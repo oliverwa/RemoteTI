@@ -1,0 +1,1202 @@
+
+> multicam-inspector@0.1.0 dev
+> concurrently "npm run server" "npm start"
+
+[0] 
+[0] > multicam-inspector@0.1.0 server
+[0] > node server.js
+[0] 
+[1] 
+[1] > multicam-inspector@0.1.0 start
+[1] > craco start
+[1] 
+[0] [2025-11-14T17:15:26.601Z] [INFO] Backend server started on port 3001
+[0] [2025-11-14T17:15:26.602Z] [INFO] Environment check:
+[0] [2025-11-14T17:15:26.602Z] [DATA] {
+[0]   "nodeVersion": "v22.19.0",
+[0]   "platform": "darwin",
+[0]   "cwd": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector",
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh",
+[0]   "homeDir": "/Users/oliverwallin"
+[0] }
+[0] [2025-11-14T17:15:26.602Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:15:26.602Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:15:26.602Z] [INFO] Script validation passed
+[0] [2025-11-14T17:15:26.602Z] [INFO] Initial script validation successful
+[1] Something is already running on port 3000.
+[1] npm start exited with code 0
+[0] [2025-11-14T17:18:04.090Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:18:04.090Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:18:04.091Z] [INFO] Script validation passed
+[0] [2025-11-14T17:18:04.092Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:18:04.092Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:18:04.092Z] [INFO] Script validation passed
+[0] [2025-11-14T17:18:11.850Z] [INFO] [optm8ieum] Received snapshot request
+[0] [2025-11-14T17:18:11.850Z] [DATA] {
+[0]   "hangar": "hangar_rouen_vpn",
+[0]   "drone": "marvin"
+[0] }
+[0] [2025-11-14T17:18:11.851Z] [INFO] Validating snapshot request
+[0] [2025-11-14T17:18:11.851Z] [DATA] {
+[0]   "hangar": "hangar_rouen_vpn",
+[0]   "drone": "marvin"
+[0] }
+[0] [2025-11-14T17:18:11.851Z] [INFO] Validation passed
+[0] [2025-11-14T17:18:11.851Z] [INFO] [optm8ieum] Starting parallel camera capture
+[0] [2025-11-14T17:18:11.851Z] [DATA] {
+[0]   "hangar": "hangar_rouen_vpn",
+[0]   "drone": "marvin"
+[0] }
+[0] [2025-11-14T17:18:11.852Z] [INFO] [optm8ieum] Starting parallel capture in 2 batches of 4 cameras each
+[0] [2025-11-14T17:18:11.852Z] [INFO] [optm8ieum] Processing batch 1/2: [FDR, FUR, RUR, RDR]
+[0] [2025-11-14T17:18:11.852Z] [INFO] [optm8ieum] Starting FDR on port 8083 (1/8)
+[0] [2025-11-14T17:18:11.858Z] [INFO] [optm8ieum] Starting FUR on port 8084 (2/8)
+[0] [2025-11-14T17:18:11.862Z] [INFO] [optm8ieum] Starting RUR on port 8085 (3/8)
+[0] [2025-11-14T17:18:11.865Z] [INFO] [optm8ieum] Starting RDR on port 8086 (4/8)
+[0] [2025-11-14T17:18:11.868Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:11.868Z] [DATA] "Fetching FDR from 10.20.1.208 via hangar_rouen_vpn\nFetching FDR from 10.20.1.208 via hangar_rouen_vpn on port 8083"
+[0] [2025-11-14T17:18:11.869Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:11.869Z] [DATA] "Fetching FUR from 10.20.1.209 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:11.870Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:11.870Z] [DATA] "Fetching FUR from 10.20.1.209 via hangar_rouen_vpn on port 8084"
+[0] [2025-11-14T17:18:11.870Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:11.870Z] [DATA] "Fetching RUR from 10.20.1.210 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:11.871Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:11.871Z] [DATA] "Fetching RUR from 10.20.1.210 via hangar_rouen_vpn on port 8085"
+[0] [2025-11-14T17:18:11.872Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:11.872Z] [DATA] "📅 Start time: 18:18:11"
+[0] [2025-11-14T17:18:11.872Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:11.872Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:11.873Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:11.873Z] [DATA] "Fetching RDR from 10.20.1.211 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:11.873Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:11.873Z] [DATA] "📅 Start time: 18:18:11\n🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:11.873Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:11.873Z] [DATA] "Fetching RDR from 10.20.1.211 via hangar_rouen_vpn on port 8086"
+[0] [2025-11-14T17:18:11.874Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:11.874Z] [DATA] "📅 Start time: 18:18:11\n🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:11.877Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:11.877Z] [DATA] "📅 Start time: 18:18:11"
+[0] [2025-11-14T17:18:11.877Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:11.877Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:13.587Z] [WARN] [optm8ieum][RDR:8086] ERROR:
+[0] [2025-11-14T17:18:13.587Z] [DATA] "ControlSocket /Users/oliverwallin/.ssh/cm-system@hangar_rouen_vpn:22 already exists, disabling multiplexing"
+[0] [2025-11-14T17:18:13.590Z] [WARN] [optm8ieum][FUR:8084] ERROR:
+[0] [2025-11-14T17:18:13.590Z] [DATA] "ControlSocket /Users/oliverwallin/.ssh/cm-system@hangar_rouen_vpn:22 already exists, disabling multiplexing"
+[0] [2025-11-14T17:18:13.590Z] [WARN] [optm8ieum][FDR:8083] ERROR:
+[0] [2025-11-14T17:18:13.590Z] [DATA] "ControlSocket /Users/oliverwallin/.ssh/cm-system@hangar_rouen_vpn:22 already exists, disabling multiplexing"
+[0] [2025-11-14T17:18:13.957Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:13.957Z] [DATA] "✅ SSH connection established (18:18:13)"
+[0] [2025-11-14T17:18:13.957Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:13.957Z] [DATA] "🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8085..."
+[0] [2025-11-14T17:18:14.084Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:14.084Z] [DATA] "✅ SSH connection established (18:18:14)"
+[0] [2025-11-14T17:18:14.084Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:14.084Z] [DATA] "🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8084..."
+[0] [2025-11-14T17:18:14.084Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:14.084Z] [DATA] "✅ SSH connection established (18:18:14)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8086..."
+[0] [2025-11-14T17:18:14.089Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:14.089Z] [DATA] "✅ SSH connection established (18:18:14)"
+[0] [2025-11-14T17:18:14.090Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:14.090Z] [DATA] "🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8083..."
+[0] [2025-11-14T17:18:14.602Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:14.602Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.210..."
+[0] [2025-11-14T17:18:14.803Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:14.803Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.209..."
+[0] [2025-11-14T17:18:14.803Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:14.803Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.208..."
+[0] [2025-11-14T17:18:14.803Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:14.803Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.211..."
+[0] [2025-11-14T17:18:15.532Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:15.532Z] [DATA] "✅ Tunnel started (18:18:15)"
+[0] [2025-11-14T17:18:15.641Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:15.641Z] [DATA] "✅ Tunnel started (18:18:15)"
+[0] [2025-11-14T17:18:15.641Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:15.641Z] [DATA] "✅ Tunnel started (18:18:15)"
+[0] [2025-11-14T17:18:15.641Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:15.641Z] [DATA] "✅ Tunnel started (18:18:15)"
+[0] [2025-11-14T17:18:16.544Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:16.544Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:16.544Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:16.544Z] [DATA] "🎯 Triggering autofocus for RUR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:16.653Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:16.653Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:16.653Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:16.653Z] [DATA] "🎯 Triggering autofocus for RDR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:16.654Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:16.654Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:16.655Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:16.655Z] [DATA] "🎯 Triggering autofocus for FUR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:16.656Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:16.656Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:16.656Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:16.656Z] [DATA] "🎯 Triggering autofocus for FDR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:17.317Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:17.317Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:17.317Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:17.317Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:17.324Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:17.324Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:17.325Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:17.325Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:17.342Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:17.342Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:17.342Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:17.342Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:17.432Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:17.432Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:17.433Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:17.433Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:18.055Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:18.055Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:18.154Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:18.154Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:18.172Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:18.172Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:18.222Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:18.222Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:20.068Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:20.068Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:20.165Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:20.165Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:20.182Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:20.182Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:20.233Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:20.233Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:20.857Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:20.857Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:20.944Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:20.944Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:21.096Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:21.096Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:21.097Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:21.097Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:23.865Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:23.865Z] [DATA] "✓ Working zoom-triggered autofocus completed for RUR"
+[0] [2025-11-14T17:18:23.874Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:23.874Z] [DATA] "✅ Autofocus completed (18:18:23)"
+[0] [2025-11-14T17:18:23.875Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:23.875Z] [DATA] "📸 Step 5/6: Capturing image from RUR...\nStarting curl download..."
+[0] [2025-11-14T17:18:23.956Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:23.956Z] [DATA] "✓ Working zoom-triggered autofocus completed for FUR"
+[0] [2025-11-14T17:18:23.965Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:23.965Z] [DATA] "✅ Autofocus completed (18:18:23)"
+[0] [2025-11-14T17:18:23.966Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:23.966Z] [DATA] "📸 Step 5/6: Capturing image from FUR...\nStarting curl download..."
+[0] [2025-11-14T17:18:24.106Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:24.106Z] [DATA] "✓ Working zoom-triggered autofocus completed for FDR"
+[0] [2025-11-14T17:18:24.108Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:24.108Z] [DATA] "✓ Working zoom-triggered autofocus completed for RDR"
+[0] [2025-11-14T17:18:24.112Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:24.112Z] [DATA] "✅ Autofocus completed (18:18:24)"
+[0] [2025-11-14T17:18:24.112Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:24.112Z] [DATA] "📸 Step 5/6: Capturing image from FDR...\nStarting curl download..."
+[0] [2025-11-14T17:18:24.114Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:24.114Z] [DATA] "✅ Autofocus completed (18:18:24)"
+[0] [2025-11-14T17:18:24.114Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:24.114Z] [DATA] "📸 Step 5/6: Capturing image from RDR...\nStarting curl download..."
+[0] [2025-11-14T17:18:26.149Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:26.149Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:26.160Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:26.160Z] [DATA] "Initial file size after curl: 382624 bytes"
+[0] [2025-11-14T17:18:26.160Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:26.160Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:26.165Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:26.165Z] [DATA] "File size: 382624 bytes (check 1/30)"
+[0] [2025-11-14T17:18:26.495Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:26.495Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:26.506Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:26.506Z] [DATA] "Initial file size after curl: 654940 bytes"
+[0] [2025-11-14T17:18:26.506Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:26.506Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:26.515Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:26.515Z] [DATA] "File size: 654940 bytes (check 1/30)"
+[0] [2025-11-14T17:18:26.541Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:26.541Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:26.548Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:26.548Z] [DATA] "Initial file size after curl: 610429 bytes"
+[0] [2025-11-14T17:18:26.548Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:26.548Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:26.553Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:26.553Z] [DATA] "File size: 610429 bytes (check 1/30)"
+[0] [2025-11-14T17:18:26.654Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:26.654Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:26.664Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:26.664Z] [DATA] "Initial file size after curl: 724848 bytes"
+[0] [2025-11-14T17:18:26.665Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:26.665Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:26.673Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:26.673Z] [DATA] "File size: 724848 bytes (check 1/30)"
+[0] [2025-11-14T17:18:26.679Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:26.679Z] [DATA] "File size: 382624 bytes (check 2/30)"
+[0] [2025-11-14T17:18:27.033Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:27.033Z] [DATA] "File size: 654940 bytes (check 2/30)"
+[0] [2025-11-14T17:18:27.073Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:27.073Z] [DATA] "File size: 610429 bytes (check 2/30)"
+[0] [2025-11-14T17:18:27.190Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:27.190Z] [DATA] "File size: 724848 bytes (check 2/30)"
+[0] [2025-11-14T17:18:27.192Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:27.192Z] [DATA] "File size: 382624 bytes (check 3/30)"
+[0] [2025-11-14T17:18:27.556Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:27.556Z] [DATA] "File size: 654940 bytes (check 3/30)"
+[0] [2025-11-14T17:18:27.589Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:27.589Z] [DATA] "File size: 610429 bytes (check 3/30)"
+[0] [2025-11-14T17:18:27.719Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:27.719Z] [DATA] "File size: 382624 bytes (check 4/30)\nFile appears complete (382624 bytes, stable for 3 checks)"
+[0] [2025-11-14T17:18:27.719Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:27.719Z] [DATA] "SUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FUR_251114_181811.jpg"
+[0] [2025-11-14T17:18:27.719Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:27.719Z] [DATA] "File size: 724848 bytes (check 3/30)"
+[0] [2025-11-14T17:18:27.737Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:27.737Z] [DATA] "File size: 382624 bytes\n🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:28.029Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:28.029Z] [DATA] "✅ Cleanup completed (18:18:28)"
+[0] [2025-11-14T17:18:28.030Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:28.030Z] [DATA] "✅ Done: FUR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FUR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.035Z] [INFO] [optm8ieum][FUR:8084]
+[0] [2025-11-14T17:18:28.035Z] [DATA] "⏱️ Total capture time: Completed at 18:18:28"
+[0] [2025-11-14T17:18:28.037Z] [INFO] [optm8ieum] FUR SUCCESS
+[0] [2025-11-14T17:18:28.086Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.086Z] [DATA] "File size: 654940 bytes (check 4/30)"
+[0] [2025-11-14T17:18:28.086Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.086Z] [DATA] "File appears complete (654940 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FDR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.091Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.091Z] [DATA] "File size: 654940 bytes"
+[0] [2025-11-14T17:18:28.091Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.091Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:28.102Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.102Z] [DATA] "File size: 610429 bytes (check 4/30)"
+[0] [2025-11-14T17:18:28.102Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.102Z] [DATA] "File appears complete (610429 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RDR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.104Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.104Z] [DATA] "File size: 610429 bytes"
+[0] [2025-11-14T17:18:28.104Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.104Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:28.236Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.236Z] [DATA] "File size: 724848 bytes (check 4/30)"
+[0] [2025-11-14T17:18:28.236Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.236Z] [DATA] "File appears complete (724848 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RUR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.242Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.242Z] [DATA] "File size: 724848 bytes"
+[0] [2025-11-14T17:18:28.242Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.242Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:28.347Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.347Z] [DATA] "✅ Cleanup completed (18:18:28)"
+[0] [2025-11-14T17:18:28.348Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.348Z] [DATA] "✅ Done: FDR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FDR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.359Z] [INFO] [optm8ieum][FDR:8083]
+[0] [2025-11-14T17:18:28.359Z] [DATA] "⏱️ Total capture time: Completed at 18:18:28"
+[0] [2025-11-14T17:18:28.361Z] [INFO] [optm8ieum] FDR SUCCESS
+[0] [2025-11-14T17:18:28.438Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.438Z] [DATA] "✅ Cleanup completed (18:18:28)"
+[0] [2025-11-14T17:18:28.438Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.438Z] [DATA] "✅ Done: RDR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RDR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.444Z] [INFO] [optm8ieum][RDR:8086]
+[0] [2025-11-14T17:18:28.444Z] [DATA] "⏱️ Total capture time: Completed at 18:18:28"
+[0] [2025-11-14T17:18:28.445Z] [INFO] [optm8ieum] RDR SUCCESS
+[0] [2025-11-14T17:18:28.556Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.556Z] [DATA] "✅ Cleanup completed (18:18:28)"
+[0] [2025-11-14T17:18:28.556Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.556Z] [DATA] "✅ Done: RUR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RUR_251114_181811.jpg"
+[0] [2025-11-14T17:18:28.562Z] [INFO] [optm8ieum][RUR:8085]
+[0] [2025-11-14T17:18:28.562Z] [DATA] "⏱️ Total capture time: Completed at 18:18:28"
+[0] [2025-11-14T17:18:28.563Z] [INFO] [optm8ieum] RUR SUCCESS
+[0] [2025-11-14T17:18:28.563Z] [INFO] [optm8ieum] Batch 1 completed, waiting 2s before next batch
+[0] [2025-11-14T17:18:30.564Z] [INFO] [optm8ieum] Processing batch 2/2: [FDL, FUL, RUL, RDL]
+[0] [2025-11-14T17:18:30.564Z] [INFO] [optm8ieum] Starting FDL on port 8083 (5/8)
+[0] [2025-11-14T17:18:30.567Z] [INFO] [optm8ieum] Starting FUL on port 8084 (6/8)
+[0] [2025-11-14T17:18:30.570Z] [INFO] [optm8ieum] Starting RUL on port 8085 (7/8)
+[0] [2025-11-14T17:18:30.574Z] [INFO] [optm8ieum] Starting RDL on port 8086 (8/8)
+[0] [2025-11-14T17:18:30.583Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:30.583Z] [DATA] "Fetching FDL from 10.20.1.212 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:30.583Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:30.583Z] [DATA] "Fetching FUL from 10.20.1.213 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:30.584Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:30.584Z] [DATA] "Fetching FDL from 10.20.1.212 via hangar_rouen_vpn on port 8083"
+[0] [2025-11-14T17:18:30.584Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:30.584Z] [DATA] "Fetching FUL from 10.20.1.213 via hangar_rouen_vpn on port 8084"
+[0] [2025-11-14T17:18:30.590Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.590Z] [DATA] "Fetching RUL from 10.20.1.214 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:30.591Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.591Z] [DATA] "Fetching RUL from 10.20.1.214 via hangar_rouen_vpn on port 8085"
+[0] [2025-11-14T17:18:30.592Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:30.592Z] [DATA] "📅 Start time: 18:18:30"
+[0] [2025-11-14T17:18:30.592Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:30.592Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:30.594Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:30.594Z] [DATA] "Fetching RDL from 10.20.1.215 via hangar_rouen_vpn"
+[0] [2025-11-14T17:18:30.595Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:30.595Z] [DATA] "📅 Start time: 18:18:30\n🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:30.595Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:30.595Z] [DATA] "Fetching RDL from 10.20.1.215 via hangar_rouen_vpn on port 8086"
+[0] [2025-11-14T17:18:30.599Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.599Z] [DATA] "📅 Start time: 18:18:30"
+[0] [2025-11-14T17:18:30.599Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.599Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:30.602Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:30.602Z] [DATA] "📅 Start time: 18:18:30"
+[0] [2025-11-14T17:18:30.602Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:30.602Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:18:30.856Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:30.856Z] [DATA] "✅ SSH connection established (18:18:30)\n🧹 Step 2/6: Cleaning up existing processes..."
+[0] [2025-11-14T17:18:30.857Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:30.857Z] [DATA] "✅ SSH connection established (18:18:30)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8084..."
+[0] [2025-11-14T17:18:30.857Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:30.857Z] [DATA] "Checking for existing socat processes on port 8086..."
+[0] [2025-11-14T17:18:30.857Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:30.857Z] [DATA] "✅ SSH connection established (18:18:30)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8083..."
+[0] [2025-11-14T17:18:30.857Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.857Z] [DATA] "✅ SSH connection established (18:18:30)"
+[0] [2025-11-14T17:18:30.857Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.857Z] [DATA] "🧹 Step 2/6: Cleaning up existing processes..."
+[0] [2025-11-14T17:18:30.857Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:30.857Z] [DATA] "Checking for existing socat processes on port 8085..."
+[0] [2025-11-14T17:18:31.466Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:31.466Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.214..."
+[0] [2025-11-14T17:18:31.466Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:31.466Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.212..."
+[0] [2025-11-14T17:18:31.466Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:31.466Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.213..."
+[0] [2025-11-14T17:18:31.466Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:31.466Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.215..."
+[0] [2025-11-14T17:18:32.346Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:32.346Z] [DATA] "✅ Tunnel started (18:18:32)"
+[0] [2025-11-14T17:18:32.346Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:32.346Z] [DATA] "✅ Tunnel started (18:18:32)"
+[0] [2025-11-14T17:18:32.346Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:32.346Z] [DATA] "✅ Tunnel started (18:18:32)"
+[0] [2025-11-14T17:18:32.346Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:32.346Z] [DATA] "✅ Tunnel started (18:18:32)"
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Triggering autofocus for RDL via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Triggering autofocus for FUL via working zoom method..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Triggering autofocus for RUL via working zoom method..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "🎯 Triggering autofocus for FDL via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:33.356Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:33.356Z] [DATA] "📡 Getting current zoom position..."
+[0] [2025-11-14T17:18:34.082Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:34.082Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:34.082Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:34.082Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:34.082Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:34.082Z] [DATA] "📊 Current zoom position: 15\n   🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:34.083Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:34.083Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:34.083Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:34.083Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:34.087Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:34.087Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:18:34.087Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:34.087Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:18:34.883Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:34.883Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:34.962Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:34.962Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:34.962Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:34.962Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:35.091Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:35.091Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:18:36.895Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:36.895Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:36.972Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:36.972Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:36.972Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:36.972Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:37.101Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:37.101Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:18:37.642Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:37.642Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:37.754Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:37.754Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:37.775Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:37.775Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:37.871Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:37.871Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:18:40.656Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:40.656Z] [DATA] "✓ Working zoom-triggered autofocus completed for RDL"
+[0] [2025-11-14T17:18:40.665Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:40.665Z] [DATA] "✅ Autofocus completed (18:18:40)"
+[0] [2025-11-14T17:18:40.665Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:40.665Z] [DATA] "📸 Step 5/6: Capturing image from RDL...\nStarting curl download..."
+[0] [2025-11-14T17:18:40.765Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:40.765Z] [DATA] "✓ Working zoom-triggered autofocus completed for RUL"
+[0] [2025-11-14T17:18:40.773Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:40.773Z] [DATA] "✅ Autofocus completed (18:18:40)"
+[0] [2025-11-14T17:18:40.774Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:40.774Z] [DATA] "📸 Step 5/6: Capturing image from RUL...\nStarting curl download..."
+[0] [2025-11-14T17:18:40.785Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:40.785Z] [DATA] "✓ Working zoom-triggered autofocus completed for FDL"
+[0] [2025-11-14T17:18:40.789Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:40.789Z] [DATA] "✅ Autofocus completed (18:18:40)"
+[0] [2025-11-14T17:18:40.790Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:40.790Z] [DATA] "📸 Step 5/6: Capturing image from FDL..."
+[0] [2025-11-14T17:18:40.790Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:40.790Z] [DATA] "Starting curl download..."
+[0] [2025-11-14T17:18:40.882Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:40.882Z] [DATA] "✓ Working zoom-triggered autofocus completed for FUL"
+[0] [2025-11-14T17:18:40.888Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:40.888Z] [DATA] "✅ Autofocus completed (18:18:40)"
+[0] [2025-11-14T17:18:40.888Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:40.888Z] [DATA] "📸 Step 5/6: Capturing image from FUL..."
+[0] [2025-11-14T17:18:40.888Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:40.888Z] [DATA] "Starting curl download..."
+[0] [2025-11-14T17:18:42.900Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:42.900Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:42.905Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:42.905Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:42.907Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:42.907Z] [DATA] "Initial file size after curl: 603419 bytes"
+[0] [2025-11-14T17:18:42.907Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:42.907Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:42.911Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:42.911Z] [DATA] "Initial file size after curl: 524104 bytes"
+[0] [2025-11-14T17:18:42.911Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:42.911Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:42.913Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:42.913Z] [DATA] "File size: 603419 bytes (check 1/30)"
+[0] [2025-11-14T17:18:42.916Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:42.916Z] [DATA] "File size: 524104 bytes (check 1/30)"
+[0] [2025-11-14T17:18:43.432Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:43.432Z] [DATA] "File size: 524104 bytes (check 2/30)"
+[0] [2025-11-14T17:18:43.432Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:43.432Z] [DATA] "File size: 603419 bytes (check 2/30)"
+[0] [2025-11-14T17:18:43.555Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:43.555Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:43.562Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:43.562Z] [DATA] "Initial file size after curl: 580841 bytes"
+[0] [2025-11-14T17:18:43.562Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:43.562Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:43.567Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:43.567Z] [DATA] "File size: 580841 bytes (check 1/30)"
+[0] [2025-11-14T17:18:43.609Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:43.609Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:18:43.614Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:43.614Z] [DATA] "Initial file size after curl: 470636 bytes"
+[0] [2025-11-14T17:18:43.614Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:43.614Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:18:43.619Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:43.619Z] [DATA] "File size: 470636 bytes (check 1/30)"
+[0] [2025-11-14T17:18:43.948Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:43.948Z] [DATA] "File size: 524104 bytes (check 3/30)"
+[0] [2025-11-14T17:18:43.949Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:43.949Z] [DATA] "File size: 603419 bytes (check 3/30)"
+[0] [2025-11-14T17:18:44.084Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:44.084Z] [DATA] "File size: 580841 bytes (check 2/30)"
+[0] [2025-11-14T17:18:44.136Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:44.136Z] [DATA] "File size: 470636 bytes (check 2/30)"
+[0] [2025-11-14T17:18:44.463Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.463Z] [DATA] "File size: 524104 bytes (check 4/30)"
+[0] [2025-11-14T17:18:44.463Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.463Z] [DATA] "File appears complete (524104 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FUL_251114_181811.jpg"
+[0] [2025-11-14T17:18:44.463Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:44.463Z] [DATA] "File size: 603419 bytes (check 4/30)\nFile appears complete (603419 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RUL_251114_181811.jpg"
+[0] [2025-11-14T17:18:44.468Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:44.468Z] [DATA] "File size: 603419 bytes"
+[0] [2025-11-14T17:18:44.468Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:44.468Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:44.468Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.468Z] [DATA] "File size: 524104 bytes"
+[0] [2025-11-14T17:18:44.468Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.468Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:44.598Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:44.598Z] [DATA] "File size: 580841 bytes (check 3/30)"
+[0] [2025-11-14T17:18:44.651Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:44.651Z] [DATA] "File size: 470636 bytes (check 3/30)"
+[0] [2025-11-14T17:18:44.721Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.721Z] [DATA] "✅ Cleanup completed (18:18:44)"
+[0] [2025-11-14T17:18:44.721Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.721Z] [DATA] "✅ Done: FUL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FUL_251114_181811.jpg"
+[0] [2025-11-14T17:18:44.721Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:44.721Z] [DATA] "✅ Cleanup completed (18:18:44)\n✅ Done: RUL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RUL_251114_181811.jpg"
+[0] [2025-11-14T17:18:44.726Z] [INFO] [optm8ieum][FUL:8084]
+[0] [2025-11-14T17:18:44.726Z] [DATA] "⏱️ Total capture time: Completed at 18:18:44"
+[0] [2025-11-14T17:18:44.727Z] [INFO] [optm8ieum][RUL:8085]
+[0] [2025-11-14T17:18:44.727Z] [DATA] "⏱️ Total capture time: Completed at 18:18:44"
+[0] [2025-11-14T17:18:44.727Z] [INFO] [optm8ieum] FUL SUCCESS
+[0] [2025-11-14T17:18:44.728Z] [INFO] [optm8ieum] RUL SUCCESS
+[0] [2025-11-14T17:18:45.117Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.117Z] [DATA] "File size: 580841 bytes (check 4/30)"
+[0] [2025-11-14T17:18:45.117Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.117Z] [DATA] "File appears complete (580841 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RDL_251114_181811.jpg"
+[0] [2025-11-14T17:18:45.123Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.123Z] [DATA] "File size: 580841 bytes"
+[0] [2025-11-14T17:18:45.124Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.124Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:45.161Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.161Z] [DATA] "File size: 470636 bytes (check 4/30)"
+[0] [2025-11-14T17:18:45.161Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.161Z] [DATA] "File appears complete (470636 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FDL_251114_181811.jpg"
+[0] [2025-11-14T17:18:45.165Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.165Z] [DATA] "File size: 470636 bytes"
+[0] [2025-11-14T17:18:45.165Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.165Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:18:45.394Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.394Z] [DATA] "✅ Cleanup completed (18:18:45)"
+[0] [2025-11-14T17:18:45.394Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.394Z] [DATA] "✅ Done: RDL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RDL_251114_181811.jpg"
+[0] [2025-11-14T17:18:45.399Z] [INFO] [optm8ieum][RDL:8086]
+[0] [2025-11-14T17:18:45.399Z] [DATA] "⏱️ Total capture time: Completed at 18:18:45"
+[0] [2025-11-14T17:18:45.400Z] [INFO] [optm8ieum] RDL SUCCESS
+[0] [2025-11-14T17:18:45.409Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.409Z] [DATA] "✅ Cleanup completed (18:18:45)"
+[0] [2025-11-14T17:18:45.409Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.409Z] [DATA] "✅ Done: FDL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FDL_251114_181811.jpg"
+[0] [2025-11-14T17:18:45.413Z] [INFO] [optm8ieum][FDL:8083]
+[0] [2025-11-14T17:18:45.413Z] [DATA] "⏱️ Total capture time: Completed at 18:18:45"
+[0] [2025-11-14T17:18:45.413Z] [INFO] [optm8ieum] FDL SUCCESS
+[0] [2025-11-14T17:18:45.413Z] [INFO] [optm8ieum] Final cleanup: killing socat processes on ports 8083-8086
+[0] [2025-11-14T17:18:45.416Z] [INFO] [optm8ieum] Parallel capture completed. Success: 8, Failed: 0
+[0] [2025-11-14T17:18:45.663Z] [INFO] [optm8ieum] Port cleanup completed with code 0
+[0] [2025-11-14T17:18:47.931Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.931Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RUR_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.937Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.937Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FUR_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.939Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.939Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FUL_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.939Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.939Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RUL_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.941Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.941Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RDR_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.941Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.941Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FDR_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.944Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.944Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/FDL_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:18:47.948Z] [INFO] Image request
+[0] [2025-11-14T17:18:47.948Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_181811/RDL_251114_181811.jpg"
+[0] }
+[0] [2025-11-14T17:19:18.401Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:19:18.401Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:19:18.402Z] [INFO] Script validation passed
+[0] [2025-11-14T17:19:18.403Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:19:18.403Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:19:18.403Z] [INFO] Script validation passed
+[0] [2025-11-14T17:20:44.938Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:20:44.938Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:20:44.939Z] [INFO] Script validation passed
+[0] [2025-11-14T17:20:44.940Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:20:44.940Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:20:44.940Z] [INFO] Script validation passed
+[0] [2025-11-14T17:26:16.196Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:26:16.196Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:26:16.196Z] [INFO] Script validation passed
+[0] [2025-11-14T17:26:16.198Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:26:16.198Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:26:16.201Z] [INFO] Script validation passed
+[0] [2025-11-14T17:29:29.811Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:29:29.811Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:29:29.811Z] [INFO] Script validation passed
+[0] [2025-11-14T17:29:29.820Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:29:29.820Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:29:29.820Z] [INFO] Script validation passed
+[0] [2025-11-14T17:41:54.865Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:41:54.865Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:41:54.865Z] [INFO] Script validation passed
+[0] [2025-11-14T17:41:54.878Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:41:54.878Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:41:54.878Z] [INFO] Script validation passed
+[0] [2025-11-14T17:48:37.472Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:48:37.472Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:48:37.472Z] [INFO] Script validation passed
+[0] [2025-11-14T17:48:37.474Z] [INFO] Validating camera fetch script
+[0] [2025-11-14T17:48:37.474Z] [DATA] {
+[0]   "scriptPath": "/Users/oliverwallin/Desktop/RemoteTI/multicam-inspector/remote_ti_camera_fetch.sh"
+[0] }
+[0] [2025-11-14T17:48:37.474Z] [INFO] Script validation passed
+[0] [2025-11-14T17:52:07.690Z] [INFO] [tp80728fy] Received snapshot request
+[0] [2025-11-14T17:52:07.690Z] [DATA] {
+[0]   "hangar": "hangar_rouen_vpn",
+[0]   "drone": "marvin"
+[0] }
+[0] [2025-11-14T17:52:07.690Z] [INFO] Validating snapshot request
+[0] [2025-11-14T17:52:07.690Z] [DATA] {
+[0]   "hangar": "hangar_rouen_vpn",
+[0]   "drone": "marvin"
+[0] }
+[0] [2025-11-14T17:52:07.690Z] [INFO] Validation passed
+[0] [2025-11-14T17:52:07.690Z] [INFO] [tp80728fy] Starting parallel camera capture
+[0] [2025-11-14T17:52:07.690Z] [DATA] {
+[0]   "hangar": "hangar_rouen_vpn",
+[0]   "drone": "marvin"
+[0] }
+[0] [2025-11-14T17:52:07.691Z] [INFO] [tp80728fy] Starting parallel capture in 2 batches of 4 cameras each
+[0] [2025-11-14T17:52:07.691Z] [INFO] [tp80728fy] Processing batch 1/2: [FDR, FUR, RUR, RDR]
+[0] [2025-11-14T17:52:07.691Z] [INFO] [tp80728fy] Starting FDR on port 8083 (1/8)
+[0] [2025-11-14T17:52:07.695Z] [INFO] [tp80728fy] Starting FUR on port 8084 (2/8)
+[0] [2025-11-14T17:52:07.698Z] [INFO] [tp80728fy] Starting RUR on port 8085 (3/8)
+[0] [2025-11-14T17:52:07.701Z] [INFO] [tp80728fy] Starting RDR on port 8086 (4/8)
+[0] [2025-11-14T17:52:07.707Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:07.707Z] [DATA] "Fetching FDR from 10.20.1.208 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:07.707Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:07.707Z] [DATA] "Fetching FUR from 10.20.1.209 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:07.707Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:07.707Z] [DATA] "Fetching FUR from 10.20.1.209 via hangar_rouen_vpn on port 8084"
+[0] [2025-11-14T17:52:07.707Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:07.707Z] [DATA] "Fetching FDR from 10.20.1.208 via hangar_rouen_vpn on port 8083"
+[0] [2025-11-14T17:52:07.710Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:07.710Z] [DATA] "Fetching RUR from 10.20.1.210 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:07.711Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:07.711Z] [DATA] "Fetching RUR from 10.20.1.210 via hangar_rouen_vpn on port 8085"
+[0] [2025-11-14T17:52:07.712Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:07.712Z] [DATA] "Fetching RDR from 10.20.1.211 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:07.712Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:07.712Z] [DATA] "Fetching RDR from 10.20.1.211 via hangar_rouen_vpn on port 8086"
+[0] [2025-11-14T17:52:07.714Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:07.714Z] [DATA] "📅 Start time: 18:52:07"
+[0] [2025-11-14T17:52:07.714Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:07.714Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:07.714Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:07.714Z] [DATA] "📅 Start time: 18:52:07\n🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:07.716Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:07.716Z] [DATA] "📅 Start time: 18:52:07"
+[0] [2025-11-14T17:52:07.716Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:07.716Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:07.718Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:07.718Z] [DATA] "📅 Start time: 18:52:07"
+[0] [2025-11-14T17:52:07.718Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:07.718Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:08.931Z] [WARN] [tp80728fy][FDR:8083] ERROR:
+[0] [2025-11-14T17:52:08.931Z] [DATA] "ControlSocket /Users/oliverwallin/.ssh/cm-system@hangar_rouen_vpn:22 already exists, disabling multiplexing"
+[0] [2025-11-14T17:52:08.938Z] [WARN] [tp80728fy][RDR:8086] ERROR:
+[0] [2025-11-14T17:52:08.938Z] [DATA] "ControlSocket /Users/oliverwallin/.ssh/cm-system@hangar_rouen_vpn:22 already exists, disabling multiplexing"
+[0] [2025-11-14T17:52:08.938Z] [WARN] [tp80728fy][FUR:8084] ERROR:
+[0] [2025-11-14T17:52:08.938Z] [DATA] "ControlSocket /Users/oliverwallin/.ssh/cm-system@hangar_rouen_vpn:22 already exists, disabling multiplexing"
+[0] [2025-11-14T17:52:09.545Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:09.545Z] [DATA] "✅ SSH connection established (18:52:09)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8083..."
+[0] [2025-11-14T17:52:09.550Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:09.550Z] [DATA] "✅ SSH connection established (18:52:09)"
+[0] [2025-11-14T17:52:09.550Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:09.550Z] [DATA] "🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8084..."
+[0] [2025-11-14T17:52:09.550Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:09.550Z] [DATA] "✅ SSH connection established (18:52:09)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8085..."
+[0] [2025-11-14T17:52:09.553Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:09.553Z] [DATA] "✅ SSH connection established (18:52:09)\n🧹 Step 2/6: Cleaning up existing processes..."
+[0] [2025-11-14T17:52:09.553Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:09.553Z] [DATA] "Checking for existing socat processes on port 8086..."
+[0] [2025-11-14T17:52:10.067Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:10.067Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.211..."
+[0] [2025-11-14T17:52:10.068Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:10.068Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.210..."
+[0] [2025-11-14T17:52:10.068Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:10.068Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.209..."
+[0] [2025-11-14T17:52:10.068Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:10.068Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.208..."
+[0] [2025-11-14T17:52:10.820Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:10.820Z] [DATA] "✅ Tunnel started (18:52:10)"
+[0] [2025-11-14T17:52:10.840Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:10.840Z] [DATA] "✅ Tunnel started (18:52:10)"
+[0] [2025-11-14T17:52:10.841Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:10.841Z] [DATA] "✅ Tunnel started (18:52:10)"
+[0] [2025-11-14T17:52:10.841Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:10.841Z] [DATA] "✅ Tunnel started (18:52:10)"
+[0] [2025-11-14T17:52:11.832Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:11.832Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:52:11.832Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:11.832Z] [DATA] "🎯 Triggering autofocus for RUR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:11.850Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:11.850Z] [DATA] "🎯 Step 4/6: Triggering autofocus...\n🎯 Triggering autofocus for FDR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:11.851Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:11.851Z] [DATA] "🎯 Step 4/6: Triggering autofocus...\n🎯 Triggering autofocus for RDR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:11.851Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:11.851Z] [DATA] "🎯 Step 4/6: Triggering autofocus...\n🎯 Triggering autofocus for FUR via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:12.560Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:12.560Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:12.560Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:12.560Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:12.577Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:12.577Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:12.578Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:12.578Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:12.578Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:12.578Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:12.578Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:12.578Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:12.602Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:12.602Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:12.602Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:12.602Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:13.209Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:13.209Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:13.241Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:13.241Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:13.260Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:13.260Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:13.260Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:13.260Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:15.220Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:15.220Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:15.247Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:15.247Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:15.266Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:15.266Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:15.267Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:15.267Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:15.950Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:15.950Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:16.043Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:16.043Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:16.064Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:16.064Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:16.172Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:16.172Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:18.959Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:18.959Z] [DATA] "✓ Working zoom-triggered autofocus completed for RUR"
+[0] [2025-11-14T17:52:18.965Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:18.965Z] [DATA] "✅ Autofocus completed (18:52:18)"
+[0] [2025-11-14T17:52:18.965Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:18.965Z] [DATA] "📸 Step 5/6: Capturing image from RUR..."
+[0] [2025-11-14T17:52:18.965Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:18.965Z] [DATA] "Starting curl download..."
+[0] [2025-11-14T17:52:19.055Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:19.055Z] [DATA] "✓ Working zoom-triggered autofocus completed for FUR"
+[0] [2025-11-14T17:52:19.061Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:19.061Z] [DATA] "✅ Autofocus completed (18:52:19)"
+[0] [2025-11-14T17:52:19.061Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:19.061Z] [DATA] "📸 Step 5/6: Capturing image from FUR...\nStarting curl download..."
+[0] [2025-11-14T17:52:19.072Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:19.072Z] [DATA] "✓ Working zoom-triggered autofocus completed for RDR"
+[0] [2025-11-14T17:52:19.076Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:19.076Z] [DATA] "✅ Autofocus completed (18:52:19)"
+[0] [2025-11-14T17:52:19.076Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:19.076Z] [DATA] "📸 Step 5/6: Capturing image from RDR...\nStarting curl download..."
+[0] [2025-11-14T17:52:19.179Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:19.179Z] [DATA] "✓ Working zoom-triggered autofocus completed for FDR"
+[0] [2025-11-14T17:52:19.185Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:19.185Z] [DATA] "✅ Autofocus completed (18:52:19)"
+[0] [2025-11-14T17:52:19.185Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:19.185Z] [DATA] "📸 Step 5/6: Capturing image from FDR...\nStarting curl download..."
+[0] [2025-11-14T17:52:21.089Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:21.089Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:21.103Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:21.103Z] [DATA] "Initial file size after curl: 654261 bytes"
+[0] [2025-11-14T17:52:21.103Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:21.103Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:52:21.112Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:21.112Z] [DATA] "File size: 654261 bytes (check 1/30)"
+[0] [2025-11-14T17:52:21.243Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:21.243Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:21.254Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:21.254Z] [DATA] "Initial file size after curl: 480467 bytes"
+[0] [2025-11-14T17:52:21.254Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:21.254Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:52:21.262Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:21.262Z] [DATA] "File size: 480467 bytes (check 1/30)"
+[0] [2025-11-14T17:52:21.627Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:21.627Z] [DATA] "File size: 654261 bytes (check 2/30)"
+[0] [2025-11-14T17:52:21.768Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:21.768Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:21.769Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:21.769Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:21.778Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:21.778Z] [DATA] "Initial file size after curl: 648350 bytes\nWaiting for image to be completely written..."
+[0] [2025-11-14T17:52:21.778Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:21.778Z] [DATA] "Initial file size after curl: 514605 bytes\nWaiting for image to be completely written..."
+[0] [2025-11-14T17:52:21.781Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:21.781Z] [DATA] "File size: 480467 bytes (check 2/30)"
+[0] [2025-11-14T17:52:21.786Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:21.786Z] [DATA] "File size: 514605 bytes (check 1/30)"
+[0] [2025-11-14T17:52:21.788Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:21.788Z] [DATA] "File size: 648350 bytes (check 1/30)"
+[0] [2025-11-14T17:52:22.150Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:22.150Z] [DATA] "File size: 654261 bytes (check 3/30)"
+[0] [2025-11-14T17:52:22.303Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:22.303Z] [DATA] "File size: 480467 bytes (check 3/30)"
+[0] [2025-11-14T17:52:22.306Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:22.306Z] [DATA] "File size: 514605 bytes (check 2/30)"
+[0] [2025-11-14T17:52:22.306Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:22.306Z] [DATA] "File size: 648350 bytes (check 2/30)"
+[0] [2025-11-14T17:52:22.677Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:22.677Z] [DATA] "File size: 654261 bytes (check 4/30)"
+[0] [2025-11-14T17:52:22.677Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:22.677Z] [DATA] "File appears complete (654261 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FUR_251114_185207.jpg"
+[0] [2025-11-14T17:52:22.687Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:22.687Z] [DATA] "File size: 654261 bytes\n🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:22.821Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:22.821Z] [DATA] "File size: 480467 bytes (check 4/30)"
+[0] [2025-11-14T17:52:22.821Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:22.821Z] [DATA] "File appears complete (480467 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RUR_251114_185207.jpg"
+[0] [2025-11-14T17:52:22.825Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:22.825Z] [DATA] "File size: 514605 bytes (check 3/30)"
+[0] [2025-11-14T17:52:22.825Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:22.825Z] [DATA] "File size: 648350 bytes (check 3/30)"
+[0] [2025-11-14T17:52:22.827Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:22.827Z] [DATA] "File size: 480467 bytes"
+[0] [2025-11-14T17:52:22.827Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:22.827Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:22.948Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:22.948Z] [DATA] "✅ Cleanup completed (18:52:22)\n✅ Done: FUR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FUR_251114_185207.jpg"
+[0] [2025-11-14T17:52:22.956Z] [INFO] [tp80728fy][FUR:8084]
+[0] [2025-11-14T17:52:22.956Z] [DATA] "⏱️ Total capture time: Completed at 18:52:22"
+[0] [2025-11-14T17:52:22.957Z] [INFO] [tp80728fy] FUR SUCCESS
+[0] [2025-11-14T17:52:23.083Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:23.083Z] [DATA] "✅ Cleanup completed (18:52:23)"
+[0] [2025-11-14T17:52:23.084Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:23.084Z] [DATA] "✅ Done: RUR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RUR_251114_185207.jpg"
+[0] [2025-11-14T17:52:23.093Z] [INFO] [tp80728fy][RUR:8085]
+[0] [2025-11-14T17:52:23.093Z] [DATA] "⏱️ Total capture time: Completed at 18:52:23"
+[0] [2025-11-14T17:52:23.093Z] [INFO] [tp80728fy] RUR SUCCESS
+[0] [2025-11-14T17:52:23.344Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.344Z] [DATA] "File size: 514605 bytes (check 4/30)"
+[0] [2025-11-14T17:52:23.344Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:23.344Z] [DATA] "File size: 648350 bytes (check 4/30)\nFile appears complete (648350 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FDR_251114_185207.jpg"
+[0] [2025-11-14T17:52:23.344Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.344Z] [DATA] "File appears complete (514605 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RDR_251114_185207.jpg"
+[0] [2025-11-14T17:52:23.351Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.351Z] [DATA] "File size: 514605 bytes"
+[0] [2025-11-14T17:52:23.351Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:23.351Z] [DATA] "File size: 648350 bytes\n🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:23.351Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.351Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:23.640Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.640Z] [DATA] "✅ Cleanup completed (18:52:23)"
+[0] [2025-11-14T17:52:23.640Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.640Z] [DATA] "✅ Done: RDR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RDR_251114_185207.jpg"
+[0] [2025-11-14T17:52:23.644Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:23.644Z] [DATA] "✅ Cleanup completed (18:52:23)\n✅ Done: FDR -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FDR_251114_185207.jpg"
+[0] [2025-11-14T17:52:23.652Z] [INFO] [tp80728fy][RDR:8086]
+[0] [2025-11-14T17:52:23.652Z] [DATA] "⏱️ Total capture time: Completed at 18:52:23"
+[0] [2025-11-14T17:52:23.652Z] [INFO] [tp80728fy] RDR SUCCESS
+[0] [2025-11-14T17:52:23.655Z] [INFO] [tp80728fy][FDR:8083]
+[0] [2025-11-14T17:52:23.655Z] [DATA] "⏱️ Total capture time: Completed at 18:52:23"
+[0] [2025-11-14T17:52:23.655Z] [INFO] [tp80728fy] FDR SUCCESS
+[0] [2025-11-14T17:52:23.655Z] [INFO] [tp80728fy] Batch 1 completed, waiting 2s before next batch
+[0] [2025-11-14T17:52:25.657Z] [INFO] [tp80728fy] Processing batch 2/2: [FDL, FUL, RUL, RDL]
+[0] [2025-11-14T17:52:25.657Z] [INFO] [tp80728fy] Starting FDL on port 8083 (5/8)
+[0] [2025-11-14T17:52:25.660Z] [INFO] [tp80728fy] Starting FUL on port 8084 (6/8)
+[0] [2025-11-14T17:52:25.664Z] [INFO] [tp80728fy] Starting RUL on port 8085 (7/8)
+[0] [2025-11-14T17:52:25.670Z] [INFO] [tp80728fy] Starting RDL on port 8086 (8/8)
+[0] [2025-11-14T17:52:25.677Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:25.677Z] [DATA] "Fetching FDL from 10.20.1.212 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:25.677Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:25.677Z] [DATA] "Fetching FUL from 10.20.1.213 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:25.678Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:25.678Z] [DATA] "Fetching FDL from 10.20.1.212 via hangar_rouen_vpn on port 8083"
+[0] [2025-11-14T17:52:25.678Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:25.678Z] [DATA] "Fetching FUL from 10.20.1.213 via hangar_rouen_vpn on port 8084"
+[0] [2025-11-14T17:52:25.684Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:25.684Z] [DATA] "Fetching RUL from 10.20.1.214 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:25.685Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:25.685Z] [DATA] "Fetching RUL from 10.20.1.214 via hangar_rouen_vpn on port 8085"
+[0] [2025-11-14T17:52:25.685Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:25.685Z] [DATA] "📅 Start time: 18:52:25"
+[0] [2025-11-14T17:52:25.685Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:25.685Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:25.686Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:25.686Z] [DATA] "📅 Start time: 18:52:25\n🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:25.688Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:25.688Z] [DATA] "Fetching RDL from 10.20.1.215 via hangar_rouen_vpn"
+[0] [2025-11-14T17:52:25.689Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:25.689Z] [DATA] "Fetching RDL from 10.20.1.215 via hangar_rouen_vpn on port 8086"
+[0] [2025-11-14T17:52:25.691Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:25.691Z] [DATA] "📅 Start time: 18:52:25"
+[0] [2025-11-14T17:52:25.691Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:25.691Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:25.694Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:25.694Z] [DATA] "📅 Start time: 18:52:25"
+[0] [2025-11-14T17:52:25.694Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:25.694Z] [DATA] "🔗 Step 1/6: Establishing SSH connection..."
+[0] [2025-11-14T17:52:25.945Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:25.945Z] [DATA] "✅ SSH connection established (18:52:25)\n🧹 Step 2/6: Cleaning up existing processes..."
+[0] [2025-11-14T17:52:25.945Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:25.945Z] [DATA] "✅ SSH connection established (18:52:25)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8084..."
+[0] [2025-11-14T17:52:25.945Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:25.945Z] [DATA] "Checking for existing socat processes on port 8083..."
+[0] [2025-11-14T17:52:25.952Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:25.952Z] [DATA] "✅ SSH connection established (18:52:25)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8085..."
+[0] [2025-11-14T17:52:25.953Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:25.953Z] [DATA] "✅ SSH connection established (18:52:25)\n🧹 Step 2/6: Cleaning up existing processes...\nChecking for existing socat processes on port 8086..."
+[0] [2025-11-14T17:52:26.443Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:26.443Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.215..."
+[0] [2025-11-14T17:52:26.444Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:26.444Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.213..."
+[0] [2025-11-14T17:52:26.445Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:26.445Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.212..."
+[0] [2025-11-14T17:52:26.446Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:26.446Z] [DATA] "🚇 Step 3/6: Starting tunnel for 10.20.1.214..."
+[0] [2025-11-14T17:52:27.233Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:27.233Z] [DATA] "✅ Tunnel started (18:52:27)"
+[0] [2025-11-14T17:52:27.233Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:27.233Z] [DATA] "✅ Tunnel started (18:52:27)"
+[0] [2025-11-14T17:52:27.233Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:27.233Z] [DATA] "✅ Tunnel started (18:52:27)"
+[0] [2025-11-14T17:52:27.234Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:27.234Z] [DATA] "✅ Tunnel started (18:52:27)"
+[0] [2025-11-14T17:52:28.244Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:28.244Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:52:28.245Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:28.245Z] [DATA] "🎯 Triggering autofocus for RUL via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:28.246Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:28.246Z] [DATA] "🎯 Step 4/6: Triggering autofocus..."
+[0] [2025-11-14T17:52:28.246Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:28.246Z] [DATA] "🎯 Step 4/6: Triggering autofocus...\n🎯 Triggering autofocus for RDL via working zoom method..."
+[0] [2025-11-14T17:52:28.246Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:28.246Z] [DATA] "🎯 Triggering autofocus for FDL via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:28.246Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:28.246Z] [DATA] "📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:28.247Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:28.247Z] [DATA] "🎯 Step 4/6: Triggering autofocus...\n🎯 Triggering autofocus for FUL via working zoom method...\n   📡 Getting current zoom position..."
+[0] [2025-11-14T17:52:28.927Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:28.927Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:28.927Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:28.927Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:28.930Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:28.930Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:28.930Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:28.930Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:28.953Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:28.953Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:28.953Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:28.953Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:28.963Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:28.963Z] [DATA] "📊 Current zoom position: 15"
+[0] [2025-11-14T17:52:28.963Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:28.963Z] [DATA] "🔍 Zooming to position 20 to trigger autofocus..."
+[0] [2025-11-14T17:52:29.630Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:29.630Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:29.646Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:29.646Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:29.668Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:29.668Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:29.702Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:29.702Z] [DATA] "⏳ Waiting for autofocus to trigger..."
+[0] [2025-11-14T17:52:31.638Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:31.638Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:31.656Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:31.656Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:31.679Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:31.679Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:31.712Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:31.712Z] [DATA] "🔄 Returning to original zoom position 15..."
+[0] [2025-11-14T17:52:32.392Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:32.392Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:32.423Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:32.423Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:32.474Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:32.474Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:32.474Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:32.474Z] [DATA] "⏳ Waiting for focus to stabilize..."
+[0] [2025-11-14T17:52:35.404Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:35.404Z] [DATA] "✓ Working zoom-triggered autofocus completed for FDL"
+[0] [2025-11-14T17:52:35.414Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:35.414Z] [DATA] "✅ Autofocus completed (18:52:35)"
+[0] [2025-11-14T17:52:35.414Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:35.414Z] [DATA] "📸 Step 5/6: Capturing image from FDL...\nStarting curl download..."
+[0] [2025-11-14T17:52:35.436Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:35.436Z] [DATA] "✓ Working zoom-triggered autofocus completed for FUL"
+[0] [2025-11-14T17:52:35.441Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:35.441Z] [DATA] "✅ Autofocus completed (18:52:35)"
+[0] [2025-11-14T17:52:35.441Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:35.441Z] [DATA] "📸 Step 5/6: Capturing image from FUL...\nStarting curl download..."
+[0] [2025-11-14T17:52:35.483Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:35.483Z] [DATA] "✓ Working zoom-triggered autofocus completed for RDL"
+[0] [2025-11-14T17:52:35.487Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:35.487Z] [DATA] "✓ Working zoom-triggered autofocus completed for RUL"
+[0] [2025-11-14T17:52:35.488Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:35.488Z] [DATA] "✅ Autofocus completed (18:52:35)\n📸 Step 5/6: Capturing image from RDL..."
+[0] [2025-11-14T17:52:35.488Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:35.488Z] [DATA] "Starting curl download..."
+[0] [2025-11-14T17:52:35.492Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:35.492Z] [DATA] "✅ Autofocus completed (18:52:35)"
+[0] [2025-11-14T17:52:35.492Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:35.492Z] [DATA] "📸 Step 5/6: Capturing image from RUL..."
+[0] [2025-11-14T17:52:35.492Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:35.492Z] [DATA] "Starting curl download..."
+[0] [2025-11-14T17:52:37.089Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:37.089Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:37.109Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:37.109Z] [DATA] "Initial file size after curl: 407547 bytes"
+[0] [2025-11-14T17:52:37.109Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:37.109Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:52:37.116Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:37.116Z] [DATA] "File size: 407547 bytes (check 1/30)"
+[0] [2025-11-14T17:52:37.635Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:37.635Z] [DATA] "File size: 407547 bytes (check 2/30)"
+[0] [2025-11-14T17:52:38.023Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:38.023Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:38.032Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:38.032Z] [DATA] "Initial file size after curl: 464776 bytes"
+[0] [2025-11-14T17:52:38.032Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:38.032Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:52:38.041Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:38.041Z] [DATA] "File size: 464776 bytes (check 1/30)"
+[0] [2025-11-14T17:52:38.151Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:38.151Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:38.156Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.156Z] [DATA] "File size: 407547 bytes (check 3/30)"
+[0] [2025-11-14T17:52:38.157Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:38.157Z] [DATA] "Initial file size after curl: 507546 bytes"
+[0] [2025-11-14T17:52:38.157Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:38.157Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:52:38.163Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:38.163Z] [DATA] "File size: 507546 bytes (check 1/30)"
+[0] [2025-11-14T17:52:38.354Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:38.354Z] [DATA] "Curl download completed successfully"
+[0] [2025-11-14T17:52:38.365Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:38.365Z] [DATA] "Initial file size after curl: 582662 bytes"
+[0] [2025-11-14T17:52:38.365Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:38.365Z] [DATA] "Waiting for image to be completely written..."
+[0] [2025-11-14T17:52:38.374Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:38.374Z] [DATA] "File size: 582662 bytes (check 1/30)"
+[0] [2025-11-14T17:52:38.559Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:38.559Z] [DATA] "File size: 464776 bytes (check 2/30)"
+[0] [2025-11-14T17:52:38.673Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.673Z] [DATA] "File size: 407547 bytes (check 4/30)"
+[0] [2025-11-14T17:52:38.673Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.673Z] [DATA] "File appears complete (407547 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RUL_251114_185207.jpg"
+[0] [2025-11-14T17:52:38.679Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.679Z] [DATA] "File size: 407547 bytes"
+[0] [2025-11-14T17:52:38.679Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.679Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:38.680Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:38.680Z] [DATA] "File size: 507546 bytes (check 2/30)"
+[0] [2025-11-14T17:52:38.895Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:38.895Z] [DATA] "File size: 582662 bytes (check 2/30)"
+[0] [2025-11-14T17:52:38.945Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.945Z] [DATA] "✅ Cleanup completed (18:52:38)"
+[0] [2025-11-14T17:52:38.945Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.945Z] [DATA] "✅ Done: RUL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RUL_251114_185207.jpg"
+[0] [2025-11-14T17:52:38.951Z] [INFO] [tp80728fy][RUL:8085]
+[0] [2025-11-14T17:52:38.951Z] [DATA] "⏱️ Total capture time: Completed at 18:52:38"
+[0] [2025-11-14T17:52:38.951Z] [INFO] [tp80728fy] RUL SUCCESS
+[0] [2025-11-14T17:52:39.080Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.080Z] [DATA] "File size: 464776 bytes (check 3/30)"
+[0] [2025-11-14T17:52:39.199Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.199Z] [DATA] "File size: 507546 bytes (check 3/30)"
+[0] [2025-11-14T17:52:39.412Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:39.412Z] [DATA] "File size: 582662 bytes (check 3/30)"
+[0] [2025-11-14T17:52:39.601Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.601Z] [DATA] "File size: 464776 bytes (check 4/30)"
+[0] [2025-11-14T17:52:39.601Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.601Z] [DATA] "File appears complete (464776 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RDL_251114_185207.jpg"
+[0] [2025-11-14T17:52:39.609Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.609Z] [DATA] "File size: 464776 bytes"
+[0] [2025-11-14T17:52:39.610Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.610Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:39.719Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.719Z] [DATA] "File size: 507546 bytes (check 4/30)"
+[0] [2025-11-14T17:52:39.719Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.719Z] [DATA] "File appears complete (507546 bytes, stable for 3 checks)\nSUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FUL_251114_185207.jpg"
+[0] [2025-11-14T17:52:39.726Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.726Z] [DATA] "File size: 507546 bytes"
+[0] [2025-11-14T17:52:39.726Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.726Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:39.890Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.890Z] [DATA] "✅ Cleanup completed (18:52:39)"
+[0] [2025-11-14T17:52:39.890Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.890Z] [DATA] "✅ Done: RDL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RDL_251114_185207.jpg"
+[0] [2025-11-14T17:52:39.899Z] [INFO] [tp80728fy][RDL:8086]
+[0] [2025-11-14T17:52:39.899Z] [DATA] "⏱️ Total capture time: Completed at 18:52:39"
+[0] [2025-11-14T17:52:39.900Z] [INFO] [tp80728fy] RDL SUCCESS
+[0] [2025-11-14T17:52:39.927Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:39.927Z] [DATA] "File size: 582662 bytes (check 4/30)\nFile appears complete (582662 bytes, stable for 3 checks)"
+[0] [2025-11-14T17:52:39.928Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:39.928Z] [DATA] "SUCCESS: /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FDL_251114_185207.jpg"
+[0] [2025-11-14T17:52:39.935Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:39.935Z] [DATA] "File size: 582662 bytes"
+[0] [2025-11-14T17:52:39.935Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:39.935Z] [DATA] "🧹 Step 6/6: Cleaning up tunnel..."
+[0] [2025-11-14T17:52:39.990Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.990Z] [DATA] "✅ Cleanup completed (18:52:39)"
+[0] [2025-11-14T17:52:39.990Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.990Z] [DATA] "✅ Done: FUL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FUL_251114_185207.jpg"
+[0] [2025-11-14T17:52:39.997Z] [INFO] [tp80728fy][FUL:8084]
+[0] [2025-11-14T17:52:39.997Z] [DATA] "⏱️ Total capture time: Completed at 18:52:39"
+[0] [2025-11-14T17:52:39.997Z] [INFO] [tp80728fy] FUL SUCCESS
+[0] [2025-11-14T17:52:40.205Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:40.205Z] [DATA] "✅ Cleanup completed (18:52:40)"
+[0] [2025-11-14T17:52:40.205Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:40.205Z] [DATA] "✅ Done: FDL -> /Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FDL_251114_185207.jpg"
+[0] [2025-11-14T17:52:40.214Z] [INFO] [tp80728fy][FDL:8083]
+[0] [2025-11-14T17:52:40.214Z] [DATA] "⏱️ Total capture time: Completed at 18:52:40"
+[0] [2025-11-14T17:52:40.215Z] [INFO] [tp80728fy] FDL SUCCESS
+[0] [2025-11-14T17:52:40.215Z] [INFO] [tp80728fy] Final cleanup: killing socat processes on ports 8083-8086
+[0] [2025-11-14T17:52:40.219Z] [INFO] [tp80728fy] Parallel capture completed. Success: 8, Failed: 0
+[0] [2025-11-14T17:52:40.478Z] [INFO] [tp80728fy] Port cleanup completed with code 0
+[0] [2025-11-14T17:52:42.267Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.267Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RUR_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.274Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.274Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FDL_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.275Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.275Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FUR_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.275Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.275Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FUL_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.276Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.276Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RUL_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.277Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.277Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RDR_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.277Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.277Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/FDR_251114_185207.jpg"
+[0] }
+[0] [2025-11-14T17:52:42.285Z] [INFO] Image request
+[0] [2025-11-14T17:52:42.285Z] [DATA] {
+[0]   "imagePath": "/Users/oliverwallin/hangar_snapshots/hangar_rouen_vpn/marvin_251114_185207/RDL_251114_185207.jpg"
+[0] }
+[0] npm run server exited with code SIGKILL

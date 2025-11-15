@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoom Quality Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        
+        .container {
+            width: 400px;
+            height: 300px;
+            border: 2px solid #333;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+            background: black;
+        }
+        
+        .zoom-container {
+            width: 100%;
+            height: 100%;
+            transform-origin: 50% 50%;
+            transition: transform 0.1s;
+        }
+        
+        .test-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            max-width: none;
+            max-height: none;
+        }
+        
+        .controls {
+            margin: 10px 0;
+        }
+        
+        button {
+            margin: 0 5px;
+            padding: 5px 10px;
+        }
+        
+        .info {
+            margin: 10px 0;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>Zoom Quality Test</h1>
+    <p>Testing zoom behavior with your 4K camera images</p>
+    
+    <div class="controls">
+        <button onclick="zoomIn()">Zoom In (+0.5x)</button>
+        <button onclick="zoomOut()">Zoom Out (-0.5x)</button>
+        <button onclick="resetZoom()">Reset (1.0x)</button>
+        <input type="file" id="imageInput" accept="image/*" onchange="loadImage(event)">
+    </div>
+    
+    <div class="info">
+        Current zoom: <span id="zoomLevel">1.0</span>x
+        <br>
+        Image size: <span id="imageSize">Not loaded</span>
+        <br>
+        Container size: 400x300px
+    </div>
+    
+    <h3>Method 1: Transform on container (your reference approach)</h3>
+    <div class="container" id="container1">
+        <div class="zoom-container" id="zoomContainer1">
+            <img class="test-image" id="testImage1" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Crect width='800' height='600' fill='%23333'/%3E%3Ctext x='400' y='300' text-anchor='middle' fill='white' font-size='24'%3ELoad an image to test%3C/text%3E%3C/svg%3E" alt="Test image">
+        </div>
+    </div>
+    
+    <h3>Method 2: Transform on image directly</h3>
+    <div class="container" id="container2" style="overflow: hidden;">
+        <img class="test-image" id="testImage2" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Crect width='800' height='600' fill='%23333'/%3E%3Ctext x='400' y='300' text-anchor='middle' fill='white' font-size='24'%3ELoad an image to test%3C/text%3E%3C/svg%3E" alt="Test image" style="transform-origin: 50% 50%;">
+    </div>
+    
+    <h3>Method 3: No object-fit (natural size)</h3>
+    <div class="container" id="container3">
+        <div class="zoom-container" id="zoomContainer3">
+            <img id="testImage3" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600'%3E%3Crect width='800' height='600' fill='%23333'/%3E%3Ctext x='400' y='300' text-anchor='middle' fill='white' font-size='24'%3ELoad an image to test%3C/text%3E%3C/svg%3E" alt="Test image" style="max-width: none; max-height: none; display: block;">
+        </div>
+    </div>
+
+    <script>
+        let currentZoom = 1.0;
+        
+        function updateZoom() {
+            document.getElementById('zoomLevel').textContent = currentZoom.toFixed(1);
+            
+            // Method 1: Transform on container
+            document.getElementById('zoomContainer1').style.transform = `scale(${currentZoom})`;
+            
+            // Method 2: Transform on image
+            document.getElementById('testImage2').style.transform = `scale(${currentZoom})`;
+            
+            // Method 3: Transform on container (no object-fit)
+            document.getElementById('zoomContainer3').style.transform = `scale(${currentZoom})`;
+        }
+        
+        function zoomIn() {
+            if (currentZoom < 10) {
+                currentZoom += 0.5;
+                updateZoom();
+            }
+        }
+        
+        function zoomOut() {
+            if (currentZoom > 1) {
+                currentZoom -= 0.5;
+                updateZoom();
+            }
+        }
+        
+        function resetZoom() {
+            currentZoom = 1.0;
+            updateZoom();
+        }
+        
+        function loadImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageSrc = e.target.result;
+                    
+                    // Load image to get dimensions
+                    const img = new Image();
+                    img.onload = function() {
+                        document.getElementById('imageSize').textContent = `${img.naturalWidth}x${img.naturalHeight}px`;
+                        
+                        // Set image source for all test methods
+                        document.getElementById('testImage1').src = imageSrc;
+                        document.getElementById('testImage2').src = imageSrc;
+                        document.getElementById('testImage3').src = imageSrc;
+                    };
+                    img.src = imageSrc;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Initialize
+        updateZoom();
+    </script>
+</body>
+</html>
