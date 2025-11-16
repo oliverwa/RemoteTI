@@ -217,6 +217,7 @@ export default function MultiCamInspector() {
   const [showTransformModal, setShowTransformModal] = useState(false);
   
   // Camera calibration modal state
+  const [showCalibrateSelectionModal, setCalibrateSelectionModal] = useState(false);
   const [showCalibrateModal, setCalibrateModal] = useState(false);
   const [calibrateHangar, setCalibrateHangar] = useState("");
   const [calibrateCamera, setCalibrateCamera] = useState(0);
@@ -2051,10 +2052,7 @@ export default function MultiCamInspector() {
           variant="outline" 
           size="sm"
           onClick={() => {
-            setCalibrateHangar("hangar_rouen_vpn"); // Default to Forges-les-Eaux
-            setCalibrateCamera(0); // Default to FDR
-            loadCalibrationImages("hangar_rouen_vpn", 0);
-            setCalibrateModal(true);
+            setCalibrateSelectionModal(true);
           }}
           className="mr-2"
         >
@@ -2766,13 +2764,91 @@ export default function MultiCamInspector() {
         </div>
       )}
 
+      {/* Camera Calibration Selection Modal */}
+      {showCalibrateSelectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-[600px] max-w-full mx-4">
+            <h2 className="text-lg font-semibold mb-4">🎯 Select Camera to Calibrate</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Choose which hangar and camera you want to calibrate against the Mölndal baseline.
+            </p>
+
+            <div className="space-y-4">
+              {/* Hangar Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Hangar:
+                </label>
+                <select
+                  value={calibrateHangar}
+                  onChange={(e) => setCalibrateHangar(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Choose a hangar...</option>
+                  {HANGARS.map((hangar) => (
+                    <option key={hangar.id} value={hangar.id}>
+                      {hangar.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Camera Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Camera:
+                </label>
+                <select
+                  value={calibrateCamera}
+                  onChange={(e) => setCalibrateCamera(parseInt(e.target.value))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {inspectionData.cameras.map((camera, index) => (
+                    <option key={camera.id} value={index}>
+                      {camera.name} ({camera.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCalibrateSelectionModal(false);
+                  setCalibrateHangar("");
+                  setCalibrateCamera(0);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (calibrateHangar) {
+                    setCalibrateSelectionModal(false);
+                    loadCalibrationImages(calibrateHangar, calibrateCamera);
+                    setCalibrateModal(true);
+                  }
+                }}
+                disabled={!calibrateHangar}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Start Calibration
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Camera Calibration Modal */}
       {showCalibrateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-[1200px] max-w-full mx-4 max-h-[95vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">🎯 Camera Calibration - FDR in Forges-les-Eaux</h2>
+            <h2 className="text-lg font-semibold mb-4">🎯 Camera Calibration - {inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
             <p className="text-sm text-gray-600 mb-6">
-              Align the Forges-les-Eaux image with the Mölndal baseline. Use the controls to adjust position, rotation, and scale.
+              Align the {HANGARS.find(h => h.id === calibrateHangar)?.label || 'hangar'} image with the Mölndal baseline. Use the controls to adjust position, rotation, and scale.
             </p>
 
             {loadingImages ? (
@@ -2995,16 +3071,20 @@ export default function MultiCamInspector() {
               {molndalImage && hangarImage && (
                 <Button
                   onClick={() => {
+                    // Convert from inspectionData.cameras index to CAMERA_LAYOUT index
+                    const selectedCameraName = inspectionData.cameras[calibrateCamera]?.id;
+                    const cameraLayoutIndex = CAMERA_LAYOUT.findIndex(layout => layout.name === selectedCameraName);
+                    
                     // Save the calibration to the hangar transforms
                     const newTransforms = { ...hangarTransforms };
                     if (!newTransforms[calibrateHangar]) newTransforms[calibrateHangar] = {};
-                    newTransforms[calibrateHangar][calibrateCamera] = { ...calibrationTransform };
+                    newTransforms[calibrateHangar][cameraLayoutIndex] = { ...calibrationTransform };
                     setHangarTransforms(newTransforms);
                     
                     // Save to localStorage
                     localStorage.setItem('hangar_camera_transforms', JSON.stringify(newTransforms));
                     
-                    addLog(`🎯 Calibration saved for FDR in Forges-les-Eaux`);
+                    addLog(`🎯 Calibration saved for ${inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in ${HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}`);
                     
                     // Reset and close
                     setCalibrateModal(false);
