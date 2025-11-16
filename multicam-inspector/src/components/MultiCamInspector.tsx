@@ -215,6 +215,7 @@ export default function MultiCamInspector() {
   
   // Camera transform settings
   const [showTransformModal, setShowTransformModal] = useState(false);
+  const [selectedHangarTab, setSelectedHangarTab] = useState('molndal');
   
   // Camera calibration modal state
   const [showCalibrateSelectionModal, setCalibrateSelectionModal] = useState(false);
@@ -1873,8 +1874,13 @@ export default function MultiCamInspector() {
         >
           {isWaitingToDisplay ? "PREPARING..." : (isCapturing ? "CAPTURING..." : "📸 SNAPSHOT")}
         </Button>
-        
 
+        {/* Current Session - Inline and Subtle */}
+        {currentSession && (
+          <div className="text-xs text-gray-500 font-medium">
+            📂 {currentSession.name} <span className="text-gray-400">({currentSession.hangar})</span>
+          </div>
+        )}
         
         {showLogs && (
           <>
@@ -2081,17 +2087,6 @@ export default function MultiCamInspector() {
         </div>
       </div>
 
-      {/* Current Session Display */}
-      {currentSession && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-          <div className="flex items-center gap-2 text-sm">
-            <div className="text-blue-600 font-medium">📂 Current Session:</div>
-            <div className="text-blue-800 font-semibold">{currentSession.name}</div>
-            <div className="text-blue-600">from</div>
-            <div className="text-blue-700">{currentSession.hangar}</div>
-          </div>
-        </div>
-      )}
 
       {/* ETA Countdown Display */}
       {(isCapturing || isWaitingToDisplay) && (
@@ -2623,121 +2618,147 @@ export default function MultiCamInspector() {
       {/* Camera Transform Settings Modal */}
       {showTransformModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-[800px] max-w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">⚙️ Camera Alignment Settings</h2>
-            <p className="text-sm text-gray-600 mb-6">
+          <div className="bg-white rounded-lg p-4 w-[900px] max-w-full mx-4 max-h-[85vh] overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-2">⚙️ Camera Alignment Settings</h2>
+            <p className="text-xs text-gray-600 mb-3">
               Configure camera transform corrections for each hangar to compensate for drone positioning differences.
             </p>
             
-            {HANGARS.map((hangar) => (
-              <div key={hangar.id} className="mb-6">
-                <h3 className="text-md font-medium mb-3 text-blue-700">
-                  📍 {hangar.label}
-                </h3>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  {Array.from({ length: 8 }, (_, camIndex) => {
-                    const transform = hangarTransforms[hangar.id]?.[camIndex] || { x: 0, y: 0, scale: 1, rotation: 0 };
-                    
-                    return (
-                      <div key={camIndex} className="border rounded-lg p-4 bg-gray-50">
-                        <div className="font-medium mb-3 text-sm text-gray-700">
-                          📷 Camera {camIndex + 1} ({CAMERA_LAYOUT[camIndex]?.name || `cam${camIndex}`})
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-xs text-gray-600">X Offset (px)</label>
-                              <input
-                                type="number"
-                                className="w-full text-xs border rounded px-2 py-1"
-                                value={transform.x}
-                                onChange={(e) => {
-                                  const newTransforms = { ...hangarTransforms };
-                                  if (!newTransforms[hangar.id]) newTransforms[hangar.id] = {};
-                                  newTransforms[hangar.id][camIndex] = {
-                                    ...transform,
-                                    x: parseFloat(e.target.value) || 0
-                                  };
-                                  setHangarTransforms(newTransforms);
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-600">Y Offset (px)</label>
-                              <input
-                                type="number"
-                                className="w-full text-xs border rounded px-2 py-1"
-                                value={transform.y}
-                                onChange={(e) => {
-                                  const newTransforms = { ...hangarTransforms };
-                                  if (!newTransforms[hangar.id]) newTransforms[hangar.id] = {};
-                                  newTransforms[hangar.id][camIndex] = {
-                                    ...transform,
-                                    y: parseFloat(e.target.value) || 0
-                                  };
-                                  setHangarTransforms(newTransforms);
-                                }}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="block text-xs text-gray-600">Scale</label>
-                              <input
-                                type="number"
-                                step="0.01"
-                                className="w-full text-xs border rounded px-2 py-1"
-                                value={transform.scale}
-                                onChange={(e) => {
-                                  const newTransforms = { ...hangarTransforms };
-                                  if (!newTransforms[hangar.id]) newTransforms[hangar.id] = {};
-                                  newTransforms[hangar.id][camIndex] = {
-                                    ...transform,
-                                    scale: parseFloat(e.target.value) || 1
-                                  };
-                                  setHangarTransforms(newTransforms);
-                                }}
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-600">Rotation (°)</label>
-                              <input
-                                type="number"
-                                step="0.1"
-                                className="w-full text-xs border rounded px-2 py-1"
-                                value={transform.rotation}
-                                onChange={(e) => {
-                                  const newTransforms = { ...hangarTransforms };
-                                  if (!newTransforms[hangar.id]) newTransforms[hangar.id] = {};
-                                  newTransforms[hangar.id][camIndex] = {
-                                    ...transform,
-                                    rotation: parseFloat(e.target.value) || 0
-                                  };
-                                  setHangarTransforms(newTransforms);
-                                }}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="text-xs text-gray-500 mt-1">
-                            Transform: X:{transform.x}, Y:{transform.y}, Scale:{transform.scale}, Rot:{transform.rotation}°
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+            {/* Hangar Tabs */}
+            <div className="border-b mb-3">
+              <div className="flex space-x-1 overflow-x-auto">
+                {HANGARS.map((hangar) => (
+                  <button
+                    key={hangar.id}
+                    onClick={() => setSelectedHangarTab(hangar.id)}
+                    className={`px-2 py-1 text-xs font-medium rounded-t-lg whitespace-nowrap ${
+                      selectedHangarTab === hangar.id
+                        ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    📍 {hangar.label}
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
             
-            <div className="flex gap-3 pt-4 border-t">
+            {/* Camera Settings Table for Selected Hangar */}
+            {(() => {
+              const selectedHangar = HANGARS.find(h => h.id === selectedHangarTab);
+              if (!selectedHangar) return null;
+              
+              return (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-blue-700">
+                    📍 {selectedHangar.label} - Camera Transforms
+                  </h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b bg-gray-50">
+                          <th className="text-left p-1 font-medium text-gray-700">Camera</th>
+                          <th className="text-center p-1 font-medium text-gray-700">X (px)</th>
+                          <th className="text-center p-1 font-medium text-gray-700">Y (px)</th>
+                          <th className="text-center p-1 font-medium text-gray-700">Scale</th>
+                          <th className="text-center p-1 font-medium text-gray-700">Rot (°)</th>
+                          <th className="text-left p-1 font-medium text-gray-700">Values</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: 8 }, (_, camIndex) => {
+                          const transform = hangarTransforms[selectedHangar.id]?.[camIndex] || { x: 0, y: 0, scale: 1, rotation: 0 };
+                          
+                          return (
+                            <tr key={camIndex} className="border-b hover:bg-gray-50">
+                              <td className="p-1 font-medium text-gray-700">
+                                📷 {CAMERA_LAYOUT[camIndex]?.name || `Cam${camIndex + 1}`}
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.x}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      x: parseFloat(e.target.value) || 0
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.y}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      y: parseFloat(e.target.value) || 0
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.scale}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      scale: parseFloat(e.target.value) || 1
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.rotation}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      rotation: parseFloat(e.target.value) || 0
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-2 text-xs text-gray-500">
+                                X:{transform.x}, Y:{transform.y}, S:{transform.scale}, R:{transform.rotation}°
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })()}
+            
+            <div className="flex gap-2 pt-3 border-t mt-4">
               <Button
                 variant="outline"
                 onClick={() => setShowTransformModal(false)}
-                className="flex-1"
+                className="flex-1 text-xs py-1"
               >
                 Cancel
               </Button>
@@ -2748,17 +2769,10 @@ export default function MultiCamInspector() {
                   addLog('💾 Camera transform settings saved');
                   setShowTransformModal(false);
                 }}
-                className="flex-1"
+                className="flex-1 text-xs py-1"
               >
                 💾 Save Settings
               </Button>
-            </div>
-            
-            <div className="mt-4 text-xs text-gray-500 bg-blue-50 border border-blue-200 rounded p-3">
-              <div className="font-medium mb-1">💡 How to use:</div>
-              <div>1. Use the alignment test page to determine correct values</div>
-              <div>2. Enter the transform values for each camera that needs alignment</div>
-              <div>3. These settings will be applied automatically during inspections</div>
             </div>
           </div>
         </div>
@@ -2845,10 +2859,10 @@ export default function MultiCamInspector() {
       {/* Camera Calibration Modal */}
       {showCalibrateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-[1200px] max-w-full mx-4 max-h-[95vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">🎯 Camera Calibration - {inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Align the {HANGARS.find(h => h.id === calibrateHangar)?.label || 'hangar'} image with the Mölndal baseline. Use the controls to adjust position, rotation, and scale.
+          <div className="bg-white rounded-lg p-4 w-[1100px] max-w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-2">🎯 Camera Calibration - {inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Align the {HANGARS.find(h => h.id === calibrateHangar)?.label || 'hangar'} image with the Mölndal baseline. Drag to pan or use controls.
             </p>
 
             {loadingImages ? (
@@ -2930,120 +2944,158 @@ export default function MultiCamInspector() {
                   </div>
 
                   {/* Controls Panel */}
-                  <div className="space-y-6">
-                    {/* Opacity Control */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">🔍 Visibility</label>
-                      <input
-                        type="range"
-                        min="10"
-                        max="100"
-                        value={calibrationTransform.opacity || 70}
-                        className="w-full"
-                        onChange={(e) => {
-                          const opacity = parseInt(e.target.value);
-                          setCalibrationTransform(prev => ({ ...prev, opacity }));
-                          // Update the overlay opacity in real-time
-                          const overlay = document.querySelector('.absolute.inset-0.cursor-move') as HTMLElement;
-                          if (overlay) overlay.style.opacity = (opacity / 100).toString();
-                        }}
-                      />
-                      <div className="text-xs text-gray-500 text-center mt-1">{calibrationTransform.opacity || 70}%</div>
-                    </div>
-
-                    {/* Position Controls */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">📍 Position</label>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs text-gray-600">X Offset</label>
-                          <input
-                            type="range"
-                            min="-300"
-                            max="300"
-                            value={calibrationTransform.x}
-                            className="w-full"
-                            onChange={(e) => setCalibrationTransform(prev => ({ ...prev, x: parseInt(e.target.value) }))}
-                          />
-                          <div className="text-xs text-gray-500 text-center">{calibrationTransform.x}px</div>
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-600">Y Offset</label>
-                          <input
-                            type="range"
-                            min="-300"
-                            max="300"
-                            value={calibrationTransform.y}
-                            className="w-full"
-                            onChange={(e) => setCalibrationTransform(prev => ({ ...prev, y: parseInt(e.target.value) }))}
-                          />
-                          <div className="text-xs text-gray-500 text-center">{calibrationTransform.y}px</div>
-                        </div>
+                  <div className="space-y-4">
+                    {/* Compact Controls Grid */}
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">🔍 Opacity</label>
+                        <input
+                          type="range"
+                          min="10"
+                          max="100"
+                          value={calibrationTransform.opacity || 70}
+                          className="w-full"
+                          onChange={(e) => {
+                            const opacity = parseInt(e.target.value);
+                            setCalibrationTransform(prev => ({ ...prev, opacity }));
+                            // Update the overlay opacity in real-time
+                            const overlay = document.querySelector('.absolute.inset-0.cursor-move') as HTMLElement;
+                            if (overlay) overlay.style.opacity = (opacity / 100).toString();
+                          }}
+                        />
+                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.opacity || 70}%</div>
                       </div>
-                    </div>
 
-                    {/* Rotation & Scale */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">🔄 Transform</label>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="block text-xs text-gray-600">Rotation</label>
-                          <input
-                            type="range"
-                            min="-15"
-                            max="15"
-                            step="0.1"
-                            value={calibrationTransform.rotation}
-                            className="w-full"
-                            onChange={(e) => setCalibrationTransform(prev => ({ ...prev, rotation: parseFloat(e.target.value) }))}
-                          />
-                          <div className="text-xs text-gray-500 text-center">{calibrationTransform.rotation.toFixed(1)}°</div>
-                        </div>
-                        <div>
-                          <label className="block text-xs text-gray-600">Scale</label>
-                          <input
-                            type="range"
-                            min="0.5"
-                            max="2"
-                            step="0.01"
-                            value={calibrationTransform.scale}
-                            className="w-full"
-                            onChange={(e) => setCalibrationTransform(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
-                          />
-                          <div className="text-xs text-gray-500 text-center">{calibrationTransform.scale.toFixed(2)}x</div>
-                        </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">📍 X Position</label>
+                        <input
+                          type="range"
+                          min="-300"
+                          max="300"
+                          value={calibrationTransform.x}
+                          className="w-full"
+                          onChange={(e) => setCalibrationTransform(prev => ({ ...prev, x: parseInt(e.target.value) }))}
+                        />
+                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.x}px</div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">📍 Y Position</label>
+                        <input
+                          type="range"
+                          min="-300"
+                          max="300"
+                          value={calibrationTransform.y}
+                          className="w-full"
+                          onChange={(e) => setCalibrationTransform(prev => ({ ...prev, y: parseInt(e.target.value) }))}
+                        />
+                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.y}px</div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">🔄 Rotation</label>
+                        <input
+                          type="range"
+                          min="-15"
+                          max="15"
+                          step="0.1"
+                          value={calibrationTransform.rotation}
+                          className="w-full"
+                          onChange={(e) => setCalibrationTransform(prev => ({ ...prev, rotation: parseFloat(e.target.value) }))}
+                        />
+                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.rotation.toFixed(1)}°</div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium mb-1">📏 Scale</label>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="2"
+                          step="0.01"
+                          value={calibrationTransform.scale}
+                          className="w-full"
+                          onChange={(e) => setCalibrationTransform(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
+                        />
+                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.scale.toFixed(2)}x</div>
                       </div>
                     </div>
 
                     {/* Quick Actions */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2">⚡ Quick Actions</label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-medium"
-                          onClick={() => setCalibrationTransform(prev => ({ ...prev, flipped: !prev.flipped }))}
-                        >
-                          {calibrationTransform.flipped ? '↔ Unflip' : '↔ Flip'}
-                        </button>
-                        <button
-                          className="px-3 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-medium"
-                          onClick={() => setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0, flipped: false })}
-                        >
-                          ↺ Reset
-                        </button>
-                      </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-medium"
+                        onClick={() => setCalibrationTransform(prev => ({ ...prev, flipped: !prev.flipped }))}
+                      >
+                        {calibrationTransform.flipped ? '↔ Unflip' : '↔ Flip'}
+                      </button>
+                      <button
+                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-medium"
+                        onClick={() => setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0, flipped: false })}
+                      >
+                        ↺ Reset
+                      </button>
                     </div>
 
-                    {/* Current Values Display */}
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <label className="block text-sm font-medium mb-2">📊 Current Values</label>
-                      <div className="text-xs text-gray-600 space-y-1 font-mono">
-                        <div>X: {calibrationTransform.x}px</div>
-                        <div>Y: {calibrationTransform.y}px</div>
-                        <div>Scale: {calibrationTransform.scale.toFixed(2)}</div>
-                        <div>Rotation: {calibrationTransform.rotation.toFixed(1)}°</div>
-                        <div>Flipped: {calibrationTransform.flipped ? 'Yes' : 'No'}</div>
+                    {/* Current Values - Compact */}
+                    <div className="bg-gray-50 p-2 rounded text-xs">
+                      <div className="font-medium mb-1">📊 Values</div>
+                      <div className="text-xs text-gray-600 font-mono leading-tight space-y-1">
+                        <div className="grid grid-cols-2 gap-x-2">
+                          <div>X: {calibrationTransform.x}px</div>
+                          <div>Y: {calibrationTransform.y}px</div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-2">
+                          <div>S: {calibrationTransform.scale.toFixed(2)}</div>
+                          <div>R: {calibrationTransform.rotation.toFixed(1)}°</div>
+                        </div>
+                        <div className="text-center">Flip: {calibrationTransform.flipped ? 'Yes' : 'No'}</div>
                       </div>
+                    </div>
+                    
+                    {/* Save Actions in controls panel to avoid scrolling */}
+                    <div className="pt-2 border-t space-y-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCalibrateModal(false);
+                          setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
+                          setMolndalImage("");
+                          setHangarImage("");
+                        }}
+                        className="w-full text-xs py-1"
+                      >
+                        Cancel
+                      </Button>
+                      {molndalImage && hangarImage && (
+                        <Button
+                          onClick={() => {
+                            // Convert from inspectionData.cameras index to CAMERA_LAYOUT index
+                            const selectedCameraName = inspectionData.cameras[calibrateCamera]?.id;
+                            const cameraLayoutIndex = CAMERA_LAYOUT.findIndex(layout => layout.name === selectedCameraName);
+                            
+                            // Save the calibration to the hangar transforms
+                            const newTransforms = { ...hangarTransforms };
+                            if (!newTransforms[calibrateHangar]) newTransforms[calibrateHangar] = {};
+                            newTransforms[calibrateHangar][cameraLayoutIndex] = { ...calibrationTransform };
+                            setHangarTransforms(newTransforms);
+                            
+                            // Save to localStorage
+                            localStorage.setItem('hangar_camera_transforms', JSON.stringify(newTransforms));
+                            
+                            addLog(`🎯 Calibration saved for ${inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in ${HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}`);
+                            
+                            // Reset and close
+                            setCalibrateModal(false);
+                            setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
+                            setMolndalImage("");
+                            setHangarImage("");
+                          }}
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-xs py-1"
+                        >
+                          💾 Save Calibration
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -3054,50 +3106,6 @@ export default function MultiCamInspector() {
               </div>
             )}
 
-            {/* Modal Actions */}
-            <div className="flex gap-4 mt-6 pt-6 border-t">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setCalibrateModal(false);
-                  setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
-                  setMolndalImage("");
-                  setHangarImage("");
-                }}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              {molndalImage && hangarImage && (
-                <Button
-                  onClick={() => {
-                    // Convert from inspectionData.cameras index to CAMERA_LAYOUT index
-                    const selectedCameraName = inspectionData.cameras[calibrateCamera]?.id;
-                    const cameraLayoutIndex = CAMERA_LAYOUT.findIndex(layout => layout.name === selectedCameraName);
-                    
-                    // Save the calibration to the hangar transforms
-                    const newTransforms = { ...hangarTransforms };
-                    if (!newTransforms[calibrateHangar]) newTransforms[calibrateHangar] = {};
-                    newTransforms[calibrateHangar][cameraLayoutIndex] = { ...calibrationTransform };
-                    setHangarTransforms(newTransforms);
-                    
-                    // Save to localStorage
-                    localStorage.setItem('hangar_camera_transforms', JSON.stringify(newTransforms));
-                    
-                    addLog(`🎯 Calibration saved for ${inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in ${HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}`);
-                    
-                    // Reset and close
-                    setCalibrateModal(false);
-                    setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
-                    setMolndalImage("");
-                    setHangarImage("");
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  💾 Save Calibration
-                </Button>
-              )}
-            </div>
           </div>
         </div>
       )}
