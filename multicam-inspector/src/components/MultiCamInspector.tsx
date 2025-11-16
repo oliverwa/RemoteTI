@@ -1406,6 +1406,28 @@ export default function MultiCamInspector() {
         return;
       }
       
+      // Handle ESC for closing modals
+      if (k === "escape") {
+        if (showTransformModal) {
+          setShowTransformModal(false);
+          addLog("⚙️ Camera Alignment settings closed");
+          return;
+        }
+        if (showCalibrateSelectionModal) {
+          setCalibrateSelectionModal(false);
+          addLog("🎯 Camera Calibration selection closed");
+          return;
+        }
+        if (showCalibrateModal) {
+          setCalibrateModal(false);
+          setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
+          setMolndalImage("");
+          setHangarImage("");
+          addLog("🎯 Camera Calibration closed");
+          return;
+        }
+      }
+      
       // Keyboard shortcuts when not in fullscreen
       if (k === "f") {
         // F = Fullscreen (show hovered camera, or first camera if none hovered)
@@ -1432,6 +1454,14 @@ export default function MultiCamInspector() {
       } else if (k === "x") {
         // X = Fail current inspection task
         selectStatus("fail");
+      } else if (k === "a") {
+        // A = Open Camera Alignment settings
+        setShowTransformModal(true);
+        addLog("⚙️ Camera Alignment settings opened");
+      } else if (k === "c") {
+        // C = Open Camera Calibration selection
+        setCalibrateSelectionModal(true);
+        addLog("🎯 Camera Calibration selection opened");
       }
     };
     window.addEventListener("keydown", onKey);
@@ -2045,26 +2075,6 @@ export default function MultiCamInspector() {
           </>
         )}
         
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => setShowTransformModal(true)}
-          className="mr-2"
-        >
-          ⚙️ Camera Alignment
-        </Button>
-        
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => {
-            setCalibrateSelectionModal(true);
-          }}
-          className="mr-2"
-        >
-          🎯 Calibrate Camera
-        </Button>
-        
         <div className="ml-auto relative group">
           <button className="text-xs text-neutral-400 hover:text-neutral-600 px-2 py-1 rounded border border-neutral-200 hover:border-neutral-300 transition-colors">
             ?
@@ -2077,11 +2087,14 @@ export default function MultiCamInspector() {
               <div>Double-click = reset</div>
               <div>F = fullscreen</div>
               <div>R = reset view</div>
+              <div>Esc = close modal/fullscreen</div>
               <div>I = innovative mode</div>
               <div>L = laptop mode</div>
               <div>D = debug mode</div>
               <div>P = pass</div>
               <div>X = fail</div>
+              <div>A = camera alignment</div>
+              <div>C = calibrate camera</div>
             </div>
           </div>
         </div>
