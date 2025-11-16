@@ -226,6 +226,10 @@ export default function MultiCamInspector() {
   const [molndalImage, setMolndalImage] = useState<string>("");
   const [hangarImage, setHangarImage] = useState<string>("");
   const [loadingImages, setLoadingImages] = useState(false);
+  
+  // Image enhancement controls
+  const [brightness, setBrightness] = useState(100); // 100 = normal (100%)
+  const [contrast, setContrast] = useState(100); // 100 = normal (100%)
 
   // Debug effect for calibration state
   useEffect(() => {
@@ -1911,6 +1915,34 @@ export default function MultiCamInspector() {
             📂 {currentSession.name} <span className="text-gray-400">({currentSession.hangar})</span>
           </div>
         )}
+
+        {/* Image Enhancement Controls */}
+        <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-1">
+            <label className="text-gray-600">💡 Bright:</label>
+            <input
+              type="range"
+              min="25"
+              max="200"
+              value={brightness}
+              onChange={(e) => setBrightness(parseInt(e.target.value))}
+              className="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer slider"
+            />
+            <span className="text-gray-500 w-8 text-right">{brightness}%</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <label className="text-gray-600">🎨 Contrast:</label>
+            <input
+              type="range"
+              min="25"
+              max="200"
+              value={contrast}
+              onChange={(e) => setContrast(parseInt(e.target.value))}
+              className="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer slider"
+            />
+            <span className="text-gray-500 w-8 text-right">{contrast}%</span>
+          </div>
+        </div>
         
         {showLogs && (
           <>
@@ -2153,6 +2185,8 @@ export default function MultiCamInspector() {
                   <CamTile
                     cam={cam}
                     transform={transform}
+                    brightness={brightness}
+                    contrast={contrast}
                     onWheel={(e) => onWheel(cam.id, e)}
                     onDragStart={(e) => onDrag(cam.id, e)}
                     onDropFile={(f) => onDropFile(cam.id, f)}
@@ -2529,6 +2563,8 @@ export default function MultiCamInspector() {
       {fsId != null && (
         <Fullscreen
           cam={cams[fsId]}
+          brightness={brightness}
+          contrast={contrast}
           onClose={() => {
             resetView(fsId);
             setFsId(null);
@@ -3305,6 +3341,8 @@ export default function MultiCamInspector() {
 function CamTile({
   cam,
   transform,
+  brightness = 100,
+  contrast = 100,
   onWheel,
   onDragStart,
   onDropFile,
@@ -3329,6 +3367,8 @@ function CamTile({
   }: {
     cam: Cam;
     transform?: CameraTransform;
+    brightness?: number;
+    contrast?: number;
     onWheel: (e: React.WheelEvent<HTMLDivElement>) => void;
     onDragStart: (e: React.MouseEvent<HTMLDivElement>) => void;
     onDropFile: (f?: File) => void;
@@ -3434,6 +3474,8 @@ function CamTile({
             panX={cam.pan.x}
             panY={cam.pan.y}
             transform={transform}
+            brightness={brightness}
+            contrast={contrast}
             validationBoxes={inspectionMode === 'innovative' ? items[idx]?.validationBoxes?.[cam.name] || [] : []}
             validatedBoxIds={validatedBoxes[items[idx]?.id] || new Set()}
             onBoxClick={handleValidationBoxClick}
@@ -3508,11 +3550,15 @@ function CamTile({
 
 function Fullscreen({
   cam,
+  brightness,
+  contrast,
   onClose,
   onWheel,
   onDragStart,
 }: {
   cam: Cam;
+  brightness: number;
+  contrast: number;
   onClose: () => void;
   onWheel: (e: React.WheelEvent<HTMLDivElement>) => void;
   onDragStart: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -3556,6 +3602,7 @@ function Fullscreen({
                 maxWidth: '100%',
                 maxHeight: '100%',
                 display: 'block',
+                filter: `brightness(${brightness}%) contrast(${contrast}%)`,
               }}
             />
           ) : (
@@ -3760,6 +3807,8 @@ function CanvasImage({
   panX, 
   panY, 
   transform,
+  brightness = 100,
+  contrast = 100,
   validationBoxes = [], 
   validatedBoxIds = new Set(),
   onBoxClick,
@@ -3775,6 +3824,8 @@ function CanvasImage({
   panX: number; 
   panY: number; 
   transform?: CameraTransform;
+  brightness?: number;
+  contrast?: number;
   validationBoxes?: ValidationBox[];
   validatedBoxIds?: Set<string>;
   onBoxClick?: (boxId: string) => void;
@@ -4176,6 +4227,7 @@ function CanvasImage({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       style={{
+        filter: `brightness(${brightness}%) contrast(${contrast}%)`,
         width: '100%',
         height: '100%',
         display: 'block',
