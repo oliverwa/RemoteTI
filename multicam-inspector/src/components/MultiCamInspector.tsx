@@ -2306,33 +2306,33 @@ export default function MultiCamInspector() {
               }}
             >
             {inspectionMode === 'classic' ? (
-              /* Classic Mode - Detailed Text Layout */
-              <div className="space-y-6">
+              /* Classic Mode - Compact Layout */
+              <div className="space-y-3">
                 {/* Header Section */}
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h2 className="text-xl font-semibold text-gray-900">{items[idx].title}</h2>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h2 className="text-lg font-semibold text-gray-900">{items[idx].title}</h2>
                       <span 
-                        className="px-3 py-1 rounded-full text-xs font-medium text-white"
+                        className="px-2 py-1 rounded-full text-xs font-medium text-white"
                         style={{ backgroundColor: getCategoryInfo(items[idx].category).color }}
                       >
                         {getCategoryInfo(items[idx].category).name}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 whitespace-pre-line leading-relaxed">
+                    <div className="text-sm text-gray-600 whitespace-pre-line">
                       {items[idx].detail}
                     </div>
                   </div>
                   
-                  {/* Status Buttons - Top Right */}
-                  <div className="ml-8 flex gap-4">
+                  {/* Status Buttons - Top Right - Compact */}
+                  <div className="ml-6 flex gap-2">
                     <Button 
                       onClick={() => {
                         console.log('PASS clicked for task', idx);
                         selectStatus("pass");
                       }} 
-                      className={`w-32 h-16 text-xl font-bold rounded-lg ${
+                      className={`w-20 h-10 text-sm font-bold rounded ${
                         items[idx].status === "pass" 
                           ? "bg-green-600 hover:bg-green-700 text-white" 
                           : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
@@ -2345,7 +2345,7 @@ export default function MultiCamInspector() {
                         console.log('FAIL clicked for task', idx);
                         selectStatus("fail");
                       }} 
-                      className={`w-32 h-16 text-xl font-bold rounded-lg ${
+                      className={`w-20 h-10 text-sm font-bold rounded ${
                         items[idx].status === "fail" 
                           ? "bg-red-600 hover:bg-red-700 text-white" 
                           : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
@@ -2353,7 +2353,7 @@ export default function MultiCamInspector() {
                     >
                       ✗ FAIL
                     </Button>
-                    <label className={`flex items-center justify-center gap-2 w-32 h-16 border rounded-lg cursor-pointer hover:bg-gray-50 ${
+                    <label className={`flex items-center justify-center gap-1 w-16 h-10 border rounded cursor-pointer hover:bg-gray-50 ${
                       items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
                     }`}>
                       <input 
@@ -2361,43 +2361,38 @@ export default function MultiCamInspector() {
                         name={`task-${idx}`}
                         checked={items[idx].status === "na"}
                         onChange={() => selectStatus("na")}
-                        className="text-blue-600"
+                        className="text-blue-600 w-3 h-3"
                       />
-                      <span className={`text-xl font-bold ${items[idx].status === "na" ? "text-blue-700" : ""}`}>
+                      <span className={`text-xs font-bold ${items[idx].status === "na" ? "text-blue-700" : ""}`}>
                         N/A
                       </span>
                     </label>
                   </div>
                 </div>
 
-                {/* Content Grid */}
-                <div className="grid grid-cols-3 gap-6">
-                  {/* Instructions */}
+                {/* Content - Inline Layout */}
+                <div className="flex gap-4">
+                  {/* Instructions - If present */}
                   {items[idx].instructions && items[idx].instructions!.length > 0 && (
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="text-sm font-semibold text-blue-900 mb-3">📋 Instructions</div>
-                      <ul className="text-sm text-blue-800 space-y-2">
+                    <div className="bg-blue-50 p-3 rounded flex-shrink-0 w-64">
+                      <div className="text-xs font-semibold text-blue-900 mb-2">📋 Instructions</div>
+                      <ul className="text-xs text-blue-800 space-y-1">
                         {items[idx].instructions!.map((instruction, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <span className="text-blue-600 mt-1">•</span>
+                          <li key={i} className="flex items-start gap-1">
+                            <span className="text-blue-600 mt-0.5 text-xs">•</span>
                             <span>{instruction}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
-                  
 
-                  {/* Comments */}
-                  <div className={`bg-gray-50 p-4 rounded-lg ${
-                    (!items[idx].instructions || items[idx].instructions!.length === 0)
-                      ? 'col-span-3' 
-                      : 'col-span-2'
-                  }`}>
-                    <div className="text-sm font-semibold text-gray-900 mb-3">💬 Inspector Comments</div>
+                  {/* Comments - Flexible width */}
+                  <div className="bg-gray-50 p-3 rounded flex-1">
+                    <div className="text-xs font-semibold text-gray-900 mb-2">💬 Inspector Comments</div>
                     <textarea
-                      className="w-full border border-gray-200 rounded px-3 py-2 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={6}
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={2}
                       placeholder="Add detailed comments, observations, or notes for this inspection task..."
                       value={items[idx].comment || ''}
                       onChange={(e) => updateTaskComment(e.target.value)}
@@ -2406,26 +2401,26 @@ export default function MultiCamInspector() {
                 </div>
               </div>
             ) : (
-              /* Innovative Mode - Validation-Focused Layout */
-              <div className="space-y-6">
-                {/* Header Section - Simplified */}
+              /* Innovative Mode - Compact Layout */
+              <div className="space-y-3">
+                {/* Header Section - Compact */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-bold text-gray-900">{items[idx].title}</h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-bold text-gray-900">{items[idx].title}</h2>
                     <span 
-                      className="px-3 py-1 rounded-full text-xs font-medium text-white"
+                      className="px-2 py-1 rounded-full text-xs font-medium text-white"
                       style={{ backgroundColor: getCategoryInfo(items[idx].category).color }}
                     >
                       {getCategoryInfo(items[idx].category).name}
                     </span>
-                    <span className="text-purple-600 font-medium text-sm">🚀 Innovative Mode</span>
+                    <span className="text-purple-600 font-medium text-xs">🚀 Innovative</span>
                   </div>
                 </div>
 
-                {/* Validation Progress */}
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-lg border-l-4 border-purple-500">
+                {/* Validation Progress - Inline */}
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded border-l-4 border-purple-500">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-lg font-semibold text-purple-900">📋 Validation Progress</div>
+                    <div className="text-sm font-semibold text-purple-900">📋 Validation Progress</div>
                     {(() => {
                       const currentValidations = validatedBoxes[items[idx].id] || new Set();
                       const totalBoxes = Object.values(items[idx].validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
@@ -2434,10 +2429,10 @@ export default function MultiCamInspector() {
                       
                       return (
                         <div className="flex items-center gap-2">
-                          <div className="text-sm text-purple-700">
+                          <div className="text-xs text-purple-700">
                             {completedBoxes}/{totalBoxes} validated
                           </div>
-                          {isComplete && <div className="text-green-600">✅ Ready for decision</div>}
+                          {isComplete && <div className="text-green-600 text-xs">✅ Ready</div>}
                         </div>
                       );
                     })()}
@@ -2450,37 +2445,33 @@ export default function MultiCamInspector() {
                     const progressPercent = totalBoxes > 0 ? (completedBoxes / totalBoxes) * 100 : 0;
                     
                     return (
-                      <div className="w-full bg-purple-200 rounded-full h-3">
+                      <div className="w-full bg-purple-200 rounded-full h-1">
                         <div 
-                          className="bg-gradient-to-r from-purple-500 to-indigo-500 h-3 rounded-full transition-all duration-300" 
+                          className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 rounded-full transition-all duration-300" 
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
                     );
                   })()}
-                  
-                  <div className="mt-3 text-sm text-purple-800">
-                    💡 Click on the validation boxes in the images above to mark them as inspected. All boxes must be validated to PASS, but you can FAIL immediately if issues are found.
-                  </div>
                 </div>
 
-                {/* Bottom Section - Comments and Decisions */}
-                <div className="grid grid-cols-2 gap-6">
+                {/* Bottom Section - Inline Layout */}
+                <div className="flex gap-4">
                   {/* Comments */}
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="text-sm font-semibold text-gray-900 mb-3">💬 Inspector Comments</div>
+                  <div className="bg-gray-50 p-3 rounded flex-1">
+                    <div className="text-xs font-semibold text-gray-900 mb-2">💬 Inspector Comments</div>
                     <textarea
-                      className="w-full border border-gray-200 rounded px-3 py-2 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={4}
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={2}
                       placeholder="Add detailed comments, observations, or notes for this inspection task..."
                       value={items[idx].comment || ''}
                       onChange={(e) => updateTaskComment(e.target.value)}
                     />
                   </div>
 
-                  {/* Status Buttons - Right Side */}
-                  <div className="flex flex-col gap-3">
-                    <div className="text-sm font-semibold text-gray-900 mb-1">🎯 Inspection Decision</div>
+                  {/* Status Buttons - Right Side - Compact */}
+                  <div className="flex flex-col gap-2 w-32">
+                    <div className="text-xs font-semibold text-gray-900">🎯 Decision</div>
                     {(() => {
                       const currentValidations = validatedBoxes[items[idx].id] || new Set();
                       const totalBoxes = Object.values(items[idx].validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
@@ -2494,7 +2485,7 @@ export default function MultiCamInspector() {
                               selectStatus("pass");
                             }} 
                             disabled={!isValidationComplete}
-                            className={`w-full h-14 text-lg font-bold rounded-lg ${
+                            className={`w-full h-10 text-sm font-bold rounded-lg ${
                               items[idx].status === "pass" 
                                 ? "bg-green-600 hover:bg-green-700 text-white" 
                                 : isValidationComplete
@@ -2510,7 +2501,7 @@ export default function MultiCamInspector() {
                               selectStatus("fail");
                             }} 
                             disabled={false}
-                            className={`w-full h-14 text-lg font-bold rounded-lg ${
+                            className={`w-full h-10 text-sm font-bold rounded-lg ${
                               items[idx].status === "fail" 
                                 ? "bg-red-600 hover:bg-red-700 text-white" 
                                 : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
@@ -2518,7 +2509,7 @@ export default function MultiCamInspector() {
                           >
                             ✗ FAIL
                           </Button>
-                          <label className={`flex items-center justify-center gap-2 w-full h-14 border rounded-lg cursor-pointer hover:bg-gray-50 ${
+                          <label className={`flex items-center justify-center gap-2 w-full h-10 border rounded-lg cursor-pointer hover:bg-gray-50 ${
                             items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
                           }`}>
                             <input 
@@ -2528,7 +2519,7 @@ export default function MultiCamInspector() {
                               onChange={() => selectStatus("na")}
                               className="text-blue-600"
                             />
-                            <span className={`text-lg font-bold ${items[idx].status === "na" ? "text-blue-700" : ""}`}>
+                            <span className={`text-sm font-bold ${items[idx].status === "na" ? "text-blue-700" : ""}`}>
                               N/A
                             </span>
                           </label>
