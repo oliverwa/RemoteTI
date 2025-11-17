@@ -4334,12 +4334,80 @@ function CanvasImage({
       const { mouseX, mouseY, finalX, finalY, scaledWidth, scaledHeight } = coords;
       const img = imageRef.current!;
       
-      // Check each validation box for clicks
+      // Check each validation box for clicks using the same coordinate system as visual rendering
       for (const box of validationBoxes) {
-        const boxX = finalX + (box.x * scaledWidth) / img.width;
-        const boxY = finalY + (box.y * scaledHeight) / img.height;
-        const boxWidth = (box.width * scaledWidth) / img.width;
-        const boxHeight = (box.height * scaledHeight) / img.height;
+        let boxX, boxY, boxWidth, boxHeight;
+        
+        if (transform && (transform.x !== 0 || transform.y !== 0 || transform.scale !== 1)) {
+          // For transformed images, use the same complex calculation as visual rendering
+          const canvas = canvasRef.current;
+          if (!canvas) continue;
+          const canvasRect = canvas.getBoundingClientRect();
+          
+          // Calculate baseline image position (zoom=1, pan=0)
+          const baseDrawWidth = Math.min(canvasRect.width, canvasRect.height * (img.width / img.height));
+          const baseDrawHeight = Math.min(canvasRect.height, canvasRect.width * (img.height / img.width));
+          
+          let baseOffsetX, baseOffsetY;
+          if (baseDrawWidth === canvasRect.width) {
+            baseOffsetX = 0;
+            baseOffsetY = (canvasRect.height - baseDrawHeight) / 2;
+          } else {
+            baseOffsetX = (canvasRect.width - baseDrawWidth) / 2;
+            baseOffsetY = 0;
+          }
+          
+          const baseScaledWidth = baseDrawWidth;
+          const baseScaledHeight = baseDrawHeight;
+          const baseFinalX = baseOffsetX + (canvasRect.width - baseScaledWidth) / 2;
+          const baseFinalY = baseOffsetY + (canvasRect.height - baseScaledHeight) / 2;
+          
+          // Calculate baseline validation box position
+          const baselineBoxX = baseFinalX + (box.x * baseScaledWidth) / img.width;
+          const baselineBoxY = baseFinalY + (box.y * baseScaledHeight) / img.height;
+          const baselineBoxWidth = (box.width * baseScaledWidth) / img.width;
+          const baselineBoxHeight = (box.height * baseScaledHeight) / img.height;
+          
+          // Calculate the transform offset
+          const scaleFactorForTranslate = Math.min(canvasRect.width, canvasRect.height) / 500;
+          const baseTransformOffsetX = transform.x * scaleFactorForTranslate;
+          const baseTransformOffsetY = transform.y * scaleFactorForTranslate;
+          
+          // Calculate baseline transformed center
+          const baseTransformedCenterX = baseFinalX + baseScaledWidth / 2 + baseTransformOffsetX;
+          const baseTransformedCenterY = baseFinalY + baseScaledHeight / 2 + baseTransformOffsetY;
+          
+          // Calculate current transformed center
+          const currentUntransformedCenterX = finalX + scaledWidth / 2;
+          const currentUntransformedCenterY = finalY + scaledHeight / 2;
+          const currentTransformOffsetX = transform.x * scaleFactorForTranslate;
+          const currentTransformOffsetY = transform.y * scaleFactorForTranslate;
+          const currentTransformedCenterX = currentUntransformedCenterX + currentTransformOffsetX;
+          const currentTransformedCenterY = currentUntransformedCenterY + currentTransformOffsetY;
+          
+          // Calculate validation box position relative to baseline transformed center
+          const boxRelativeToBaseTransformedCenter = {
+            x: baselineBoxX - baseTransformedCenterX,
+            y: baselineBoxY - baseTransformedCenterY
+          };
+          
+          // Apply zoom/pan transformation
+          const zoomFactor = scaledWidth / baseScaledWidth;
+          const scaledBoxRelativeX = boxRelativeToBaseTransformedCenter.x * zoomFactor;
+          const scaledBoxRelativeY = boxRelativeToBaseTransformedCenter.y * zoomFactor;
+          
+          // Position relative to current transformed center
+          boxX = currentTransformedCenterX + scaledBoxRelativeX;
+          boxY = currentTransformedCenterY + scaledBoxRelativeY;
+          boxWidth = baselineBoxWidth * zoomFactor;
+          boxHeight = baselineBoxHeight * zoomFactor;
+        } else {
+          // For untransformed images, use simple calculation
+          boxX = finalX + (box.x * scaledWidth) / img.width;
+          boxY = finalY + (box.y * scaledHeight) / img.height;
+          boxWidth = (box.width * scaledWidth) / img.width;
+          boxHeight = (box.height * scaledHeight) / img.height;
+        }
         
         if (mouseX >= boxX && mouseX <= boxX + boxWidth && 
             mouseY >= boxY && mouseY <= boxY + boxHeight) {
