@@ -3983,11 +3983,84 @@ function CanvasImage({
       validationBoxes.forEach(box => {
         const isValidated = validatedBoxIds.has(box.id);
         
-        // Transform box coordinates according to image transform (simple version - ignores camera transforms for now)
-        const boxX = finalX + (box.x * scaledWidth) / img.width;
-        const boxY = finalY + (box.y * scaledHeight) / img.height;
-        const boxWidth = (box.width * scaledWidth) / img.width;
-        const boxHeight = (box.height * scaledHeight) / img.height;
+        // Calculate validation boxes to maintain baseline position but zoom/pan with transformed image center
+        let boxX, boxY, boxWidth, boxHeight;
+        
+        if (transform && (transform.x !== 0 || transform.y !== 0 || transform.scale !== 1)) {
+          // For transformed images, we need to adjust for the fact that zoom/pan operations
+          // work relative to the transformed image center, not the original center
+          
+          // Calculate where the validation box would be at zoom=1, pan=0 (baseline)
+          const baseZoom = 1;
+          const basePanX = 0;
+          const basePanY = 0;
+          
+          // Calculate base image dimensions and position at baseline zoom/pan
+          const baseDrawWidth = Math.min(rect.width, rect.height * (img.width / img.height));
+          const baseDrawHeight = Math.min(rect.height, rect.width * (img.height / img.width));
+          
+          let baseOffsetX, baseOffsetY;
+          if (baseDrawWidth === rect.width) {
+            baseOffsetX = 0;
+            baseOffsetY = (rect.height - baseDrawHeight) / 2;
+          } else {
+            baseOffsetX = (rect.width - baseDrawWidth) / 2;
+            baseOffsetY = 0;
+          }
+          
+          const baseScaledWidth = baseDrawWidth * baseZoom;
+          const baseScaledHeight = baseDrawHeight * baseZoom;
+          const baseFinalX = baseOffsetX + (rect.width - baseScaledWidth) / 2;
+          const baseFinalY = baseOffsetY + (rect.height - baseScaledHeight) / 2;
+          
+          // Calculate baseline validation box position
+          const baselineBoxX = baseFinalX + (box.x * baseScaledWidth) / img.width;
+          const baselineBoxY = baseFinalY + (box.y * baseScaledHeight) / img.height;
+          const baselineBoxWidth = (box.width * baseScaledWidth) / img.width;
+          const baselineBoxHeight = (box.height * baseScaledHeight) / img.height;
+          
+          // Calculate the transform offset at baseline
+          const scaleFactorForTranslate = Math.min(rect.width, rect.height) / 500;
+          const baseTransformOffsetX = transform.x * scaleFactorForTranslate;
+          const baseTransformOffsetY = transform.y * scaleFactorForTranslate;
+          
+          // Calculate baseline image centers (untransformed and transformed)
+          const baseUntransformedCenterX = baseFinalX + baseScaledWidth / 2;
+          const baseUntransformedCenterY = baseFinalY + baseScaledHeight / 2;
+          const baseTransformedCenterX = baseUntransformedCenterX + baseTransformOffsetX;
+          const baseTransformedCenterY = baseUntransformedCenterY + baseTransformOffsetY;
+          
+          // Calculate current image centers with zoom/pan
+          const currentUntransformedCenterX = finalX + scaledWidth / 2;
+          const currentUntransformedCenterY = finalY + scaledHeight / 2;
+          const currentTransformOffsetX = transform.x * scaleFactorForTranslate;
+          const currentTransformOffsetY = transform.y * scaleFactorForTranslate;
+          const currentTransformedCenterX = currentUntransformedCenterX + currentTransformOffsetX;
+          const currentTransformedCenterY = currentUntransformedCenterY + currentTransformOffsetY;
+          
+          // Calculate validation box position relative to baseline transformed center
+          const boxRelativeToBaseTransformedCenter = {
+            x: baselineBoxX - baseTransformedCenterX,
+            y: baselineBoxY - baseTransformedCenterY
+          };
+          
+          // Apply the same zoom/pan transformation that was applied to the image
+          const zoomFactor = scaledWidth / baseScaledWidth; // This captures both zoom and camera scale
+          const scaledBoxRelativeX = boxRelativeToBaseTransformedCenter.x * zoomFactor;
+          const scaledBoxRelativeY = boxRelativeToBaseTransformedCenter.y * zoomFactor;
+          
+          // Position relative to current transformed center
+          boxX = currentTransformedCenterX + scaledBoxRelativeX;
+          boxY = currentTransformedCenterY + scaledBoxRelativeY;
+          boxWidth = baselineBoxWidth * zoomFactor;
+          boxHeight = baselineBoxHeight * zoomFactor;
+        } else {
+          // For untransformed images, use simple calculation
+          boxX = finalX + (box.x * scaledWidth) / img.width;
+          boxY = finalY + (box.y * scaledHeight) / img.height;
+          boxWidth = (box.width * scaledWidth) / img.width;
+          boxHeight = (box.height * scaledHeight) / img.height;
+        }
         
         // Draw box outline
         ctx.strokeStyle = isValidated ? '#10b981' : '#ef4444'; // green if validated, red if not
@@ -4025,11 +4098,83 @@ function CanvasImage({
       const endX = Math.max(validationBoxCreation.startX, validationBoxCreation.currentX);
       const endY = Math.max(validationBoxCreation.startY, validationBoxCreation.currentY);
       
-      // Transform box coordinates to canvas coordinates
-      const boxX = finalX + (startX * scaledWidth) / img.width;
-      const boxY = finalY + (startY * scaledHeight) / img.height;
-      const boxWidth = ((endX - startX) * scaledWidth) / img.width;
-      const boxHeight = ((endY - startY) * scaledHeight) / img.height;
+      // Transform creation box coordinates to canvas coordinates
+      // Use the same logic as validation boxes to maintain baseline position but zoom/pan correctly
+      let boxX, boxY, boxWidth, boxHeight;
+      
+      if (transform && (transform.x !== 0 || transform.y !== 0 || transform.scale !== 1)) {
+        // For transformed images, calculate relative to baseline transformed center
+        
+        // Calculate baseline image position (zoom=1, pan=0)
+        const baseDrawWidth = Math.min(rect.width, rect.height * (img.width / img.height));
+        const baseDrawHeight = Math.min(rect.height, rect.width * (img.height / img.width));
+        
+        let baseOffsetX, baseOffsetY;
+        if (baseDrawWidth === rect.width) {
+          baseOffsetX = 0;
+          baseOffsetY = (rect.height - baseDrawHeight) / 2;
+        } else {
+          baseOffsetX = (rect.width - baseDrawWidth) / 2;
+          baseOffsetY = 0;
+        }
+        
+        const baseScaledWidth = baseDrawWidth;
+        const baseScaledHeight = baseDrawHeight;
+        const baseFinalX = baseOffsetX + (rect.width - baseScaledWidth) / 2;
+        const baseFinalY = baseOffsetY + (rect.height - baseScaledHeight) / 2;
+        
+        // Calculate baseline creation box position
+        const baselineBoxX = baseFinalX + (startX * baseScaledWidth) / img.width;
+        const baselineBoxY = baseFinalY + (startY * baseScaledHeight) / img.height;
+        const baselineBoxWidth = ((endX - startX) * baseScaledWidth) / img.width;
+        const baselineBoxHeight = ((endY - startY) * baseScaledHeight) / img.height;
+        
+        // Calculate the transform offset
+        const scaleFactorForTranslate = Math.min(rect.width, rect.height) / 500;
+        const baseTransformOffsetX = transform.x * scaleFactorForTranslate;
+        const baseTransformOffsetY = transform.y * scaleFactorForTranslate;
+        
+        // Calculate baseline transformed center
+        const baseTransformedCenterX = baseFinalX + baseScaledWidth / 2 + baseTransformOffsetX;
+        const baseTransformedCenterY = baseFinalY + baseScaledHeight / 2 + baseTransformOffsetY;
+        
+        // Calculate current transformed center
+        const currentUntransformedCenterX = finalX + scaledWidth / 2;
+        const currentUntransformedCenterY = finalY + scaledHeight / 2;
+        const currentTransformOffsetX = transform.x * scaleFactorForTranslate;
+        const currentTransformOffsetY = transform.y * scaleFactorForTranslate;
+        const currentTransformedCenterX = currentUntransformedCenterX + currentTransformOffsetX;
+        const currentTransformedCenterY = currentUntransformedCenterY + currentTransformOffsetY;
+        
+        // Calculate creation box position relative to baseline transformed center
+        const boxRelativeToBaseTransformedCenter = {
+          x: baselineBoxX - baseTransformedCenterX,
+          y: baselineBoxY - baseTransformedCenterY
+        };
+        const boxEndRelativeToBaseTransformedCenter = {
+          x: (baselineBoxX + baselineBoxWidth) - baseTransformedCenterX,
+          y: (baselineBoxY + baselineBoxHeight) - baseTransformedCenterY
+        };
+        
+        // Apply zoom/pan transformation
+        const zoomFactor = scaledWidth / baseScaledWidth;
+        const scaledBoxRelativeX = boxRelativeToBaseTransformedCenter.x * zoomFactor;
+        const scaledBoxRelativeY = boxRelativeToBaseTransformedCenter.y * zoomFactor;
+        const scaledBoxEndRelativeX = boxEndRelativeToBaseTransformedCenter.x * zoomFactor;
+        const scaledBoxEndRelativeY = boxEndRelativeToBaseTransformedCenter.y * zoomFactor;
+        
+        // Position relative to current transformed center
+        boxX = currentTransformedCenterX + scaledBoxRelativeX;
+        boxY = currentTransformedCenterY + scaledBoxRelativeY;
+        boxWidth = scaledBoxEndRelativeX - scaledBoxRelativeX;
+        boxHeight = scaledBoxEndRelativeY - scaledBoxRelativeY;
+      } else {
+        // For untransformed images, use simple calculation
+        boxX = finalX + (startX * scaledWidth) / img.width;
+        boxY = finalY + (startY * scaledHeight) / img.height;
+        boxWidth = ((endX - startX) * scaledWidth) / img.width;
+        boxHeight = ((endY - startY) * scaledHeight) / img.height;
+      }
       
       // Draw creation box
       ctx.strokeStyle = '#f59e0b'; // amber color for creation
