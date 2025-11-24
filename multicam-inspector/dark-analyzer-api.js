@@ -13,66 +13,7 @@ app.use(express.json());
 // Base path to hangar snapshots
 const HANGAR_BASE_PATH = '/Users/oliverwallin/hangar_snapshots';
 
-// Calculate image sharpness using much simpler edge detection
-async function calculateImageSharpness(imagePath) {
-  try {
-    console.log(`Starting sharpness calculation for: ${imagePath}`);
-    
-    const image = sharp(imagePath);
-    
-    // Get a small sample for processing
-    const { data, info } = await image
-      .resize(200, 200, { fit: 'cover' }) // Fixed small size
-      .greyscale()
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    
-    const width = info.width;
-    const height = info.height;
-    
-    console.log(`Image resized to: ${width}x${height}, data length: ${data.length}`);
-    
-    if (data.length === 0) {
-      console.log('No data in image buffer');
-      return 0;
-    }
-    
-    // Simple edge detection using adjacent pixel differences
-    let totalEdgeStrength = 0;
-    let pixelCount = 0;
-    
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
-        const center = y * width + x;
-        const right = center + 1;
-        const down = center + width;
-        
-        // Check bounds
-        if (center < data.length && right < data.length && down < data.length) {
-          // Calculate horizontal and vertical differences
-          const horizDiff = Math.abs(data[center] - data[right]);
-          const vertDiff = Math.abs(data[center] - data[down]);
-          
-          // Edge strength is the maximum of horizontal and vertical differences
-          const edgeStrength = Math.max(horizDiff, vertDiff);
-          totalEdgeStrength += edgeStrength;
-          pixelCount++;
-        }
-      }
-    }
-    
-    const avgEdgeStrength = pixelCount > 0 ? totalEdgeStrength / pixelCount : 0;
-    const sharpness = Math.round(avgEdgeStrength * 10); // Scale for better range
-    
-    console.log(`Sharpness calculation complete - Pixels: ${pixelCount}, Avg edge: ${avgEdgeStrength.toFixed(2)}, Final sharpness: ${sharpness}`);
-    
-    return sharpness;
-  } catch (error) {
-    console.error('Error calculating sharpness for', imagePath, ':', error.message);
-    console.error('Stack trace:', error.stack);
-    return 0; // Return 0 instead of null to avoid issues
-  }
-}
+// Removed sharpness calculation - focusing only on brightness analysis
 
 // Calculate image brightness using different methods
 async function calculateImageBrightness(imagePath, method = 'average') {
@@ -205,7 +146,7 @@ app.get('/api/hangars/:hangar/sessions', async (req, res) => {
 // Analyze brightness for a specific session
 app.post('/api/analyze-session', async (req, res) => {
   try {
-    const { sessionPath, method = 'average', threshold = 100, blurThreshold = 100 } = req.body;
+    const { sessionPath, method = 'average', threshold = 100 } = req.body;
 
     if (!sessionPath) {
       return res.status(400).json({ error: 'Session path is required' });
@@ -237,36 +178,26 @@ app.post('/api/analyze-session', async (req, res) => {
 
     const images = [];
     let totalBrightness = 0;
-    let totalSharpness = 0;
     let darkCount = 0;
-    let blurCount = 0;
 
     for (const imageFile of imageFiles) {
       const imagePath = path.join(sessionPath, imageFile);
       
       try {
-        const [brightness, sharpness] = await Promise.all([
-          calculateImageBrightness(imagePath, method),
-          calculateImageSharpness(imagePath)
-        ]);
+        const brightness = await calculateImageBrightness(imagePath, method);
         
-        if (brightness !== null && sharpness !== null) {
+        if (brightness !== null) {
           const isDark = brightness < threshold;
-          const isBlurry = sharpness < blurThreshold;
           
           images.push({
             name: imageFile,
             path: imagePath,
             brightness: brightness,
-            sharpness: sharpness,
-            isDark: isDark,
-            isBlurry: isBlurry
+            isDark: isDark
           });
 
           totalBrightness += brightness;
-          totalSharpness += sharpness;
           if (isDark) darkCount++;
-          if (isBlurry) blurCount++;
         }
       } catch (error) {
         console.error(`Error analyzing ${imageFile}:`, error.message);
@@ -274,19 +205,15 @@ app.post('/api/analyze-session', async (req, res) => {
     }
 
     const avgBrightness = images.length > 0 ? Math.round(totalBrightness / images.length) : 0;
-    const avgSharpness = images.length > 0 ? Math.round(totalSharpness / images.length) : 0;
-    const flagged = darkCount > 0 || blurCount > 0;
+    const flagged = darkCount > 0;
 
     res.json({
       sessionPath,
       method,
       threshold,
-      blurThreshold,
       images,
       darkImageCount: darkCount,
-      blurImageCount: blurCount,
       avgBrightness,
-      avgSharpness,
       flagged,
       analysisDate: new Date().toISOString()
     });
@@ -470,6 +397,45 @@ app.post('/api/delete-sessions', async (req, res) => {
     });
 
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Serve images from hangar sessions
+app.get('/api/image/:hangar/:session/:filename', async (req, res) => {
+  try {
+    const { hangar, session, filename } = req.params;
+    const imagePath = path.join(HANGAR_BASE_PATH, hangar, session, filename);
+    
+    console.log(`Attempting to serve image: ${imagePath}`);
+    
+    // Check if file exists
+    try {
+      await fs.access(imagePath);
+      console.log(`Image file exists: ${imagePath}`);
+    } catch (error) {
+      console.log(`Image file not found: ${imagePath}`);
+      return res.status(404).json({ error: 'Image not found', path: imagePath });
+    }
+    
+    // Set appropriate headers
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    
+    // Determine content type based on file extension
+    const ext = path.extname(filename).toLowerCase();
+    if (ext === '.jpg' || ext === '.jpeg') {
+      res.setHeader('Content-Type', 'image/jpeg');
+    } else if (ext === '.png') {
+      res.setHeader('Content-Type', 'image/png');
+    } else {
+      res.setHeader('Content-Type', 'image/jpeg'); // default
+    }
+    
+    // Send the file using absolute path
+    res.sendFile(path.resolve(imagePath));
+    
+  } catch (error) {
+    console.error('Error serving image:', error);
     res.status(500).json({ error: error.message });
   }
 });

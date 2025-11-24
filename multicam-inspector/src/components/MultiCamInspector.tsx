@@ -352,6 +352,10 @@ export default function MultiCamInspector() {
   // Handle validation box clicks (moved after state declarations)  
   const lastClickRef = useRef<{ boxId: string; timestamp: number } | null>(null);
   
+  // Session info refs for dark analysis (persist across state resets)
+  const sessionRef = useRef<string>("");
+  const hangarRef = useRef<string>("");
+  
   // Validation box creation state
   const [isCreatingValidationBox, setIsCreatingValidationBox] = useState(false);
   const [validationBoxCreation, setValidationBoxCreation] = useState<{
@@ -859,23 +863,30 @@ export default function MultiCamInspector() {
   // API-based dark image detection (same as the working standalone version)
   const checkForDarkImages = async (hangar: string, session: string) => {
     try {
+      console.log(`🌙 checkForDarkImages called with hangar: "${hangar}", session: "${session}"`);
       addLog(`🌙 Checking for dark images in session: ${session}`);
       
       // Construct session path based on hangar structure
       const sessionPath = `/Users/oliverwallin/hangar_snapshots/${hangar}/${session}`;
+      console.log(`📁 Session path: ${sessionPath}`);
+      
+      const requestBody = {
+        sessionPath: sessionPath,
+        method: 'average',
+        threshold: 100,
+        blurThreshold: 100 // Not used
+      };
+      console.log(`📤 Sending request to API:`, requestBody);
       
       const response = await fetch('http://localhost:3002/api/analyze-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          sessionPath: sessionPath,
-          method: 'average',
-          threshold: 100, // Brightness threshold (same as our working version)
-          blurThreshold: 100 // Not used
-        })
+        body: JSON.stringify(requestBody)
       });
+      
+      console.log(`📥 API response status: ${response.status} ${response.statusText}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -999,6 +1010,10 @@ export default function MultiCamInspector() {
 
     addLog(`📸 Starting fast camera capture for ${snapshotDrone} at ${snapshotHangar}`);
     addLog("🔗 Connecting to backend API...");
+    
+    // Store hangar in ref for dark analysis (persists across state resets)
+    hangarRef.current = snapshotHangar;
+    console.log(`📝 Stored hangar in ref: ${hangarRef.current}`);
     
     // Reset session name for new capture
     setCurrentSessionName("");
@@ -1148,7 +1163,9 @@ export default function MultiCamInspector() {
                   // Capture session name from the first image processed
                   if (!currentSessionName) {
                     setCurrentSessionName(imageInfo.session);
+                    sessionRef.current = imageInfo.session;
                     console.log(`Captured session name: ${imageInfo.session}`);
+                    console.log(`📝 Stored session in ref: ${sessionRef.current}`);
                   }
                   
                   // Store in pending images instead of displaying
@@ -1215,20 +1232,30 @@ export default function MultiCamInspector() {
                 addLog(`✅ All images displayed successfully!`);
                 addLog(`🚀 Inspection officially started - images ready for review`);
                 
-                // Check for dark images after successful capture
-                setTimeout(async () => {
-                  console.log('🕐 Dark image check timer triggered!');
-                  console.log(`Debug: snapshotHangar=${snapshotHangar}, currentSessionName="${currentSessionName}"`);
-                  
-                  if (snapshotHangar && currentSessionName) {
-                    console.log(`✅ Starting dark image check for session: ${currentSessionName} in hangar: ${snapshotHangar}`);
-                    addLog(`🔍 Starting dark image analysis...`);
-                    await checkForDarkImages(snapshotHangar, currentSessionName);
-                  } else {
-                    console.log(`❌ Cannot start dark image check - missing hangar (${snapshotHangar}) or session name (${currentSessionName})`);
-                    addLog(`⚠️ Dark image check skipped - missing session information`);
-                  }
-                }, 3000); // 3 second delay
+                // Set up dark image analysis timer after all images are displayed
+                const sessionToAnalyze = sessionRef.current;
+                const hangarToAnalyze = hangarRef.current;
+                
+                console.log(`🔍 Dark image analysis check - session: "${sessionToAnalyze}", hangar: "${hangarToAnalyze}"`);
+                
+                if (sessionToAnalyze && hangarToAnalyze) {
+                  console.log(`📅 Setting up dark image analysis timer for session: ${sessionToAnalyze} in hangar: ${hangarToAnalyze}`);
+                  setTimeout(async () => {
+                    console.log('🕐 Dark image check timer triggered!');
+                    console.log(`🔍 Analyzing session: ${sessionToAnalyze} in hangar: ${hangarToAnalyze}`);
+                    
+                    try {
+                      addLog(`🔍 Starting dark image analysis...`);
+                      await checkForDarkImages(hangarToAnalyze, sessionToAnalyze);
+                    } catch (error) {
+                      console.error('❌ Dark image analysis failed:', error);
+                      addLog(`❌ Dark image analysis failed: ${error instanceof Error ? error.message : String(error)}`);
+                    }
+                  }, 3000); // 3 second delay after all images are displayed
+                } else {
+                  console.log(`❌ Cannot set up dark image analysis - missing session (${sessionToAnalyze}) or hangar (${hangarToAnalyze})`);
+                  addLog(`❌ Dark image check skipped - missing session (${sessionToAnalyze}) or hangar (${hangarToAnalyze})`);
+                }
                 
                 // Clear pending images
                 return new Map();
