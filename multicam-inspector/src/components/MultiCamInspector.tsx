@@ -1194,6 +1194,31 @@ export default function MultiCamInspector() {
             
             setIsWaitingToDisplay(true);
             
+            // Start dark image analysis during the 2-second wait period
+            const sessionToAnalyze = sessionRef.current;
+            const hangarToAnalyze = hangarRef.current;
+            
+            console.log(`🔍 Dark image analysis check - session: "${sessionToAnalyze}", hangar: "${hangarToAnalyze}"`);
+            
+            if (sessionToAnalyze && hangarToAnalyze) {
+              console.log(`📅 Starting dark image analysis for session: ${sessionToAnalyze} in hangar: ${hangarToAnalyze}`);
+              setTimeout(async () => {
+                console.log('🕐 Dark image check timer triggered during stabilization!');
+                console.log(`🔍 Analyzing session: ${sessionToAnalyze} in hangar: ${hangarToAnalyze}`);
+                
+                try {
+                  addLog(`🔍 Starting dark image analysis...`);
+                  await checkForDarkImages(hangarToAnalyze, sessionToAnalyze);
+                } catch (error) {
+                  console.error('❌ Dark image analysis failed:', error);
+                  addLog(`❌ Dark image analysis failed: ${error instanceof Error ? error.message : String(error)}`);
+                }
+              }, 500); // Start analysis 500ms into the stabilization period
+            } else {
+              console.log(`❌ Cannot set up dark image analysis - missing session (${sessionToAnalyze}) or hangar (${hangarToAnalyze})`);
+              addLog(`❌ Dark image check skipped - missing session (${sessionToAnalyze}) or hangar (${hangarToAnalyze})`);
+            }
+            
             // Wait 2 seconds then display all pending images
             setTimeout(() => {
               addLog(`🖼️ Displaying all images now!`);
@@ -1231,31 +1256,6 @@ export default function MultiCamInspector() {
                 
                 addLog(`✅ All images displayed successfully!`);
                 addLog(`🚀 Inspection officially started - images ready for review`);
-                
-                // Set up dark image analysis timer after all images are displayed
-                const sessionToAnalyze = sessionRef.current;
-                const hangarToAnalyze = hangarRef.current;
-                
-                console.log(`🔍 Dark image analysis check - session: "${sessionToAnalyze}", hangar: "${hangarToAnalyze}"`);
-                
-                if (sessionToAnalyze && hangarToAnalyze) {
-                  console.log(`📅 Setting up dark image analysis timer for session: ${sessionToAnalyze} in hangar: ${hangarToAnalyze}`);
-                  setTimeout(async () => {
-                    console.log('🕐 Dark image check timer triggered!');
-                    console.log(`🔍 Analyzing session: ${sessionToAnalyze} in hangar: ${hangarToAnalyze}`);
-                    
-                    try {
-                      addLog(`🔍 Starting dark image analysis...`);
-                      await checkForDarkImages(hangarToAnalyze, sessionToAnalyze);
-                    } catch (error) {
-                      console.error('❌ Dark image analysis failed:', error);
-                      addLog(`❌ Dark image analysis failed: ${error instanceof Error ? error.message : String(error)}`);
-                    }
-                  }, 3000); // 3 second delay after all images are displayed
-                } else {
-                  console.log(`❌ Cannot set up dark image analysis - missing session (${sessionToAnalyze}) or hangar (${hangarToAnalyze})`);
-                  addLog(`❌ Dark image check skipped - missing session (${sessionToAnalyze}) or hangar (${hangarToAnalyze})`);
-                }
                 
                 // Clear pending images
                 return new Map();
@@ -3544,76 +3544,59 @@ export default function MultiCamInspector() {
       {/* Image Analysis Results Modal */}
       {showDarkImageModal && darkImageDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg p-4 max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
             <div className="text-center">
-              <div className="text-4xl mb-4">
+              <div className="text-3xl mb-2">
                 {darkImageDetails.darkCount > 0 ? '⚠️' : darkImageDetails.totalImages !== 8 ? '⚠️' : '✅'}
               </div>
-              <h2 className={`text-xl font-bold mb-4 ${
+              <h2 className={`text-lg font-bold mb-3 ${
                 darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 
                   ? 'text-red-600' 
                   : 'text-green-600'
               }`}>
-                Image Analysis Results
+                Image Analysis
               </h2>
               
-              <div className="text-left mb-6">
-                <p className="text-gray-700 mb-4">
-                  <strong>Analysis Summary:</strong><br/>
-                  • Found {darkImageDetails.totalImages} images (expected 8)<br/>
-                  • {darkImageDetails.darkCount} images are too dark (brightness &lt; 100)<br/>
-                  • {darkImageDetails.totalImages - darkImageDetails.darkCount} images have good brightness
+              <div className="text-left mb-4">
+                <p className="text-gray-700 mb-3 text-sm">
+                  Images: {darkImageDetails.totalImages}/8 • Dark: {darkImageDetails.darkCount}
                 </p>
                 
                 {darkImageDetails.analysisResults && (
-                  <div className="bg-gray-50 rounded p-4 mb-4">
-                    <h3 className="font-semibold mb-2">Detailed Results:</h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="bg-gray-50 rounded p-3 mb-3">
+                    <div className="grid grid-cols-4 gap-1 text-xs">
                       {darkImageDetails.analysisResults.map((result, index) => (
-                        <div key={index} className={`p-2 rounded ${
-                          result.isDark ? 'bg-red-100 border border-red-200' : 'bg-green-100 border border-green-200'
+                        <div key={index} className={`p-1 rounded text-center ${
+                          result.isDark ? 'bg-red-100' : 'bg-green-100'
                         }`}>
-                          <div className="font-medium">{result.cameraName}</div>
-                          <div className="text-xs">
-                            Brightness: {result.brightness}
-                            <span className={`ml-2 ${result.isDark ? 'text-red-600' : 'text-green-600'}`}>
-                              {result.isDark ? '🔴 Too Dark' : '✅ Good'}
-                            </span>
+                          <div className="font-medium text-xs">{result.cameraName}</div>
+                          <div className={`text-xs ${result.isDark ? 'text-red-600' : 'text-green-600'}`}>
+                            {Math.round(result.brightness)}
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
-                
-                <p className="text-gray-600 mb-4">
-                  <strong>Session:</strong> {darkImageDetails.session}<br/>
-                  <strong>Hangar:</strong> {darkImageDetails.hangar}
-                </p>
               </div>
               
-              <div className="flex gap-3 justify-center">
+              <div className="flex gap-2 justify-center">
                 {(darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8) && (
                   <Button
                     onClick={deleteSessionFolder}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6"
+                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm"
                   >
-                    Delete Session & Try Again
+                    Delete & Retry
                   </Button>
                 )}
                 <Button
                   onClick={() => setShowDarkImageModal(false)}
                   variant="outline"
+                  className="px-4 py-2 text-sm"
                 >
-                  {darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 ? 'Keep Session Anyway' : 'Continue'}
+                  {darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 ? 'Keep' : 'Continue'}
                 </Button>
               </div>
-              
-              {(darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8) && (
-                <p className="text-sm text-gray-500 mt-4">
-                  💡 Turn on the hangar lights and capture a new session for better results.
-                </p>
-              )}
             </div>
           </div>
         </div>
