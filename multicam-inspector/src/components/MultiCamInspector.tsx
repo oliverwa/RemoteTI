@@ -185,6 +185,9 @@ const CAMERA_LAYOUT = [
   { id: 4, name: 'RDR' }, { id: 5, name: 'FDR' }, { id: 6, name: 'FDL' }, { id: 7, name: 'RDL' }
 ];
 
+// Also make CAMERAS available as an alias for CAMERA_LAYOUT for backwards compatibility
+const CAMERAS = CAMERA_LAYOUT.map(cam => ({ ...cam, label: cam.name }));
+
 const defaultCam = (i: number): Cam => ({ 
   id: i, 
   src: "", 
@@ -230,6 +233,15 @@ export default function MultiCamInspector() {
   // Image enhancement controls
   const [brightness, setBrightness] = useState(100); // 100 = normal (100%)
   const [contrast, setContrast] = useState(100); // 100 = normal (100%)
+  
+  // Brightness and contrast adjustment functions
+  const adjustBrightness = (delta: number) => {
+    setBrightness(prev => Math.max(50, Math.min(150, prev + delta)));
+  };
+  
+  const adjustContrast = (delta: number) => {
+    setContrast(prev => Math.max(50, Math.min(150, prev + delta)));
+  };
 
   // Debug effect for calibration state
   useEffect(() => {
@@ -270,6 +282,22 @@ export default function MultiCamInspector() {
   const [captureStartTime, setCaptureStartTime] = useState<number | null>(null);
   const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<number | null>(null);
   const [showNoImagesModal, setShowNoImagesModal] = useState(false);
+
+  // Dark image detection state
+  const [showDarkImageModal, setShowDarkImageModal] = useState(false);
+  const [darkImageDetails, setDarkImageDetails] = useState<{
+    darkCount: number;
+    totalImages: number;
+    sessionPath: string;
+    hangar: string;
+    session: string;
+    analysisResults?: Array<{
+      cameraName: string;
+      brightness: number;
+      isDark: boolean;
+    }>;
+  } | null>(null);
+  const [currentSessionName, setCurrentSessionName] = useState<string>("");
 
   // Countdown timer effect - decreases estimate every second when capturing
   useEffect(() => {
@@ -828,6 +856,132 @@ export default function MultiCamInspector() {
     document.body.style.cursor = 'grabbing';
   };
 
+  // API-based dark image detection (same as the working standalone version)
+  const checkForDarkImages = async (hangar: string, session: string) => {
+    try {
+      addLog(`🌙 Checking for dark images in session: ${session}`);
+      
+      // Construct session path based on hangar structure
+      const sessionPath = `/Users/oliverwallin/hangar_snapshots/${hangar}/${session}`;
+      
+      const response = await fetch('http://localhost:3002/api/analyze-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionPath: sessionPath,
+          method: 'average',
+          threshold: 100, // Brightness threshold (same as our working version)
+          blurThreshold: 100 // Not used
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Dark image detection failed: ${errorData.error || response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      // Check for dark images or incomplete image count (should be 8)
+      const hasDarkImages = result.darkImageCount > 0;
+      const hasIncompleteImages = result.images.length !== 8;
+      
+      if (hasDarkImages || hasIncompleteImages) {
+        addLog(`⚠️ Issues detected - Dark: ${result.darkImageCount}, Total: ${result.images.length}/8`);
+        
+        // Convert API results to our format
+        const analysisResults = result.images.map((img: any) => ({
+          cameraName: img.name.substring(0, 3), // Extract camera name (FDL, FDR, etc.)
+          brightness: img.brightness,
+          isDark: img.isDark
+        }));
+        
+        setDarkImageDetails({
+          darkCount: result.darkImageCount,
+          totalImages: result.images.length,
+          sessionPath: sessionPath,
+          hangar: hangar,
+          session: session,
+          analysisResults: analysisResults
+        });
+        
+        setShowDarkImageModal(true);
+        return true; // Issues found
+      } else {
+        addLog(`✅ Image quality check passed - No dark images, ${result.images.length}/8 images`);
+        
+        // Show success popup too
+        const analysisResults = result.images.map((img: any) => ({
+          cameraName: img.name.substring(0, 3),
+          brightness: img.brightness,
+          isDark: false
+        }));
+        
+        setDarkImageDetails({
+          darkCount: 0,
+          totalImages: result.images.length,
+          sessionPath: sessionPath,
+          hangar: hangar,
+          session: session,
+          analysisResults: analysisResults
+        });
+        
+        setShowDarkImageModal(true);
+        return false; // No issues
+      }
+      
+    } catch (error) {
+      console.error('Dark image detection error:', error);
+      addLog(`❌ Dark image detection failed: ${error instanceof Error ? error.message : String(error)}`);
+      return false; // Assume no issues on error
+    }
+  };
+
+  // Function to delete the current session folder
+  const deleteSessionFolder = async () => {
+    if (!darkImageDetails) return;
+
+    try {
+      addLog(`🗑️ Deleting session folder: ${darkImageDetails.session}`);
+      
+      const response = await fetch('http://localhost:3002/api/delete-sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionPaths: [darkImageDetails.sessionPath],
+          confirmBackup: true,
+          confirmDelete: true
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Deletion failed: ${errorData.error || response.statusText}`);
+      }
+
+      const result = await response.json();
+      addLog(`✅ Session folder deleted successfully`);
+      
+      // Close the modal and clear images from UI
+      setShowDarkImageModal(false);
+      setDarkImageDetails(null);
+      
+      // Clear the camera images since the session was deleted
+      setCams(prev => prev.map(cam => ({ ...cam, src: "", isLoading: false })));
+      
+      return true;
+    } catch (error) {
+      console.error('Session deletion error:', error);
+      addLog(`❌ Failed to delete session: ${error instanceof Error ? error.message : String(error)}`);
+      alert(`Failed to delete session: ${error instanceof Error ? error.message : String(error)}`);
+      return false;
+    }
+  };
+
   const snapshotAll = () => {
     addLog("Snapshot button clicked - opening configuration modal");
     // Reset modal fields and show modal
@@ -845,6 +999,10 @@ export default function MultiCamInspector() {
 
     addLog(`📸 Starting fast camera capture for ${snapshotDrone} at ${snapshotHangar}`);
     addLog("🔗 Connecting to backend API...");
+    
+    // Reset session name for new capture
+    setCurrentSessionName("");
+    
     setIsCapturing(true);
     setShowSnapshotModal(false);
     
@@ -987,6 +1145,12 @@ export default function MultiCamInspector() {
                   
                   console.log(`Storing image for ${cameraName}:`, imageUrl);
                   
+                  // Capture session name from the first image processed
+                  if (!currentSessionName) {
+                    setCurrentSessionName(imageInfo.session);
+                    console.log(`Captured session name: ${imageInfo.session}`);
+                  }
+                  
                   // Store in pending images instead of displaying
                   setPendingImages(prev => {
                     const newMap = new Map(prev);
@@ -1050,6 +1214,21 @@ export default function MultiCamInspector() {
                 
                 addLog(`✅ All images displayed successfully!`);
                 addLog(`🚀 Inspection officially started - images ready for review`);
+                
+                // Check for dark images after successful capture
+                setTimeout(async () => {
+                  console.log('🕐 Dark image check timer triggered!');
+                  console.log(`Debug: snapshotHangar=${snapshotHangar}, currentSessionName="${currentSessionName}"`);
+                  
+                  if (snapshotHangar && currentSessionName) {
+                    console.log(`✅ Starting dark image check for session: ${currentSessionName} in hangar: ${snapshotHangar}`);
+                    addLog(`🔍 Starting dark image analysis...`);
+                    await checkForDarkImages(snapshotHangar, currentSessionName);
+                  } else {
+                    console.log(`❌ Cannot start dark image check - missing hangar (${snapshotHangar}) or session name (${currentSessionName})`);
+                    addLog(`⚠️ Dark image check skipped - missing session information`);
+                  }
+                }, 3000); // 3 second delay
                 
                 // Clear pending images
                 return new Map();
@@ -1920,27 +2099,39 @@ export default function MultiCamInspector() {
         <div className="flex items-center gap-3 text-xs">
           <div className="flex items-center gap-1">
             <label className="text-gray-600">💡 Bright:</label>
-            <input
-              type="range"
-              min="25"
-              max="200"
-              value={brightness}
-              onChange={(e) => setBrightness(parseInt(e.target.value))}
-              className="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer slider"
-            />
-            <span className="text-gray-500 w-8 text-right">{brightness}%</span>
+            <button
+              onClick={() => adjustBrightness(-5)}
+              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
+              title="Decrease brightness by 5%"
+            >
+              −
+            </button>
+            <span className="text-gray-700 w-12 text-center font-medium">{brightness}%</span>
+            <button
+              onClick={() => adjustBrightness(5)}
+              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
+              title="Increase brightness by 5%"
+            >
+              +
+            </button>
           </div>
           <div className="flex items-center gap-1">
             <label className="text-gray-600">🎨 Contrast:</label>
-            <input
-              type="range"
-              min="25"
-              max="200"
-              value={contrast}
-              onChange={(e) => setContrast(parseInt(e.target.value))}
-              className="w-16 h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer slider"
-            />
-            <span className="text-gray-500 w-8 text-right">{contrast}%</span>
+            <button
+              onClick={() => adjustContrast(-5)}
+              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
+              title="Decrease contrast by 5%"
+            >
+              −
+            </button>
+            <span className="text-gray-700 w-12 text-center font-medium">{contrast}%</span>
+            <button
+              onClick={() => adjustContrast(5)}
+              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
+              title="Increase contrast by 5%"
+            >
+              +
+            </button>
           </div>
         </div>
         
@@ -3318,6 +3509,84 @@ export default function MultiCamInspector() {
                   Cancel
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Analysis Results Modal */}
+      {showDarkImageModal && darkImageDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="text-center">
+              <div className="text-4xl mb-4">
+                {darkImageDetails.darkCount > 0 ? '⚠️' : darkImageDetails.totalImages !== 8 ? '⚠️' : '✅'}
+              </div>
+              <h2 className={`text-xl font-bold mb-4 ${
+                darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 
+                  ? 'text-red-600' 
+                  : 'text-green-600'
+              }`}>
+                Image Analysis Results
+              </h2>
+              
+              <div className="text-left mb-6">
+                <p className="text-gray-700 mb-4">
+                  <strong>Analysis Summary:</strong><br/>
+                  • Found {darkImageDetails.totalImages} images (expected 8)<br/>
+                  • {darkImageDetails.darkCount} images are too dark (brightness &lt; 100)<br/>
+                  • {darkImageDetails.totalImages - darkImageDetails.darkCount} images have good brightness
+                </p>
+                
+                {darkImageDetails.analysisResults && (
+                  <div className="bg-gray-50 rounded p-4 mb-4">
+                    <h3 className="font-semibold mb-2">Detailed Results:</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {darkImageDetails.analysisResults.map((result, index) => (
+                        <div key={index} className={`p-2 rounded ${
+                          result.isDark ? 'bg-red-100 border border-red-200' : 'bg-green-100 border border-green-200'
+                        }`}>
+                          <div className="font-medium">{result.cameraName}</div>
+                          <div className="text-xs">
+                            Brightness: {result.brightness}
+                            <span className={`ml-2 ${result.isDark ? 'text-red-600' : 'text-green-600'}`}>
+                              {result.isDark ? '🔴 Too Dark' : '✅ Good'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <p className="text-gray-600 mb-4">
+                  <strong>Session:</strong> {darkImageDetails.session}<br/>
+                  <strong>Hangar:</strong> {darkImageDetails.hangar}
+                </p>
+              </div>
+              
+              <div className="flex gap-3 justify-center">
+                {(darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8) && (
+                  <Button
+                    onClick={deleteSessionFolder}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6"
+                  >
+                    Delete Session & Try Again
+                  </Button>
+                )}
+                <Button
+                  onClick={() => setShowDarkImageModal(false)}
+                  variant="outline"
+                >
+                  {darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 ? 'Keep Session Anyway' : 'Continue'}
+                </Button>
+              </div>
+              
+              {(darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8) && (
+                <p className="text-sm text-gray-500 mt-4">
+                  💡 Turn on the hangar lights and capture a new session for better results.
+                </p>
+              )}
             </div>
           </div>
         </div>

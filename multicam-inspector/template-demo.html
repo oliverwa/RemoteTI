@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template Matching Demo</title>
+  <script src="https://docs.opencv.org/4.5.0/opencv.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .upload-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .upload-box {
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .upload-box canvas {
+      max-width: 100%;
+      max-height: 300px;
+      border: 1px solid #ddd;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    .threshold-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .results {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      min-height: 400px;
+      background: #fafafa;
+      text-align: center;
+    }
+    .status {
+      background: #e9ecef;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 12px;
+    }
+    .match-info {
+      background: white;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 15px;
+      text-align: left;
+    }
+    .file-input {
+      margin: 10px 0;
+    }
+    canvas#resultCanvas {
+      max-width: 100%;
+      border: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Template Matching Demo</h1>
+    <p>Upload a source image and a template to test OpenCV.js template matching</p>
+
+    <!-- Status -->
+    <div class="status" id="status">
+      OpenCV Status: <span id="opencv-status">Loading...</span><br>
+      Source: <span id="source-status">❌ Not uploaded</span><br>
+      Template: <span id="template-status">❌ Not uploaded</span>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="upload-section">
+      <div class="upload-box">
+        <h3>Source Image (Drone Photo)</h3>
+        <input type="file" accept="image/*" id="sourceInput" class="file-input">
+        <canvas id="sourceCanvas" style="display: none;"></canvas>
+        <p id="sourceText">Select a source image</p>
+      </div>
+      
+      <div class="upload-box">
+        <h3>Template Image (Object to Find)</h3>
+        <input type="file" accept="image/*" id="templateInput" class="file-input">
+        <canvas id="templateCanvas" style="display: none;"></canvas>
+        <p id="templateText">Select a template image</p>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="threshold-control">
+        <label>Detection Method:</label>
+        <select id="detectionMethod">
+          <option value="template">Template Matching</option>
+          <option value="color">Color Detection (Yellow)</option>
+          <option value="both">Both Methods</option>
+        </select>
+      </div>
+      
+      <div class="threshold-control">
+        <label>Confidence Threshold:</label>
+        <input type="range" id="threshold" min="0.5" max="0.95" step="0.05" value="0.8">
+        <span id="thresholdValue">80%</span>
+      </div>
+      
+      <div class="threshold-control" id="colorControls" style="display: none;">
+        <label>Yellow Tolerance:</label>
+        <input type="range" id="colorTolerance" min="10" max="50" value="25">
+        <span id="colorToleranceValue">25</span>
+      </div>
+      
+      <button id="findMatches" class="btn btn-primary" disabled>Find Matches</button>
+      <button id="reset" class="btn btn-secondary">Reset</button>
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+      <p>Upload images and click "Find Matches" to see results</p>
+      <canvas id="resultCanvas" style="display: none;"></canvas>
+      <div id="matchInfo" class="match-info" style="display: none;"></div>
+    </div>
+  </div>
+
+  <script>
+    let isOpenCVLoaded = false;
+    let sourceImageData = null;
+    let templateImageData = null;
+    
+    // DOM elements
+    const sourceInput = document.getElementById('sourceInput');
+    const templateInput = document.getElementById('templateInput');
+    const sourceCanvas = document.getElementById('sourceCanvas');
+    const templateCanvas = document.getElementById('templateCanvas');
+    const resultCanvas = document.getElementById('resultCanvas');
+    const findMatchesBtn = document.getElementById('findMatches');
+    const resetBtn = document.getElementById('reset');
+    const thresholdSlider = document.getElementById('threshold');
+    const thresholdValue = document.getElementById('thresholdValue');
+    const detectionMethod = document.getElementById('detectionMethod');
+    const colorControls = document.getElementById('colorControls');
+    const colorTolerance = document.getElementById('colorTolerance');
+    const colorToleranceValue = document.getElementById('colorToleranceValue');
+    
+    // Status elements
+    const opencvStatus = document.getElementById('opencv-status');
+    const sourceStatus = document.getElementById('source-status');
+    const templateStatus = document.getElementById('template-status');
+    const sourceText = document.getElementById('sourceText');
+    const templateText = document.getElementById('templateText');
+    const matchInfo = document.getElementById('matchInfo');
+
+    // Wait for OpenCV to load
+    function onOpenCvReady() {
+      console.log('OpenCV.js loaded successfully');
+      isOpenCVLoaded = true;
+      opencvStatus.textContent = '✅ Loaded';
+      updateButtonState();
+    }
+
+    // Check if OpenCV is ready
+    function checkOpenCV() {
+      if (typeof cv !== 'undefined' && cv.Mat) {
+        onOpenCvReady();
+      } else {
+        setTimeout(checkOpenCV, 100);
+      }
+    }
+    
+    // Start checking for OpenCV
+    checkOpenCV();
+
+    // Load image to canvas
+    function loadImageToCanvas(file, canvas) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const ctx = canvas.getContext('2d');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          resolve();
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    // Update button state
+    function updateButtonState() {
+      const method = detectionMethod.value;
+      const needsTemplate = method === 'template' || method === 'both';
+      const canProcess = isOpenCVLoaded && sourceImageData && (!needsTemplate || templateImageData);
+      findMatchesBtn.disabled = !canProcess;
+    }
+
+    // Handle source image upload
+    sourceInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        console.log('Loading source image:', file.name);
+        await loadImageToCanvas(file, sourceCanvas);
+        sourceImageData = file;
+        sourceCanvas.style.display = 'block';
+        sourceText.style.display = 'none';
+        sourceStatus.textContent = '✅ Uploaded';
+        updateButtonState();
+      }
+    });
+
+    // Handle template image upload
+    templateInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        console.log('Loading template image:', file.name);
+        await loadImageToCanvas(file, templateCanvas);
+        templateImageData = file;
+        templateCanvas.style.display = 'block';
+        templateText.style.display = 'none';
+        templateStatus.textContent = '✅ Uploaded';
+        updateButtonState();
+      }
+    });
+
+    // Update threshold display
+    thresholdSlider.addEventListener('input', (e) => {
+      thresholdValue.textContent = Math.round(e.target.value * 100) + '%';
+    });
+
+    // Detection method change
+    detectionMethod.addEventListener('change', (e) => {
+      const method = e.target.value;
+      colorControls.style.display = (method === 'color' || method === 'both') ? 'flex' : 'none';
+      updateButtonState();
+    });
+
+    // Color tolerance slider
+    colorTolerance.addEventListener('input', (e) => {
+      colorToleranceValue.textContent = e.target.value;
+    });
+
+    // Color detection function
+    function detectYellowObjects(sourceMat, tolerance = 25) {
+      console.log('Starting yellow color detection...');
+      
+      // Convert to HSV color space
+      const hsv = new cv.Mat();
+      cv.cvtColor(sourceMat, hsv, cv.COLOR_RGBA2RGB);
+      cv.cvtColor(hsv, hsv, cv.COLOR_RGB2HSV);
+
+      // Yellow color range in HSV (more robust than RGB)
+      const lowerYellow = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [15, 100, 100, 255]);
+      const upperYellow = new cv.Mat(hsv.rows, hsv.cols, hsv.type(), [35, 255, 255, 255]);
+      
+      // Adjust range based on tolerance
+      const toleranceScale = tolerance / 25;
+      lowerYellow.data32S[0] = Math.max(0, 20 - tolerance);  // Hue lower bound
+      lowerYellow.data32S[1] = Math.max(50, 120 - tolerance * 2); // Saturation lower
+      upperYellow.data32S[0] = Math.min(35, 30 + tolerance); // Hue upper bound
+      
+      // Create mask for yellow pixels
+      const mask = new cv.Mat();
+      cv.inRange(hsv, lowerYellow, upperYellow, mask);
+
+      // Find contours
+      const contours = new cv.MatVector();
+      const hierarchy = new cv.Mat();
+      cv.findContours(mask, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+      const colorMatches = [];
+      
+      // Process each contour
+      for (let i = 0; i < contours.size(); i++) {
+        const contour = contours.get(i);
+        const area = cv.contourArea(contour);
+        
+        // Filter by area (adjust these values based on your needs)
+        if (area > 100 && area < 50000) { // Min 100 pixels, max 50k pixels
+          const rect = cv.boundingRect(contour);
+          
+          // Calculate "confidence" based on area and aspect ratio
+          const aspectRatio = rect.width / rect.height;
+          const areaScore = Math.min(area / 1000, 1); // Normalize area score
+          const aspectScore = aspectRatio > 0.3 && aspectRatio < 3 ? 1 : 0.5; // Prefer roughly square objects
+          const confidence = (areaScore * aspectScore * 0.8) + 0.2; // 20-100% range
+          
+          colorMatches.push({
+            x: rect.x,
+            y: rect.y,
+            templateWidth: rect.width,
+            templateHeight: rect.height,
+            confidence: confidence,
+            area: area,
+            method: 'color'
+          });
+        }
+        
+        contour.delete();
+      }
+
+      // Cleanup
+      hsv.delete();
+      lowerYellow.delete();
+      upperYellow.delete();
+      mask.delete();
+      contours.delete();
+      hierarchy.delete();
+
+      // Sort by confidence and return
+      colorMatches.sort((a, b) => b.confidence - a.confidence);
+      console.log('Color detection found', colorMatches.length, 'matches');
+      return colorMatches;
+    }
+
+    // Perform template matching
+    findMatchesBtn.addEventListener('click', async () => {
+      if (!isOpenCVLoaded) {
+        alert('OpenCV is not loaded yet');
+        return;
+      }
+
+      const method = detectionMethod.value;
+      console.log('Starting detection with method:', method);
+      findMatchesBtn.textContent = 'Processing...';
+      findMatchesBtn.disabled = true;
+
+      try {
+        // Get source image
+        const sourceMat = cv.imread(sourceCanvas);
+        let allMatches = [];
+
+        // Template matching
+        if (method === 'template' || method === 'both') {
+          const templateMat = cv.imread(templateCanvas);
+          const resultMat = new cv.Mat();
+
+          // Convert to grayscale
+          const sourceGray = new cv.Mat();
+          const templateGray = new cv.Mat();
+          cv.cvtColor(sourceMat, sourceGray, cv.COLOR_RGBA2GRAY);
+          cv.cvtColor(templateMat, templateGray, cv.COLOR_RGBA2GRAY);
+
+          // Perform template matching
+          cv.matchTemplate(sourceGray, templateGray, resultMat, cv.TM_CCOEFF_NORMED);
+
+          // Find matches above threshold
+          const threshold = parseFloat(thresholdSlider.value);
+          const templateWidth = templateGray.cols;
+          const templateHeight = templateGray.rows;
+
+          for (let y = 0; y < resultMat.rows; y++) {
+            for (let x = 0; x < resultMat.cols; x++) {
+              const confidence = resultMat.floatAt(y, x);
+              if (confidence >= threshold) {
+                allMatches.push({ x, y, confidence, templateWidth, templateHeight, method: 'template' });
+              }
+            }
+          }
+
+          // Cleanup template matching
+          templateMat.delete();
+          sourceGray.delete();
+          templateGray.delete();
+          resultMat.delete();
+        }
+
+        // Color detection
+        if (method === 'color' || method === 'both') {
+          const tolerance = parseInt(colorTolerance.value);
+          const colorMatches = detectYellowObjects(sourceMat, tolerance);
+          allMatches = allMatches.concat(colorMatches);
+        }
+
+        // Sort by confidence and take top 10 (more for color detection)
+        allMatches.sort((a, b) => b.confidence - a.confidence);
+        const topMatches = allMatches.slice(0, 10);
+
+        console.log('Found matches:', topMatches.length);
+
+        // Draw results
+        resultCanvas.width = sourceCanvas.width;
+        resultCanvas.height = sourceCanvas.height;
+        resultCanvas.style.display = 'block';
+        
+        const ctx = resultCanvas.getContext('2d');
+        ctx.drawImage(sourceCanvas, 0, 0);
+
+        // Draw enhanced bounding boxes with different colors for different methods
+        const templateColors = ['red', 'darkred', 'crimson', 'firebrick'];
+        const colorColors = ['lime', 'green', 'forestgreen', 'darkgreen', 'lightgreen'];
+        ctx.lineWidth = 4;
+        ctx.font = 'bold 18px Arial';
+
+        let templateIndex = 0;
+        let colorIndex = 0;
+
+        topMatches.forEach((match, index) => {
+          let color, methodLabel;
+          
+          if (match.method === 'template') {
+            color = templateColors[templateIndex % templateColors.length];
+            methodLabel = 'T';
+            templateIndex++;
+          } else {
+            color = colorColors[colorIndex % colorColors.length];
+            methodLabel = 'C';
+            colorIndex++;
+          }
+          
+          // Draw main bounding box
+          ctx.strokeStyle = color;
+          ctx.strokeRect(match.x, match.y, match.templateWidth, match.templateHeight);
+          
+          // Draw semi-transparent fill
+          ctx.fillStyle = color + '40'; // Add transparency
+          ctx.fillRect(match.x, match.y, match.templateWidth, match.templateHeight);
+          
+          // Draw confidence label with background
+          const label = `${methodLabel}${index + 1}: ${(match.confidence * 100).toFixed(1)}%`;
+          const labelY = match.y - 8;
+          
+          // Label background
+          ctx.fillStyle = color;
+          const textMetrics = ctx.measureText(label);
+          ctx.fillRect(match.x, labelY - 20, textMetrics.width + 10, 25);
+          
+          // Label text
+          ctx.fillStyle = 'white';
+          ctx.fillText(label, match.x + 5, labelY - 2);
+          
+          // Draw crosshair at center
+          const centerX = match.x + match.templateWidth / 2;
+          const centerY = match.y + match.templateHeight / 2;
+          
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          // Horizontal line
+          ctx.beginPath();
+          ctx.moveTo(centerX - 15, centerY);
+          ctx.lineTo(centerX + 15, centerY);
+          ctx.stroke();
+          // Vertical line
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY - 15);
+          ctx.lineTo(centerX, centerY + 15);
+          ctx.stroke();
+        });
+
+        // Show match info
+        matchInfo.style.display = 'block';
+        const templateCount = topMatches.filter(m => m.method === 'template').length;
+        const colorCount = topMatches.filter(m => m.method === 'color').length;
+        
+        matchInfo.innerHTML = `
+          <h4>Found ${topMatches.length} matches total:</h4>
+          ${templateCount > 0 ? `<p><strong>Template Matching:</strong> ${templateCount} matches (Red boxes, T labels)</p>` : ''}
+          ${colorCount > 0 ? `<p><strong>Color Detection:</strong> ${colorCount} yellow objects found (Green boxes, C labels)</p>` : ''}
+          <div style="font-size: 12px; margin-top: 10px;">
+            ${topMatches.map((match, i) => {
+              const method = match.method === 'template' ? 'Template' : 'Color';
+              const extraInfo = match.area ? `, Area: ${match.area}px` : '';
+              return `<div>${method} ${i + 1}: Position (${match.x}, ${match.y}), Confidence: ${(match.confidence * 100).toFixed(1)}%${extraInfo}</div>`;
+            }).join('')}
+          </div>
+        `;
+
+        // Cleanup
+        sourceMat.delete();
+
+      } catch (error) {
+        console.error('Template matching error:', error);
+        alert('Error during template matching: ' + error.message);
+      }
+
+      findMatchesBtn.textContent = 'Find Matches';
+      findMatchesBtn.disabled = false;
+    });
+
+    // Reset functionality
+    resetBtn.addEventListener('click', () => {
+      sourceInput.value = '';
+      templateInput.value = '';
+      sourceImageData = null;
+      templateImageData = null;
+      
+      sourceCanvas.style.display = 'none';
+      templateCanvas.style.display = 'none';
+      resultCanvas.style.display = 'none';
+      matchInfo.style.display = 'none';
+      
+      sourceText.style.display = 'block';
+      templateText.style.display = 'block';
+      
+      sourceStatus.textContent = '❌ Not uploaded';
+      templateStatus.textContent = '❌ Not uploaded';
+      
+      updateButtonState();
+    });
+  </script>
+</body>
+</html>
