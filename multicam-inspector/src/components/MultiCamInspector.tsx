@@ -217,6 +217,7 @@ export default function MultiCamInspector() {
   
   // Camera calibration modal state
   const [showCalibrateSelectionModal, setCalibrateSelectionModal] = useState(false);
+  const [showTaskDescriptionModal, setShowTaskDescriptionModal] = useState(false);
   const [showCalibrateModal, setCalibrateModal] = useState(false);
   const [calibrateHangar, setCalibrateHangar] = useState("");
   const [calibrateCamera, setCalibrateCamera] = useState(0);
@@ -1024,16 +1025,16 @@ export default function MultiCamInspector() {
       
       // Simulate loading delay for realism
       setTimeout(() => {
-        // Map camera IDs to demo image filenames
+        // Map camera IDs to demo image filenames based on camera layout
         const demoImageMap: Record<number, string> = {
-          0: 'FUL_251016_090049.jpg',  // Front Upper Left
-          1: 'FUR_251016_090049.jpg',  // Front Upper Right  
-          2: 'RUL_251016_090049.jpg',  // Rear Upper Left
-          3: 'RUR_251016_090049.jpg',  // Rear Upper Right
-          4: 'FDL_251016_090049.jpg',  // Front Down Left
-          5: 'FDR_251016_090049.jpg',  // Front Down Right
-          6: 'RDL_251016_090049.jpg',  // Rear Down Left
-          7: 'RDR_251016_090049.jpg',  // Rear Down Right
+          0: 'RUR_251016_090049.jpg',  // Camera 0 = RUR (Rear Upper Right)
+          1: 'FUR_251016_090049.jpg',  // Camera 1 = FUR (Front Upper Right)
+          2: 'FUL_251016_090049.jpg',  // Camera 2 = FUL (Front Upper Left)
+          3: 'RUL_251016_090049.jpg',  // Camera 3 = RUL (Rear Upper Left)
+          4: 'RDR_251016_090049.jpg',  // Camera 4 = RDR (Rear Down Right)
+          5: 'FDR_251016_090049.jpg',  // Camera 5 = FDR (Front Down Right)
+          6: 'FDL_251016_090049.jpg',  // Camera 6 = FDL (Front Down Left)
+          7: 'RDL_251016_090049.jpg',  // Camera 7 = RDL (Rear Down Left)
         };
         
         // Load demo images
@@ -2154,45 +2155,6 @@ export default function MultiCamInspector() {
           </div>
         )}
 
-        {/* Image Enhancement Controls */}
-        <div className="flex items-center gap-3 text-xs">
-          <div className="flex items-center gap-1">
-            <label className="text-gray-600">💡 Bright:</label>
-            <button
-              onClick={() => adjustBrightness(-5)}
-              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
-              title="Decrease brightness by 5%"
-            >
-              −
-            </button>
-            <span className="text-gray-700 w-12 text-center font-medium">{brightness}%</span>
-            <button
-              onClick={() => adjustBrightness(5)}
-              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
-              title="Increase brightness by 5%"
-            >
-              +
-            </button>
-          </div>
-          <div className="flex items-center gap-1">
-            <label className="text-gray-600">🎨 Contrast:</label>
-            <button
-              onClick={() => adjustContrast(-5)}
-              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
-              title="Decrease contrast by 5%"
-            >
-              −
-            </button>
-            <span className="text-gray-700 w-12 text-center font-medium">{contrast}%</span>
-            <button
-              onClick={() => adjustContrast(5)}
-              className="px-1 py-0.5 text-xs bg-gray-200 hover:bg-gray-300 rounded border"
-              title="Increase contrast by 5%"
-            >
-              +
-            </button>
-          </div>
-        </div>
         
         {showLogs && (
           <>
@@ -2357,28 +2319,6 @@ export default function MultiCamInspector() {
           </>
         )}
         
-        <div className="ml-auto relative group">
-          <button className="text-xs text-neutral-400 hover:text-neutral-600 px-2 py-1 rounded border border-neutral-200 hover:border-neutral-300 transition-colors">
-            ?
-          </button>
-          <div className="absolute right-0 top-8 bg-white border border-neutral-200 rounded-lg shadow-lg p-3 text-xs text-neutral-700 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
-            <div className="font-semibold mb-2">Keyboard Shortcuts</div>
-            <div className="space-y-1">
-              <div>Scroll = zoom</div>
-              <div>Drag = pan</div>
-              <div>Double-click = reset</div>
-              <div>F = fullscreen</div>
-              <div>R = reset view</div>
-              <div>Esc = close modal/fullscreen</div>
-              <div>L = laptop mode</div>
-              <div>D = debug mode</div>
-              <div>P = pass</div>
-              <div>X = fail</div>
-              <div>A = camera alignment</div>
-              <div>C = calibrate camera</div>
-            </div>
-          </div>
-        </div>
       </div>
 
 
@@ -2480,6 +2420,94 @@ export default function MultiCamInspector() {
             );
           })}
         </div>
+
+        {/* Pass/Fail Buttons, Title, and Timeline - Below Camera Images */}
+        {items.some(item => !item.status) && (
+          <div className="bg-white border rounded-lg p-4 space-y-4">
+            {/* Buttons */}
+            <div className="flex justify-between gap-4">
+              {(() => {
+                const currentTask = items[idx];
+                const currentValidations = validatedBoxes[currentTask.id] || new Set();
+                const totalBoxes = Object.values(currentTask.validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
+                const isValidationComplete = totalBoxes === 0 || currentValidations.size === totalBoxes;
+                
+                return (
+                  <>
+                    {/* FAIL Button - Left Side */}
+                    <Button 
+                      onClick={() => {
+                        console.log('FAIL clicked for task', idx);
+                        selectStatus("fail");
+                      }} 
+                      disabled={false}
+                      className={`flex-1 px-6 py-4 text-lg font-bold rounded-lg touch-manipulation ${
+                        items[idx].status === "fail" 
+                          ? "bg-red-600 hover:bg-red-700 text-white" 
+                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
+                      }`}
+                    >
+                      ✗ FAIL
+                    </Button>
+                    
+                    {/* PASS Button - Right Side */}
+                    <Button 
+                      onClick={() => {
+                        console.log('PASS clicked for task', idx);
+                        selectStatus("pass");
+                      }} 
+                      disabled={!isValidationComplete}
+                      className={`flex-1 px-6 py-4 text-lg font-bold rounded-lg touch-manipulation ${
+                        items[idx].status === "pass" 
+                          ? "bg-green-600 hover:bg-green-700 text-white" 
+                          : isValidationComplete
+                            ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
+                            : "bg-gray-50 text-gray-400 border cursor-not-allowed"
+                      }`}
+                    >
+                      ✓ PASS
+                    </Button>
+                  </>
+                );
+              })()}
+            </div>
+            
+            {/* Title with Description Toggle */}
+            <div className="flex items-center justify-center gap-2">
+              <h2 className="text-xl font-bold text-gray-900">{items[idx].title}</h2>
+              <button 
+                onClick={() => setShowTaskDescriptionModal(true)}
+                className="text-sm text-neutral-400 hover:text-neutral-600 w-6 h-6 rounded-full border border-neutral-200 hover:border-neutral-300 transition-colors flex items-center justify-center touch-manipulation"
+              >
+                ?
+              </button>
+            </div>
+            
+            {/* Timeline Dots */}
+            <div className="flex justify-center">
+              <div className="flex items-center gap-2 flex-wrap">
+                {items.map((it, i) => {
+                  const c = it.status === "pass" ? "bg-green-500" : it.status === "fail" ? "bg-red-500" : it.status === "na" ? "bg-yellow-400" : "bg-neutral-300";
+                  const active = i === idx ? "ring-2 ring-blue-500 scale-110" : "opacity-80 hover:opacity-100";
+                  return (
+                    <button
+                      title={`${i + 1}. ${it.title}`}
+                      key={i}
+                      className={`w-3 h-3 rounded-full ${c} ${active} shrink-0 outline-none focus:ring-2 focus:ring-blue-400 transition-transform`}
+                      onClick={() => {
+                        if (i !== idx) {
+                          setIdx(i);
+                          addLog(`📋 Jumped to task ${i + 1}: ${it.title}`);
+                        }
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
 
       {/* Log Panel */}
@@ -2511,32 +2539,7 @@ export default function MultiCamInspector() {
       )}
 
       {/* --- TI Checklist BELOW cameras --- */}
-      <div className="bg-white border rounded p-3">
-        <div className="mb-2 text-sm">
-          <div className="flex items-center justify-between">
-            <div>TI – Task {Math.min(idx + 1, items.length)}/{items.length}</div>
-            {/* Timeline overview */}
-            <div className="mt-1 flex-1 flex justify-center">
-              <div className="flex items-center gap-2 flex-wrap">
-                {items.map((it, i) => {
-                  const c = it.status === "pass" ? "bg-green-500" : it.status === "fail" ? "bg-red-500" : it.status === "na" ? "bg-yellow-400" : "bg-neutral-300";
-                  const active = i === idx ? "ring-2 ring-blue-500 scale-110" : "opacity-80 hover:opacity-100";
-                  return (
-                    <button
-                      title={`${i + 1}. ${it.title}`}
-                      key={i}
-                      className={`w-3 h-3 rounded-full ${c} ${active} shrink-0 outline-none focus:ring-2 focus:ring-blue-400 transition-transform`}
-                      onClick={() => {
-                        setIdx(i);
-                        setLeaving(false);
-                      }}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="bg-white border rounded p-2">
 
         {items.some(item => !item.status) ? (
           <div className="px-3 md:px-6 lg:px-8">
@@ -2548,99 +2551,46 @@ export default function MultiCamInspector() {
                 opacity: leaving ? 0.15 : 1,
               }}
             >
-              <div className="space-y-3">
-                {/* Header Section - Compact */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-gray-900">{items[idx].title}</h2>
-                  </div>
-                </div>
-
-
-                {/* Comments and Decision Section */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-3">
-                  {/* Comment Toggle Button */}
+              <div className="space-y-2">
+                {/* Comments and N/A Section - Compact */}
+                <div className="flex items-center gap-3 text-xs">
+                  {/* Comment Toggle Button - Smaller */}
                   <button
                     onClick={() => setShowComments(!showComments)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
                       items[idx].comment && items[idx].comment?.trim() 
                         ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200' 
                         : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
                   >
                     <span>{showComments ? '📝' : (items[idx].comment && items[idx].comment?.trim() ? '📋' : '💬')}</span>
-                    <span>{showComments ? 'Hide Comments' : (items[idx].comment && items[idx].comment?.trim() ? 'View Comments' : 'Add Comments')}</span>
-                    <span className="text-xs opacity-60">{showComments ? '▼' : '▶'}</span>
+                    <span>{showComments ? 'Hide' : (items[idx].comment && items[idx].comment?.trim() ? 'View' : 'Add')} Comments</span>
                   </button>
-
-                  {/* Decision Buttons */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold text-gray-900 mr-2">🎯 Decision:</span>
-                    {(() => {
-                      const currentValidations = validatedBoxes[items[idx].id] || new Set();
-                      const totalBoxes = Object.values(items[idx].validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
-                      const isValidationComplete = totalBoxes === 0 || currentValidations.size === totalBoxes;
-                      
-                      return (
-                        <>
-                          <Button 
-                            onClick={() => {
-                              console.log('PASS clicked for task', idx);
-                              selectStatus("pass");
-                            }} 
-                            disabled={!isValidationComplete}
-                            className={`px-4 py-2 text-sm font-bold rounded-lg ${
-                              items[idx].status === "pass" 
-                                ? "bg-green-600 hover:bg-green-700 text-white" 
-                                : isValidationComplete
-                                  ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
-                                  : "bg-gray-50 text-gray-400 border cursor-not-allowed"
-                            }`}
-                          >
-                            ✓ PASS {!isValidationComplete && "🔒"}
-                          </Button>
-                          <Button 
-                            onClick={() => {
-                              console.log('FAIL clicked for task', idx);
-                              selectStatus("fail");
-                            }} 
-                            disabled={false}
-                            className={`px-4 py-2 text-sm font-bold rounded-lg ${
-                              items[idx].status === "fail" 
-                                ? "bg-red-600 hover:bg-red-700 text-white" 
-                                : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
-                            }`}
-                          >
-                            ✗ FAIL
-                          </Button>
-                          <label className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50 ${
-                            items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
-                          }`}>
-                            <input 
-                              type="radio" 
-                              name={`task-${idx}`}
-                              checked={items[idx].status === "na"}
-                              onChange={() => selectStatus("na")}
-                              className="text-blue-600"
-                            />
-                            <span className={`text-sm font-bold ${items[idx].status === "na" ? "text-blue-700" : ""}`}>
-                              N/A
-                            </span>
-                          </label>
-                        </>
-                      );
-                    })()}
-                  </div>
+                  
+                  {/* N/A Option - Compact */}
+                  <label className={`inline-flex items-center gap-1 px-2 py-1 border rounded cursor-pointer hover:bg-gray-50 ${
+                    items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
+                  }`}>
+                    <input 
+                      type="radio" 
+                      name={`task-${idx}`}
+                      checked={items[idx].status === "na"}
+                      onChange={() => selectStatus("na")}
+                      className="text-blue-600 w-3 h-3"
+                    />
+                    <span className={`text-xs ${items[idx].status === "na" ? "text-blue-700 font-medium" : ""}`}>
+                      N/A
+                    </span>
+                  </label>
                 </div>
 
-                {/* Collapsible Comments Section */}
+                {/* Collapsible Comments Section - Compact */}
                 {showComments && (
-                  <div className="bg-gray-50 p-3 rounded mb-3">
-                    <div className="text-xs font-semibold text-gray-900 mb-2">💬 Inspector Comments</div>
+                  <div className="bg-gray-50 p-2 rounded">
                     <textarea
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={3}
-                      placeholder="Add detailed comments, observations, or notes for this inspection task..."
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={2}
+                      placeholder="Add comments or notes for this inspection task..."
                       value={items[idx].comment || ''}
                       onChange={(e) => updateTaskComment(e.target.value)}
                     />
@@ -2667,6 +2617,75 @@ export default function MultiCamInspector() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Image Enhancement Controls and Help - Below Inspection Task */}
+      <div className="bg-gray-50 p-4 rounded-lg">
+        {/* Centered brightness and contrast controls */}
+        <div className="flex items-center justify-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <label className="text-gray-600 font-medium">Bright:</label>
+            <button
+              onClick={() => adjustBrightness(-5)}
+              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
+              title="Decrease brightness by 5%"
+            >
+              −
+            </button>
+            <span className="text-gray-700 w-16 text-center font-medium">{brightness}%</span>
+            <button
+              onClick={() => adjustBrightness(5)}
+              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
+              title="Increase brightness by 5%"
+            >
+              +
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-gray-600 font-medium">Contrast:</label>
+            <button
+              onClick={() => adjustContrast(-5)}
+              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
+              title="Decrease contrast by 5%"
+            >
+              −
+            </button>
+            <span className="text-gray-700 w-16 text-center font-medium">{contrast}%</span>
+            <button
+              onClick={() => adjustContrast(5)}
+              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
+              title="Increase contrast by 5%"
+            >
+              +
+            </button>
+          </div>
+        </div>
+        
+        {/* Help button positioned separately */}
+        <div className="flex justify-end mt-3">
+          <div className="relative group">
+            <button className="text-sm text-neutral-400 hover:text-neutral-600 px-3 py-2 rounded border border-neutral-200 hover:border-neutral-300 transition-colors touch-manipulation">
+              ?
+            </button>
+            <div className="absolute right-0 top-12 bg-white border border-neutral-200 rounded-lg shadow-lg p-3 text-xs text-neutral-700 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
+              <div className="font-semibold mb-2">Keyboard Shortcuts</div>
+              <div className="space-y-1">
+                <div>Scroll = zoom</div>
+                <div>Drag = pan</div>
+                <div>Double-click = reset</div>
+                <div>F = fullscreen</div>
+                <div>R = reset view</div>
+                <div>Esc = close modal/fullscreen</div>
+                <div>L = laptop mode</div>
+                <div>D = debug mode</div>
+                <div>P = pass</div>
+                <div>X = fail</div>
+                <div>A = camera alignment</div>
+                <div>C = calibrate camera</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {fsId != null && (
@@ -3502,6 +3521,38 @@ export default function MultiCamInspector() {
         </div>
       )}
 
+      {/* Task Description Modal */}
+      {showTaskDescriptionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-[600px] max-w-[90vw] max-h-[80vh] overflow-y-auto mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Task Description</h2>
+              <button
+                onClick={() => setShowTaskDescriptionModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">{items[idx].title}</h3>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{items[idx].detail}</p>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setShowTaskDescriptionModal(false)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <pre className="text-[10px] text-neutral-400">(Open console for smoke tests)</pre>
     </div>
@@ -4316,11 +4367,12 @@ function CanvasImage({
         ctx.fillStyle = isValidated ? '#065f46' : '#7f1d1d';
         ctx.fillText(box.label, boxX + 5, boxY + 20);
         
-        // Draw checkmark or X
-        ctx.font = '18px Arial';
-        ctx.fillStyle = isValidated ? '#10b981' : '#ef4444';
-        const symbol = isValidated ? '✓' : '⚠';
-        ctx.fillText(symbol, boxX + boxWidth - 25, boxY + 25);
+        // Draw checkmark for validated boxes only
+        if (isValidated) {
+          ctx.font = '18px Arial';
+          ctx.fillStyle = '#10b981';
+          ctx.fillText('✓', boxX + boxWidth - 25, boxY + 25);
+        }
         
         // Reset line dash
         ctx.setLineDash([]);
