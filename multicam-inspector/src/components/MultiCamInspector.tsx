@@ -73,6 +73,7 @@ const HANGARS: HangarConfig[] = [
 const DRONE_OPTIONS = [
   { id: "bender", label: "Bender" },
   { id: "marvin", label: "Marvin" },
+  { id: "demo", label: "Demo" },
 ];
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
@@ -113,7 +114,6 @@ interface TIItem {
   id: string;
   title: string;
   detail: string;
-  category: string;
   order: number;
   required: boolean;
   allowedStatuses: string[];
@@ -145,7 +145,6 @@ const TI_ITEMS: TIItem[] = inspectionData.tasks.map(task => ({
   id: task.id,
   title: task.title,
   detail: task.description,
-  category: task.category,
   order: task.order,
   required: task.required,
   allowedStatuses: task.allowedStatuses,
@@ -163,10 +162,6 @@ function tone(s?: string) {
     : "bg-white border-neutral-200";
 }
 
-function getCategoryInfo(categoryId: string) {
-  const category = inspectionData.categories.find(c => c.id === categoryId);
-  return category || { id: categoryId, name: categoryId.replace('_', ' '), color: '#6b7280' };
-}
 
 // --- Types ---
 type Cam = { 
@@ -233,6 +228,7 @@ export default function MultiCamInspector() {
   // Image enhancement controls
   const [brightness, setBrightness] = useState(100); // 100 = normal (100%)
   const [contrast, setContrast] = useState(100); // 100 = normal (100%)
+  
   
   // Brightness and contrast adjustment functions
   const adjustBrightness = (delta: number) => {
@@ -317,14 +313,16 @@ export default function MultiCamInspector() {
     return () => clearInterval(countdownInterval);
   }, [isCapturing]); // Only depend on isCapturing, not estimatedTimeRemaining
   
-  // Inspection mode toggle
-  const [inspectionMode, setInspectionMode] = useState<'classic' | 'innovative'>('classic');
+  // Using innovative mode only
   
   // Laptop mode toggle for zoom buttons
   const [laptopMode, setLaptopMode] = useState(false);
   
   // Validation box tracking for innovative mode
   const [validatedBoxes, setValidatedBoxes] = useState<Record<string, Set<string>>>({}); // taskId -> Set of validated box IDs
+  
+  // Comment section visibility
+  const [showComments, setShowComments] = useState(false);
   
   // Log state
   const [logs, setLogs] = useState<string[]>([]);
@@ -1008,6 +1006,50 @@ export default function MultiCamInspector() {
       return;
     }
 
+    // Handle demo mode with local images
+    if (snapshotDrone === 'demo') {
+      addLog("🎭 Demo mode selected - loading local demo images");
+      setIsCapturing(true);
+      setShowSnapshotModal(false);
+      
+      // Update inspection metadata
+      setInspectionMeta(prev => ({
+        ...prev,
+        droneName: "Demo Drone",
+        hangarName: snapshotHangar
+      }));
+      
+      // Set loading state
+      setCams(prev => prev.map(cam => ({ ...cam, isLoading: true, src: "" })));
+      
+      // Simulate loading delay for realism
+      setTimeout(() => {
+        // Map camera IDs to demo image filenames
+        const demoImageMap: Record<number, string> = {
+          0: 'FUL_251016_090049.jpg',  // Front Upper Left
+          1: 'FUR_251016_090049.jpg',  // Front Upper Right  
+          2: 'RUL_251016_090049.jpg',  // Rear Upper Left
+          3: 'RUR_251016_090049.jpg',  // Rear Upper Right
+          4: 'FDL_251016_090049.jpg',  // Front Down Left
+          5: 'FDR_251016_090049.jpg',  // Front Down Right
+          6: 'RDL_251016_090049.jpg',  // Rear Down Left
+          7: 'RDR_251016_090049.jpg',  // Rear Down Right
+        };
+        
+        // Load demo images
+        setCams(prev => prev.map(cam => ({
+          ...cam,
+          isLoading: false,
+          src: `/demo-images/${demoImageMap[cam.id]}`
+        })));
+        
+        setIsCapturing(false);
+        addLog("✅ Demo images loaded successfully");
+      }, 1500); // 1.5 second delay to simulate capture
+      
+      return;
+    }
+
     addLog(`📸 Starting fast camera capture for ${snapshotDrone} at ${snapshotHangar}`);
     addLog("🔗 Connecting to backend API...");
     
@@ -1558,8 +1600,8 @@ export default function MultiCamInspector() {
       return;
     }
     
-    // Validation gate logic for innovative mode - only block PASS, allow FAIL
-    if (inspectionMode === 'innovative' && s === 'pass') {
+    // Validation gate logic - only block PASS, allow FAIL
+    if (s === 'pass') {
       const currentTask = items[idx];
       const currentValidations = validatedBoxes[currentTask.id] || new Set();
       const totalBoxes = Object.values(currentTask.validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
@@ -1646,10 +1688,6 @@ export default function MultiCamInspector() {
       } else if (k === "r") {
         // R = Reset all cameras (same as Reset All button)
         resetAll();
-      } else if (k === "i") {
-        // I = Toggle between Classic and Innovative inspection mode
-        setInspectionMode(inspectionMode === 'classic' ? 'innovative' : 'classic');
-        addLog(`🔄 Switched to ${inspectionMode === 'classic' ? 'Innovative' : 'Classic'} inspection mode`);
       } else if (k === "l") {
         // L = Toggle laptop mode (zoom buttons)
         setLaptopMode(!laptopMode);
@@ -1676,7 +1714,7 @@ export default function MultiCamInspector() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hoverId, fsId, resetView, resetAll, inspectionMode, addLog, laptopMode, showLogs, selectStatus]);
+  }, [hoverId, fsId, resetView, resetAll, addLog, laptopMode, showLogs, selectStatus]);
   
   // Update task comment
   const updateTaskComment = (comment: string) => {
@@ -1970,14 +2008,7 @@ export default function MultiCamInspector() {
         pdf.text(statusText, margin + 12, currentY + 6);
         currentY += 10;
         
-        // Category badge
-        const category = getCategoryInfo(item.category);
-        pdf.setFillColor(243, 244, 246);
-        pdf.rect(margin + 5, currentY, 40, 6, 'F');
-        pdf.setFontSize(8);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(`${category.name}`, margin + 7, currentY + 4);
-        currentY += 10;
+        currentY += 2;
         
         // Description
         pdf.setFontSize(9);
@@ -2114,6 +2145,7 @@ export default function MultiCamInspector() {
         >
           {isWaitingToDisplay ? "PREPARING..." : (isCapturing ? "CAPTURING..." : "📸 SNAPSHOT")}
         </Button>
+
 
         {/* Current Session - Inline and Subtle */}
         {currentSession && (
@@ -2338,7 +2370,6 @@ export default function MultiCamInspector() {
               <div>F = fullscreen</div>
               <div>R = reset view</div>
               <div>Esc = close modal/fullscreen</div>
-              <div>I = innovative mode</div>
               <div>L = laptop mode</div>
               <div>D = debug mode</div>
               <div>P = pass</div>
@@ -2391,7 +2422,7 @@ export default function MultiCamInspector() {
 
       {/* Grid 4×2 */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-2">
           {cams.map((cam) => {
             // Get current hangar (use current session hangar or default to first)
             const currentHangarId = currentSession?.hangar || HANGARS[0].id;
@@ -2411,36 +2442,30 @@ export default function MultiCamInspector() {
                     onDoubleClick={() => resetView(cam.id)}
                     onHover={() => setHoverId(cam.id)}
                     onPinch={(rect, fac) => onPinch(cam.id, rect, fac)}
-                  onZoomIn={() => {
-                    // Direct zoom manipulation instead of fake wheel events
-                    setCams(prev => prev.map(c => {
-                      if (c.id !== cam.id) return c;
-                      const newZoom = Math.min(c.zoom * 1.2, 10); // 20% increase, max 10x
-                      const rect = document.querySelector(`[data-camera-id="${cam.id}"]`)?.getBoundingClientRect();
-                      if (rect) {
-                        const newPan = newZoom <= 1.0 ? { x: 0, y: 0 } : clampPan(c.pan, newZoom, rect, true);
-                        return { ...c, zoom: newZoom, pan: newPan };
-                      }
-                      return { ...c, zoom: newZoom };
-                    }));
-                  }}
-                  onZoomOut={() => {
-                    // Direct zoom manipulation instead of fake wheel events
-                    setCams(prev => prev.map(c => {
-                      if (c.id !== cam.id) return c;
-                      const newZoom = Math.max(c.zoom / 1.2, 1); // 20% decrease, min 1x
-                      const rect = document.querySelector(`[data-camera-id="${cam.id}"]`)?.getBoundingClientRect();
-                      if (rect) {
-                        const newPan = newZoom <= 1.0 ? { x: 0, y: 0 } : clampPan(c.pan, newZoom, rect, true);
-                        return { ...c, zoom: newZoom, pan: newPan };
-                      }
-                      return { ...c, zoom: newZoom };
-                    }));
-                  }}
-                  onResetView={() => resetView(cam.id)}
+                    onPanUpdate={(deltaX, deltaY) => {
+                      setCams(prev => prev.map(c => {
+                        if (c.id !== cam.id) return c;
+                        
+                        // Apply sensitivity scaling like the mouse drag system
+                        const sensitivity = 1.5 * c.zoom;
+                        const newPan = {
+                          x: c.pan.x + deltaX * sensitivity,
+                          y: c.pan.y + deltaY * sensitivity
+                        };
+                        
+                        // Use clampPan to ensure pan stays within bounds
+                        const containerElement = document.querySelector(`[data-camera-id="${cam.id}"]`) as HTMLElement;
+                        if (containerElement) {
+                          const rect = containerElement.getBoundingClientRect();
+                          const clampedPan = clampPan(newPan, c.zoom, rect, true);
+                          return { ...c, pan: clampedPan };
+                        }
+                        
+                        return { ...c, pan: newPan };
+                      }));
+                    }}
                   showLogs={showLogs}
                   laptopMode={laptopMode}
-                  inspectionMode={inspectionMode}
                   items={items}
                   idx={idx}
                   validatedBoxes={validatedBoxes}
@@ -2514,7 +2539,7 @@ export default function MultiCamInspector() {
         </div>
 
         {items.some(item => !item.status) ? (
-          <div className="px-4 md:px-8 lg:px-12">
+          <div className="px-3 md:px-6 lg:px-8">
             <div
               className={`border rounded p-4 shadow ${tone(items[idx].status)} w-full`}
               style={{
@@ -2523,173 +2548,34 @@ export default function MultiCamInspector() {
                 opacity: leaving ? 0.15 : 1,
               }}
             >
-            {inspectionMode === 'classic' ? (
-              /* Classic Mode - Compact Layout */
-              <div className="space-y-3">
-                {/* Header Section */}
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h2 className="text-lg font-semibold text-gray-900">{items[idx].title}</h2>
-                      <span 
-                        className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                        style={{ backgroundColor: getCategoryInfo(items[idx].category).color }}
-                      >
-                        {getCategoryInfo(items[idx].category).name}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 whitespace-pre-line">
-                      {items[idx].detail}
-                    </div>
-                  </div>
-                  
-                  {/* Status Buttons - Top Right - Compact */}
-                  <div className="ml-6 flex gap-2">
-                    <Button 
-                      onClick={() => {
-                        console.log('PASS clicked for task', idx);
-                        selectStatus("pass");
-                      }} 
-                      className={`w-20 h-10 text-sm font-bold rounded ${
-                        items[idx].status === "pass" 
-                          ? "bg-green-600 hover:bg-green-700 text-white" 
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
-                      }`}
-                    >
-                      ✓ PASS
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        console.log('FAIL clicked for task', idx);
-                        selectStatus("fail");
-                      }} 
-                      className={`w-20 h-10 text-sm font-bold rounded ${
-                        items[idx].status === "fail" 
-                          ? "bg-red-600 hover:bg-red-700 text-white" 
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
-                      }`}
-                    >
-                      ✗ FAIL
-                    </Button>
-                    <label className={`flex items-center justify-center gap-1 w-16 h-10 border rounded cursor-pointer hover:bg-gray-50 ${
-                      items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
-                    }`}>
-                      <input 
-                        type="radio" 
-                        name={`task-${idx}`}
-                        checked={items[idx].status === "na"}
-                        onChange={() => selectStatus("na")}
-                        className="text-blue-600 w-3 h-3"
-                      />
-                      <span className={`text-xs font-bold ${items[idx].status === "na" ? "text-blue-700" : ""}`}>
-                        N/A
-                      </span>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Content - Inline Layout */}
-                <div className="flex gap-4">
-                  {/* Instructions - If present */}
-                  {items[idx].instructions && items[idx].instructions!.length > 0 && (
-                    <div className="bg-blue-50 p-3 rounded flex-shrink-0 w-64">
-                      <div className="text-xs font-semibold text-blue-900 mb-2">📋 Instructions</div>
-                      <ul className="text-xs text-blue-800 space-y-1">
-                        {items[idx].instructions!.map((instruction, i) => (
-                          <li key={i} className="flex items-start gap-1">
-                            <span className="text-blue-600 mt-0.5 text-xs">•</span>
-                            <span>{instruction}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Comments - Flexible width */}
-                  <div className="bg-gray-50 p-3 rounded flex-1">
-                    <div className="text-xs font-semibold text-gray-900 mb-2">💬 Inspector Comments</div>
-                    <textarea
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={2}
-                      placeholder="Add detailed comments, observations, or notes for this inspection task..."
-                      value={items[idx].comment || ''}
-                      onChange={(e) => updateTaskComment(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Innovative Mode - Compact Layout */
               <div className="space-y-3">
                 {/* Header Section - Compact */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold text-gray-900">{items[idx].title}</h2>
-                    <span 
-                      className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                      style={{ backgroundColor: getCategoryInfo(items[idx].category).color }}
-                    >
-                      {getCategoryInfo(items[idx].category).name}
-                    </span>
-                    <span className="text-purple-600 font-medium text-xs">🚀 Innovative</span>
                   </div>
                 </div>
 
-                {/* Validation Progress - Inline */}
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded border-l-4 border-purple-500">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-semibold text-purple-900">📋 Validation Progress</div>
-                    {(() => {
-                      const currentValidations = validatedBoxes[items[idx].id] || new Set();
-                      const totalBoxes = Object.values(items[idx].validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
-                      const completedBoxes = currentValidations.size;
-                      const isComplete = totalBoxes > 0 && completedBoxes === totalBoxes;
-                      
-                      return (
-                        <div className="flex items-center gap-2">
-                          <div className="text-xs text-purple-700">
-                            {completedBoxes}/{totalBoxes} validated
-                          </div>
-                          {isComplete && <div className="text-green-600 text-xs">✅ Ready</div>}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                  
-                  {(() => {
-                    const currentValidations = validatedBoxes[items[idx].id] || new Set();
-                    const totalBoxes = Object.values(items[idx].validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
-                    const completedBoxes = currentValidations.size;
-                    const progressPercent = totalBoxes > 0 ? (completedBoxes / totalBoxes) * 100 : 0;
-                    
-                    return (
-                      <div className="w-full bg-purple-200 rounded-full h-1">
-                        <div 
-                          className="bg-gradient-to-r from-purple-500 to-indigo-500 h-1 rounded-full transition-all duration-300" 
-                          style={{ width: `${progressPercent}%` }}
-                        />
-                      </div>
-                    );
-                  })()}
-                </div>
 
-                {/* Bottom Section - Inline Layout */}
-                <div className="flex gap-4">
-                  {/* Comments */}
-                  <div className="bg-gray-50 p-3 rounded flex-1">
-                    <div className="text-xs font-semibold text-gray-900 mb-2">💬 Inspector Comments</div>
-                    <textarea
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={2}
-                      placeholder="Add detailed comments, observations, or notes for this inspection task..."
-                      value={items[idx].comment || ''}
-                      onChange={(e) => updateTaskComment(e.target.value)}
-                    />
-                  </div>
+                {/* Comments and Decision Section */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-3">
+                  {/* Comment Toggle Button */}
+                  <button
+                    onClick={() => setShowComments(!showComments)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded text-sm font-medium transition-colors ${
+                      items[idx].comment && items[idx].comment?.trim() 
+                        ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    }`}
+                  >
+                    <span>{showComments ? '📝' : (items[idx].comment && items[idx].comment?.trim() ? '📋' : '💬')}</span>
+                    <span>{showComments ? 'Hide Comments' : (items[idx].comment && items[idx].comment?.trim() ? 'View Comments' : 'Add Comments')}</span>
+                    <span className="text-xs opacity-60">{showComments ? '▼' : '▶'}</span>
+                  </button>
 
-                  {/* Status Buttons - Right Side - Compact */}
-                  <div className="flex flex-col gap-2 w-32">
-                    <div className="text-xs font-semibold text-gray-900">🎯 Decision</div>
+                  {/* Decision Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold text-gray-900 mr-2">🎯 Decision:</span>
                     {(() => {
                       const currentValidations = validatedBoxes[items[idx].id] || new Set();
                       const totalBoxes = Object.values(items[idx].validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
@@ -2703,7 +2589,7 @@ export default function MultiCamInspector() {
                               selectStatus("pass");
                             }} 
                             disabled={!isValidationComplete}
-                            className={`w-full h-10 text-sm font-bold rounded-lg ${
+                            className={`px-4 py-2 text-sm font-bold rounded-lg ${
                               items[idx].status === "pass" 
                                 ? "bg-green-600 hover:bg-green-700 text-white" 
                                 : isValidationComplete
@@ -2719,7 +2605,7 @@ export default function MultiCamInspector() {
                               selectStatus("fail");
                             }} 
                             disabled={false}
-                            className={`w-full h-10 text-sm font-bold rounded-lg ${
+                            className={`px-4 py-2 text-sm font-bold rounded-lg ${
                               items[idx].status === "fail" 
                                 ? "bg-red-600 hover:bg-red-700 text-white" 
                                 : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
@@ -2727,7 +2613,7 @@ export default function MultiCamInspector() {
                           >
                             ✗ FAIL
                           </Button>
-                          <label className={`flex items-center justify-center gap-2 w-full h-10 border rounded-lg cursor-pointer hover:bg-gray-50 ${
+                          <label className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg cursor-pointer hover:bg-gray-50 ${
                             items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
                           }`}>
                             <input 
@@ -2746,8 +2632,22 @@ export default function MultiCamInspector() {
                     })()}
                   </div>
                 </div>
+
+                {/* Collapsible Comments Section */}
+                {showComments && (
+                  <div className="bg-gray-50 p-3 rounded mb-3">
+                    <div className="text-xs font-semibold text-gray-900 mb-2">💬 Inspector Comments</div>
+                    <textarea
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                      placeholder="Add detailed comments, observations, or notes for this inspection task..."
+                      value={items[idx].comment || ''}
+                      onChange={(e) => updateTaskComment(e.target.value)}
+                    />
+                  </div>
+                )}
+
               </div>
-            )}
           </div>
           </div>
         ) : (
@@ -3602,6 +3502,7 @@ export default function MultiCamInspector() {
         </div>
       )}
 
+
       <pre className="text-[10px] text-neutral-400">(Open console for smoke tests)</pre>
     </div>
   );
@@ -3619,13 +3520,10 @@ function CamTile({
   onDoubleClick,
   onHover,
   onPinch,
-  onZoomIn,
-  onZoomOut,
-  onResetView,
+  onPanUpdate,
   big,
   showLogs,
   laptopMode = false,
-  inspectionMode,
   items,
   idx,
   validatedBoxes,
@@ -3645,13 +3543,10 @@ function CamTile({
     onDoubleClick: () => void;
     onHover: () => void;
     onPinch: (rect: DOMRect, fac: number) => void;
-    onZoomIn?: () => void;
-    onZoomOut?: () => void;
-    onResetView?: () => void;
+    onPanUpdate?: (deltaX: number, deltaY: number) => void;
     big?: boolean;
     showLogs?: boolean;
     laptopMode?: boolean;
-    inspectionMode: 'classic' | 'innovative';
     items: TIItem[];
     idx: number;
     validatedBoxes: Record<string, Set<string>>;
@@ -3708,12 +3603,117 @@ function CamTile({
     };
   }, [onPinch]);
 
+  // Touch state for pinch-to-zoom and panning
+  const [touchState, setTouchState] = useState<{
+    initialDistance?: number;
+    initialZoom?: number;
+    centerX?: number;
+    centerY?: number;
+    isPanning?: boolean;
+    lastX?: number;
+    lastY?: number;
+  }>({});
+
+  // Touch handling for mobile devices
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      // Single touch - prepare for pan (only if zoomed in)
+      if (cam.zoom > 1) {
+        const touch = e.touches[0];
+        setTouchState({
+          isPanning: true,
+          lastX: touch.clientX,
+          lastY: touch.clientY
+        });
+      }
+    } else if (e.touches.length === 2) {
+      // Two touches - prepare for pinch-to-zoom
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+      );
+      const centerX = (touch1.clientX + touch2.clientX) / 2;
+      const centerY = (touch1.clientY + touch2.clientY) / 2;
+      
+      setTouchState({
+        initialDistance: distance,
+        initialZoom: cam.zoom,
+        centerX,
+        centerY,
+        isPanning: false // Stop panning when pinching starts
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault(); // Prevent scrolling
+    
+    if (e.touches.length === 2 && touchState.initialDistance && touchState.initialZoom) {
+      // Pinch to zoom with proper distance tracking
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const currentDistance = Math.sqrt(
+        Math.pow(touch2.clientX - touch1.clientX, 2) +
+        Math.pow(touch2.clientY - touch1.clientY, 2)
+      );
+      
+      // Calculate zoom factor based on distance change
+      const zoomFactor = currentDistance / touchState.initialDistance;
+      const newZoom = clamp(touchState.initialZoom * zoomFactor, 0.1, 10);
+      
+      // Get center point for zooming
+      const centerX = (touch1.clientX + touch2.clientX) / 2;
+      const centerY = (touch1.clientY + touch2.clientY) / 2;
+      
+      // Convert to container coordinates and apply zoom
+      const rect = rootRef.current?.getBoundingClientRect();
+      if (rect) {
+        // Apply zoom with rect and factor (matching onPinch signature)
+        onPinch(rect, newZoom / cam.zoom);
+      }
+    } else if (e.touches.length === 1 && touchState.isPanning && touchState.lastX !== undefined && touchState.lastY !== undefined) {
+      // Single finger pan - calculate movement delta
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - touchState.lastX;
+      const deltaY = touch.clientY - touchState.lastY;
+      
+      // Apply pan movement via callback
+      onPanUpdate?.(deltaX, deltaY);
+      
+      // Update last position for next move
+      setTouchState(prev => ({
+        ...prev,
+        lastX: touch.clientX,
+        lastY: touch.clientY
+      }));
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length === 0) {
+      // Reset all touch state when no touches remain
+      setTouchState({});
+    } else if (e.touches.length < 2) {
+      // Reset pinch state but keep panning if one finger remains
+      setTouchState(prev => ({
+        isPanning: prev.isPanning,
+        lastX: prev.lastX,
+        lastY: prev.lastY
+      }));
+    }
+  };
+
   return (
     <div
       ref={rootRef}
       className={`relative w-full ${big ? "aspect-[16/9] md:aspect-[16/9]" : "aspect-[16/9]"} bg-black overflow-hidden`}
       onWheel={onWheel}
       onMouseDown={onDragStart}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       onDoubleClick={onDoubleClick}
       onMouseEnter={onHover}
       onContextMenu={(e) => e.preventDefault()}
@@ -3746,10 +3746,10 @@ function CamTile({
             transform={transform}
             brightness={brightness}
             contrast={contrast}
-            validationBoxes={inspectionMode === 'innovative' ? items[idx]?.validationBoxes?.[cam.name] || [] : []}
+            validationBoxes={items[idx]?.validationBoxes?.[cam.name] || []}
             validatedBoxIds={validatedBoxes[items[idx]?.id] || new Set()}
             onBoxClick={handleValidationBoxClick}
-            showValidationBoxes={inspectionMode === 'innovative'}
+            showValidationBoxes={true}
             cameraId={cam.id}
             isCreatingValidationBox={isCreatingValidationBox}
             validationBoxCreation={validationBoxCreation}
@@ -3771,41 +3771,6 @@ function CamTile({
         {cam.name}
       </div>
 
-      {/* Laptop mode zoom controls */}
-      {laptopMode && cam.src && (
-        <div className="absolute top-2 right-2 flex gap-1">
-          <button
-            className="bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold hover:bg-black/90 transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onZoomIn?.();
-            }}
-          >
-            🔍+
-          </button>
-          <button
-            className="bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold hover:bg-black/90 transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onZoomOut?.();
-            }}
-          >
-            🔍-
-          </button>
-          <button
-            className="bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold hover:bg-black/90 transition-colors"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onResetView?.();
-            }}
-          >
-            ↺
-          </button>
-        </div>
-      )}
       
       {cam.src && showLogs && (cam.zoom !== 1 || cam.pan.x !== 0 || cam.pan.y !== 0) && (
         <div className="absolute bottom-2 right-2">
@@ -4251,6 +4216,8 @@ function CanvasImage({
     // Draw validation boxes if in innovative mode
     if (showValidationBoxes && validationBoxes.length > 0) {
       validationBoxes.forEach(box => {
+        // Get bounding box for validation box
+        const boxBounds = { x: box.x, y: box.y, width: box.width, height: box.height };
         const isValidated = validatedBoxIds.has(box.id);
         
         // Calculate validation boxes to maintain baseline position but zoom/pan with transformed image center
@@ -4606,6 +4573,9 @@ function CanvasImage({
       
       // Check each validation box for clicks using the same coordinate system as visual rendering
       for (const box of validationBoxes) {
+        // Only process rectangle validation boxes for now (default to rectangle for backward compatibility)
+        if ((box as any).type && (box as any).type !== 'rectangle') continue;
+        
         let boxX, boxY, boxWidth, boxHeight;
         
         if (transform && (transform.x !== 0 || transform.y !== 0 || transform.scale !== 1)) {

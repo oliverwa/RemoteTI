@@ -1547,6 +1547,153 @@ echo "🎯 Test completed for \${CAMERA_NAME} using method \${METHOD}"
   });
 }
 
+// API endpoint to get overlay session groups from hangar snapshots
+app.get('/api/overlay-sessions', (req, res) => {
+  try {
+    const snapshotsDir = path.join(process.env.HOME, 'hangar_snapshots');
+    
+    if (!fs.existsSync(snapshotsDir)) {
+      return res.json({ sessionGroups: {} });
+    }
+    
+    const sessionGroups = {};
+    const hangarDirs = fs.readdirSync(snapshotsDir).filter(item => {
+      const itemPath = path.join(snapshotsDir, item);
+      return fs.statSync(itemPath).isDirectory();
+    });
+    
+    hangarDirs.forEach(hangarName => {
+      const hangarPath = path.join(snapshotsDir, hangarName);
+      const sessions = [];
+      
+      const sessionDirs = fs.readdirSync(hangarPath).filter(item => {
+        const itemPath = path.join(hangarPath, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+      
+      sessionDirs.forEach(sessionName => {
+        const sessionPath = path.join(hangarPath, sessionName);
+        
+        // Check if session has images
+        try {
+          const files = fs.readdirSync(sessionPath);
+          const imageFiles = files.filter(file => 
+            file.toLowerCase().endsWith('.jpg') || file.toLowerCase().endsWith('.jpeg')
+          );
+          
+          if (imageFiles.length > 0) {
+            sessions.push(sessionName);
+          }
+        } catch (error) {
+          log('warn', `Cannot read session directory ${sessionPath}:`, error.message);
+        }
+      });
+      
+      // Sort sessions by name (newest first, assuming timestamp format)
+      sessions.sort((a, b) => b.localeCompare(a));
+      
+      if (sessions.length > 0) {
+        sessionGroups[hangarName] = sessions;
+      }
+    });
+    
+    log('info', `Found overlay sessions across ${Object.keys(sessionGroups).length} hangars`);
+    res.json({ sessionGroups });
+    
+  } catch (error) {
+    log('error', 'Error getting overlay sessions:', error.message);
+    res.status(500).json({ error: 'Failed to get overlay sessions' });
+  }
+});
+
+// API endpoint to get images for selected sessions
+app.post('/api/overlay-images', (req, res) => {
+  try {
+    const { hangar, sessions } = req.body;
+    
+    if (!hangar || !Array.isArray(sessions) || sessions.length === 0) {
+      return res.status(400).json({ error: 'Missing hangar or sessions data' });
+    }
+    
+    const images = [];
+    const snapshotsDir = path.join(process.env.HOME, 'hangar_snapshots');
+    const hangarPath = path.join(snapshotsDir, hangar);
+    
+    if (!fs.existsSync(hangarPath)) {
+      return res.status(404).json({ error: `Hangar ${hangar} not found` });
+    }
+    
+    sessions.forEach(sessionName => {
+      const sessionPath = path.join(hangarPath, sessionName);
+      
+      if (fs.existsSync(sessionPath)) {
+        try {
+          const files = fs.readdirSync(sessionPath);
+          const imageFiles = files.filter(file => 
+            file.toLowerCase().endsWith('.jpg') || file.toLowerCase().endsWith('.jpeg')
+          );
+          
+          imageFiles.forEach(filename => {
+            const filePath = path.join(sessionPath, filename);
+            const stats = fs.statSync(filePath);
+            
+            // Extract camera ID from filename (e.g., "FDR_251124_104158.jpg" -> "FDR")
+            const cameraId = filename.split('_')[0];
+            
+            images.push({
+              path: filePath,
+              sessionName,
+              cameraId,
+              filename,
+              timestamp: stats.mtime.toISOString(),
+              hangar
+            });
+          });
+        } catch (error) {
+          log('warn', `Cannot read session ${sessionName}:`, error.message);
+        }
+      }
+    });
+    
+    // Sort images by timestamp
+    images.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    
+    log('info', `Found ${images.length} images across ${sessions.length} sessions for overlay analysis`);
+    res.json({ images });
+    
+  } catch (error) {
+    log('error', 'Error getting overlay images:', error.message);
+    res.status(500).json({ error: 'Failed to get overlay images' });
+  }
+});
+
+// API endpoint to serve images by full path for overlay analysis
+app.get('/api/image', (req, res) => {
+  try {
+    const imagePath = decodeURIComponent(req.query.path);
+    
+    log('info', 'Overlay image request', { imagePath });
+    
+    if (!fs.existsSync(imagePath)) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+    
+    // Security check: ensure path is within hangar_snapshots
+    const snapshotsDir = path.join(process.env.HOME, 'hangar_snapshots');
+    const resolvedPath = path.resolve(imagePath);
+    const resolvedSnapshotsDir = path.resolve(snapshotsDir);
+    
+    if (!resolvedPath.startsWith(resolvedSnapshotsDir)) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    res.sendFile(resolvedPath);
+  } catch (error) {
+    log('error', 'Overlay image serving error:', error.message);
+    res.status(500).json({ error: 'Failed to serve image' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   log('info', `Backend server started on port ${PORT}`);

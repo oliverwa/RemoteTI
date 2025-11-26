@@ -57,7 +57,6 @@
       "id": "remote_safety_overview",
       "title": "REMOTE INSPECTION: Ensure proper setup and safety protocols",
       "description": "Remote Safety Protocol - This remote inspection is critical for drone operations. Proper execution using the multi-camera system is essential.\n\nJust Culture - Report any visual abnormalities or safety concerns identified during remote inspection.\n\nAttention to Detail - Carefully examine each camera view and follow each task in the order presented.\n\nImage Quality - Ensure all camera feeds are clear and properly focused before beginning inspection.\n\nDocumentation - Record any abnormalities or safety concerns immediately in the system.",
-      "category": "safety",
       "order": 1,
       "required": true,
       "allowedStatuses": [
@@ -77,7 +76,6 @@
       "id": "parachute_yellow_lid",
       "title": "PARACHUTE SYSTEM: Verify yellow lid condition via cameras",
       "description": "Remotely inspect the yellow lid for structural integrity and proper fitting.\n\nVisually examine for cracks on the perimeter through available camera angles.\nEnsure the red rim is not visible on any side of the tube.\nVerify no parachute fabric is protruding outside the yellow lid.",
-      "category": "parachute",
       "order": 2,
       "required": true,
       "allowedStatuses": [
@@ -87,44 +85,44 @@
       ],
       "roi": {
         "RUR": {
-          "zoom": 4.967053731282553,
-          "panX": 953.6743164062501,
-          "panY": 29.802322387695316
+          "zoom": 4.9655172413793105,
+          "panX": 2120.2865636147453,
+          "panY": -155.8151307966704
         },
         "FUR": {
-          "zoom": 6.941431670281996,
-          "panX": 1956.4628436719195,
-          "panY": 1535.8038029182994
+          "zoom": 6.943942133815551,
+          "panX": 3981.3902141532803,
+          "panY": 3359.7718837575085
         },
         "FUL": {
-          "zoom": 6.941431670281996,
-          "panX": -1335.2122378494364,
-          "panY": 1563.7783246518384
+          "zoom": 6.943942133815551,
+          "panX": -2535.0411531380696,
+          "panY": 2964.0390352583913
         },
         "RUL": {
-          "zoom": 6.941431670281996,
-          "panX": -1658.3953585763293,
-          "panY": 412.7057561370408
+          "zoom": 6.943942133815551,
+          "panX": -3328.961018151853,
+          "panY": 1009.1187636727503
         },
         "RDR": {
-          "zoom": 6.941431670281996,
-          "panX": 972.0247881385859,
-          "panY": 1921.7072508912834
+          "zoom": 6.943942133815551,
+          "panX": 4327.256293961265,
+          "panY": 3652.6141916468573
         },
         "FDR": {
-          "zoom": 6.941431670281996,
-          "panX": 3531.0776817349815,
-          "panY": 1476.1812714978755
+          "zoom": 6.943942133815551,
+          "panX": 4012.8325850449137,
+          "panY": 2623.7087855491504
         },
         "FDL": {
-          "zoom": 6.941431670281996,
-          "panX": -2535.843516640709,
-          "panY": 1565.7533451596146
+          "zoom": 6.943942133815551,
+          "panX": -4445.165184804895,
+          "panY": 3367.6865407274913
         },
         "RDL": {
-          "zoom": 4.716544888503256,
-          "panX": -1196.4473271724798,
-          "panY": 937.3246579943898
+          "zoom": 4.716157205240175,
+          "panX": -3085.6681318052674,
+          "panY": 2464.3377498045425
         }
       },
       "validationBoxes": {
@@ -225,81 +223,81 @@
       "roiBoxes": {
         "RUR": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.5110555064971098,
-            "y": 0.40550123723722187,
-            "width": 0.20132659199999997,
-            "height": 0.20132659199999997,
+            "id": "roi-1764053317841",
+            "x": 0.5366753472222223,
+            "y": 0.38148148148148153,
+            "width": 0.2013888888888889,
+            "height": 0.2013888888888889,
             "label": "ROI for RUR"
           }
         ],
         "FUR": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.5453226156069364,
-            "y": 0.5906304994617654,
-            "width": 0.1440625,
-            "height": 0.1440625,
+            "id": "roi-1764053317841",
+            "x": 0.5598958333333334,
+            "y": 0.6245225694444444,
+            "width": 0.14401041666666667,
+            "height": 0.14401041666666667,
             "label": "ROI for FUR"
           }
         ],
         "FUL": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.34787915462427743,
-            "y": 0.5935933679198895,
-            "width": 0.1440625,
-            "height": 0.1440625,
+            "id": "roi-1764053317841",
+            "x": 0.34401041666666665,
+            "y": 0.6013744212962963,
+            "width": 0.14401041666666667,
+            "height": 0.14401041666666667,
             "label": "ROI for FUL"
           }
         ],
         "RUL": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.3284937680635838,
-            "y": 0.471679698090264,
-            "width": 0.1440625,
-            "height": 0.1440625,
+            "id": "roi-1764053317841",
+            "x": 0.3177083333333333,
+            "y": 0.48702256944444444,
+            "width": 0.14401041666666667,
+            "height": 0.14401041666666667,
             "label": "ROI for RUL"
           }
         ],
         "RDR": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.4862733923410406,
-            "y": 0.6315027318727905,
-            "width": 0.1440625,
-            "height": 0.1440625,
+            "id": "roi-1764053317841",
+            "x": 0.5713541666666667,
+            "y": 0.6416521990740741,
+            "width": 0.14401041666666667,
+            "height": 0.14401041666666667,
             "label": "ROI for RDR"
           }
         ],
         "FDR": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.6397722182080925,
-            "y": 0.5843156920301411,
-            "width": 0.1440625,
-            "height": 0.1440625,
+            "id": "roi-1764053317841",
+            "x": 0.5609375,
+            "y": 0.5814670138888889,
+            "width": 0.14401041666666667,
+            "height": 0.14401041666666667,
             "label": "ROI for FDR"
           }
         ],
         "FDL": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.2758620845375722,
-            "y": 0.5938025484743374,
-            "width": 0.1440625,
-            "height": 0.1440625,
+            "id": "roi-1764053317841",
+            "x": 0.28072916666666664,
+            "y": 0.6249855324074074,
+            "width": 0.14401041666666667,
+            "height": 0.14401041666666667,
             "label": "ROI for FDL"
           }
         ],
         "RDL": [
           {
-            "id": "roi-1763399859946",
-            "x": 0.23854777871364707,
-            "y": 0.6090156650488381,
-            "width": 0.2120196083445607,
-            "height": 0.2120196083445607,
+            "id": "roi-1764053317841",
+            "x": 0.17236689814814815,
+            "y": 0.7064814814814815,
+            "width": 0.21203703703703702,
+            "height": 0.21203703703703702,
             "label": "ROI for RDL"
           }
         ]
@@ -307,9 +305,9 @@
       "roiRectangles": {
         "RUR": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 1962,
-            "y": 876,
+            "id": "roi-rect-1764053317841",
+            "x": 2061,
+            "y": 824,
             "width": 773,
             "height": 435,
             "label": "ROI Rectangle for RUR"
@@ -317,9 +315,9 @@
         ],
         "FUR": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 2094,
-            "y": 1276,
+            "id": "roi-rect-1764053317841",
+            "x": 2150,
+            "y": 1349,
             "width": 553,
             "height": 311,
             "label": "ROI Rectangle for FUR"
@@ -327,9 +325,9 @@
         ],
         "FUL": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 1336,
-            "y": 1282,
+            "id": "roi-rect-1764053317841",
+            "x": 1321,
+            "y": 1299,
             "width": 553,
             "height": 311,
             "label": "ROI Rectangle for FUL"
@@ -337,9 +335,9 @@
         ],
         "RUL": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 1261,
-            "y": 1019,
+            "id": "roi-rect-1764053317841",
+            "x": 1220,
+            "y": 1052,
             "width": 553,
             "height": 311,
             "label": "ROI Rectangle for RUL"
@@ -347,9 +345,9 @@
         ],
         "RDR": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 1867,
-            "y": 1364,
+            "id": "roi-rect-1764053317841",
+            "x": 2194,
+            "y": 1386,
             "width": 553,
             "height": 311,
             "label": "ROI Rectangle for RDR"
@@ -357,9 +355,9 @@
         ],
         "FDR": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 2457,
-            "y": 1262,
+            "id": "roi-rect-1764053317841",
+            "x": 2154,
+            "y": 1256,
             "width": 553,
             "height": 311,
             "label": "ROI Rectangle for FDR"
@@ -367,9 +365,9 @@
         ],
         "FDL": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 1059,
-            "y": 1283,
+            "id": "roi-rect-1764053317841",
+            "x": 1078,
+            "y": 1350,
             "width": 553,
             "height": 311,
             "label": "ROI Rectangle for FDL"
@@ -377,9 +375,9 @@
         ],
         "RDL": [
           {
-            "id": "roi-rect-1763399859946",
-            "x": 916,
-            "y": 1315,
+            "id": "roi-rect-1764053317841",
+            "x": 662,
+            "y": 1526,
             "width": 814,
             "height": 458,
             "label": "ROI Rectangle for RDL"
@@ -391,7 +389,6 @@
       "id": "parachute_tube_mount",
       "title": "PARACHUTE SYSTEM: Verify tube mounting through visual inspection",
       "description": "Remotely check that the parachute tube is securely mounted on the drone.\n\nInspect for any structural damage to the tube.\nVerify mounting points appear secure and undamaged.",
-      "category": "parachute",
       "order": 3,
       "required": true,
       "allowedStatuses": [
@@ -402,13 +399,33 @@
       "roi": {
         "RUR": {
           "zoom": 3.3113691541883683,
-          "panX": 441.0743713378906,
-          "panY": -154.7733942667643
+          "panX": 927.8456370035808,
+          "panY": -388.2249196370443
         },
         "RUL": {
           "zoom": 3.5930654884856428,
-          "panX": -480.8987594313092,
-          "panY": -38.6843802752318
+          "panX": -480.8987594313094,
+          "panY": -38.684380275231774
+        },
+        "RDR": {
+          "zoom": 7.450580596923828,
+          "panX": 3788.6202335357666,
+          "panY": -245.86915969848633
+        },
+        "FDR": {
+          "zoom": 9.313225746154785,
+          "panX": 6929.03995513916,
+          "panY": -2011.6567611694336
+        },
+        "FDL": {
+          "zoom": 10,
+          "panX": -8730,
+          "panY": -795
+        },
+        "RDL": {
+          "zoom": 9.313225746154785,
+          "panX": -9946.52509689331,
+          "panY": 2458.6915969848633
         }
       },
       "instructions": [
@@ -487,9 +504,9 @@
       "roiBoxes": {
         "RUR": [
           {
-            "id": "roi-1763460436588",
-            "x": 0.4652624348485549,
-            "y": 0.27697248512306194,
+            "id": "roi-1764053348769",
+            "x": 0.484176887657508,
+            "y": 0.24914436911869556,
             "width": 0.301989888,
             "height": 0.301989888,
             "label": "ROI for RUR"
@@ -497,21 +514,61 @@
         ],
         "RUL": [
           {
-            "id": "roi-1763460436588",
-            "x": 0.25318481552056277,
-            "y": 0.34555145062893994,
+            "id": "roi-1764053348769",
+            "x": 0.3013386627169372,
+            "y": 0.3523916000782238,
             "width": 0.2783138807808,
             "height": 0.2783138807808,
             "label": "ROI for RUL"
+          }
+        ],
+        "RDR": [
+          {
+            "id": "roi-1764053348769",
+            "x": 0.5419162393354632,
+            "y": 0.4203986129055573,
+            "width": 0.134217728,
+            "height": 0.134217728,
+            "label": "ROI for RDR"
+          }
+        ],
+        "FDR": [
+          {
+            "id": "roi-1764053348769",
+            "x": 0.573926953058147,
+            "y": 0.3808975151418272,
+            "width": 0.1073741824,
+            "height": 0.1073741824,
+            "label": "ROI for FDR"
+          }
+        ],
+        "FDL": [
+          {
+            "id": "roi-1764053348769",
+            "x": 0.31054313099041536,
+            "y": 0.4275770129126085,
+            "width": 0.1,
+            "height": 0.1,
+            "label": "ROI for FDL"
+          }
+        ],
+        "RDL": [
+          {
+            "id": "roi-1764053348769",
+            "x": 0.26312500655846643,
+            "y": 0.5262650566044335,
+            "width": 0.1073741824,
+            "height": 0.1073741824,
+            "label": "ROI for RDL"
           }
         ]
       },
       "roiRectangles": {
         "RUR": [
           {
-            "id": "roi-rect-1763460436588",
-            "x": 1787,
-            "y": 598,
+            "id": "roi-rect-1764053348769",
+            "x": 1859,
+            "y": 538,
             "width": 1160,
             "height": 652,
             "label": "ROI Rectangle for RUR"
@@ -519,12 +576,52 @@
         ],
         "RUL": [
           {
-            "id": "roi-rect-1763460436588",
-            "x": 972,
-            "y": 746,
+            "id": "roi-rect-1764053348769",
+            "x": 1157,
+            "y": 761,
             "width": 1069,
             "height": 601,
             "label": "ROI Rectangle for RUL"
+          }
+        ],
+        "RDR": [
+          {
+            "id": "roi-rect-1764053348769",
+            "x": 2081,
+            "y": 908,
+            "width": 515,
+            "height": 290,
+            "label": "ROI Rectangle for RDR"
+          }
+        ],
+        "FDR": [
+          {
+            "id": "roi-rect-1764053348769",
+            "x": 2204,
+            "y": 823,
+            "width": 412,
+            "height": 232,
+            "label": "ROI Rectangle for FDR"
+          }
+        ],
+        "FDL": [
+          {
+            "id": "roi-rect-1764053348769",
+            "x": 1192,
+            "y": 924,
+            "width": 384,
+            "height": 216,
+            "label": "ROI Rectangle for FDL"
+          }
+        ],
+        "RDL": [
+          {
+            "id": "roi-rect-1764053348769",
+            "x": 1010,
+            "y": 1137,
+            "width": 412,
+            "height": 232,
+            "label": "ROI Rectangle for RDL"
           }
         ]
       }
@@ -533,7 +630,6 @@
       "id": "motor_arms_inspection",
       "title": "DRONE STRUCTURE: Verify motor arms condition",
       "description": "Remotely inspect motor arms for structural integrity and proper attachment.\n\nExamine each motor arm for visual damage, cracks, or deformation.\nVerify arms appear properly aligned and securely attached to the core.\nLook for any signs of stress or fatigue in the arm structure.",
-      "category": "structure",
       "order": 4,
       "required": true,
       "allowedStatuses": [
@@ -599,7 +695,6 @@
       "id": "drone_core_inspection",
       "title": "DRONE STRUCTURE: Verify core structural integrity",
       "description": "Remotely inspect the drone core for visual damage.\n\nExamine the drone core for any visible cracks or structural damage.\nLook for signs of stress, impact damage, or material fatigue.\nVerify the core appears structurally sound from all visible angles.",
-      "category": "structure",
       "order": 5,
       "required": true,
       "allowedStatuses": [
@@ -665,7 +760,6 @@
       "id": "landing_gear_inspection",
       "title": "DRONE STRUCTURE: Verify landing gear condition",
       "description": "Remotely inspect landing gear for structural soundness and proper attachment.\n\nExamine landing gear for cracks, damage, or deformation.\nVerify secure connection to the drone body.\nLook for signs of wear or stress on the landing gear structure.",
-      "category": "structure",
       "order": 6,
       "required": true,
       "allowedStatuses": [
@@ -731,7 +825,6 @@
       "id": "downlights_inspection",
       "title": "DRONE STRUCTURE: Verify downlights mounting and condition",
       "description": "Remotely inspect downlights on rear arms for proper mounting.\n\nConfirm downlights are securely attached to the rear arms.\nVerify they are not lit during inspection.\nLook for any damage to the light housing or mounting.",
-      "category": "structure",
       "order": 7,
       "required": true,
       "allowedStatuses": [
@@ -797,7 +890,6 @@
       "id": "wasp_attachment",
       "title": "DRONE STRUCTURE: Verify WASP secure attachment",
       "description": "Remotely inspect WASP attachment to drone bottom.\n\nExamine the four mounting points for visible damage or missing components.\nInspect carbon fiber sides for cracks or damage.\nVerify WASP appears securely attached to the drone core.",
-      "category": "structure",
       "order": 8,
       "required": true,
       "allowedStatuses": [
@@ -863,7 +955,6 @@
       "id": "propellers_inspection",
       "title": "PROPULSION SYSTEM: Verify propeller condition and cleanliness",
       "description": "Remotely inspect all 8 propellers for damage and cleanliness.\n\nExamine each propeller for cracks, chips, or structural damage.\nVerify propellers appear clean and free of debris.\nInspect leading and trailing edges for damage.\nConfirm all propellers are properly unfolded.",
-      "category": "propulsion",
       "order": 9,
       "required": true,
       "allowedStatuses": [
@@ -1004,7 +1095,6 @@
       "id": "motors_visual_inspection",
       "title": "PROPULSION SYSTEM: Verify motor visual condition",
       "description": "Remotely inspect motors for visible damage.\n\nExamine motor housings for cracks or damage.\nVerify motors appear properly mounted.\nLook for any signs of overheating or unusual wear.",
-      "category": "propulsion",
       "order": 10,
       "required": true,
       "allowedStatuses": [
@@ -1142,7 +1232,6 @@
       "id": "cables_connectors_inspection",
       "title": "PERIPHERALS: Verify exposed cables and connectors",
       "description": "Remotely inspect visible cables and connectors for damage.\n\nExamine exposed cables for damaged outer shielding.\nLook for any exposed conductive material.\nVerify connectors appear secure and undamaged.",
-      "category": "electrical",
       "order": 11,
       "required": true,
       "allowedStatuses": [
@@ -1175,7 +1264,6 @@
       "id": "antennas_4g_inspection",
       "title": "PERIPHERALS: Verify 4G antenna mounting and orientation",
       "description": "Remotely inspect 4G antennas on the WASP for proper mounting.\n\nConfirm antennas are firmly mounted.\nVerify antenna orientation: two pointing to sides, two pointing down.\nLook for any damage to antenna elements.",
-      "category": "electrical",
       "order": 12,
       "required": true,
       "allowedStatuses": [
@@ -1242,7 +1330,6 @@
       "id": "realsense_lenses_inspection",
       "title": "PERIPHERALS: Verify RealSense camera lens condition",
       "description": "Remotely inspect RealSense camera lenses for cleanliness and damage.\n\nExamine front and downward camera lenses through available views.\nLook for dirt, fingerprints, or physical damage.\nVerify lenses appear clear and unobstructed.",
-      "category": "sensors",
       "order": 13,
       "required": true,
       "allowedStatuses": [
@@ -1309,7 +1396,6 @@
       "id": "rangefinder_inspection",
       "title": "PERIPHERALS: Verify Rangefinder condition",
       "description": "Remotely inspect the Rangefinder lens for cleanliness and damage.\n\nExamine the rangefinder lens through available camera views.\nLook for dirt, scratches, or damage that could affect operation.\nVerify the sensor appears properly mounted.",
-      "category": "sensors",
       "order": 14,
       "required": true,
       "allowedStatuses": [
@@ -1342,7 +1428,6 @@
       "id": "opticalflow_inspection",
       "title": "PERIPHERALS: Verify OpticalFlow module condition",
       "description": "Remotely inspect the OpticalFlow module for damage and obstruction.\n\nExamine the OpticalFlow module housing.\nVerify no visible damage to the sensor.\nLook for obstructions that might affect sensor operation.",
-      "category": "sensors",
       "order": 15,
       "required": true,
       "allowedStatuses": [
@@ -1375,7 +1460,6 @@
       "id": "drone_markings_inspection",
       "title": "MARKING: Verify drone identification markings",
       "description": "Remotely verify drone markings and identification are visible and correct.\n\nLook for permit number markings on rear arms (starting with 'SWEbne...').\nVerify Onyx name and airframeID are visible.\nCheck for public instruction markings between middle and rear arms.",
-      "category": "documentation",
       "order": 16,
       "required": true,
       "allowedStatuses": [
@@ -1463,7 +1547,6 @@
       "id": "aed_visual_inspection",
       "title": "AED: Visual inspection of AED device and markings",
       "description": "Remotely inspect the AED device for visible damage and proper markings.\n\nExamine AED housing for physical damage.\nLook for yellow sticker with power-off instructions.\nVerify AED appears securely mounted.",
-      "category": "aed",
       "order": 17,
       "required": true,
       "allowedStatuses": [
@@ -1552,7 +1635,6 @@
       "id": "winch_spool_inspection",
       "title": "WINCH: Verify winch spool and line condition",
       "description": "Remotely inspect winch spool and line for proper condition.\n\nExamine spool for proper line winding.\nLook for any visible damage to the winch mechanism.\nVerify locking pin appears properly seated.\nCheck line condition where visible.",
-      "category": "winch",
       "order": 18,
       "required": true,
       "allowedStatuses": [
@@ -1628,7 +1710,6 @@
       "id": "parachute_line_inspection",
       "title": "PARACHUTE SYSTEM: Verify parachute line and collector",
       "description": "Remotely inspect parachute line and line collector.\n\nExamine line collector for integrity.\nLook for retaining pins in proper position.\nVerify line appears structurally sound where visible.\nCheck that line is properly retained in lid locks.",
-      "category": "parachute",
       "order": 19,
       "required": true,
       "allowedStatuses": [
@@ -1691,7 +1772,6 @@
       "id": "propellers_deployment",
       "title": "PROPULSION SYSTEM: Verify complete propeller deployment",
       "description": "Remotely verify all propellers are completely unfolded.\n\nExamine each propeller to confirm full deployment.\nLook for any propellers that appear partially folded.\nVerify all propeller positions appear correct for flight readiness.",
-      "category": "propulsion",
       "order": 20,
       "required": true,
       "allowedStatuses": [
@@ -1725,7 +1805,6 @@
       "id": "drone_lid_closure",
       "title": "DRONE STRUCTURE: Verify battery compartment lid closure",
       "description": "Remotely verify the drone lid is completely closed and secured.\n\nExamine the lid closure from available camera angles.\nLook for any gaps or improper seating.\nVerify all visible locks appear properly engaged.",
-      "category": "structure",
       "order": 21,
       "required": true,
       "allowedStatuses": [
@@ -1806,7 +1885,6 @@
       "id": "ethernet_port_cap",
       "title": "SYSTEM: Verify Ethernet port cap is secure",
       "description": "Remotely verify the Ethernet port cap is properly secured.\n\nLook for the Ethernet port on the side of the WASP.\nVerify the safety cap is in place and appears secure.\nCheck that the cap shows no signs of damage or loose fitting.",
-      "category": "system",
       "order": 22,
       "required": true,
       "allowedStatuses": [
@@ -1851,7 +1929,6 @@
       "id": "drone_alignment",
       "title": "INSTRUCTION: Verify drone alignment and positioning",
       "description": "Remotely verify the drone is properly aligned and positioned.\n\nCheck that the drone appears properly aligned over navigation markers.\nVerify the front camera faces the correct direction.\nConfirm landing gear and body alignment appears correct.\nLook for any obvious misalignment issues.",
-      "category": "positioning",
       "order": 23,
       "required": true,
       "allowedStatuses": [
@@ -1896,7 +1973,6 @@
       "id": "umbilical_connection",
       "title": "POWER SYSTEM: Verify umbilical connection integrity",
       "description": "Remotely inspect umbilical connection and contact surfaces.\n\nExamine the umbilical connector for proper seating.\nLook for any visible damage to contact surfaces.\nVerify connection appears secure and properly aligned.",
-      "category": "electrical",
       "order": 24,
       "required": true,
       "allowedStatuses": [
@@ -1963,7 +2039,6 @@
       "id": "aed_alarm_pin",
       "title": "AED: Verify AED alarm pin insertion",
       "description": "Remotely verify the AED alarm pin is properly inserted.\n\nLook for the AED alarm pin through available camera views.\nVerify the pin appears fully inserted and secure.\nCheck that the alarm activation mechanism is properly engaged.",
-      "category": "aed",
       "order": 25,
       "required": true,
       "allowedStatuses": [
@@ -2008,7 +2083,6 @@
       "id": "final_visual_check",
       "title": "INSTRUCTION: Final comprehensive visual inspection",
       "description": "Perform a final comprehensive visual inspection of the entire drone.\n\nConduct a systematic visual sweep of all visible components.\nLook for any previously missed damage or abnormalities.\nVerify overall readiness and completeness of inspection.\nConfirm all critical systems appear operational from visual assessment.",
-      "category": "final_check",
       "order": 26,
       "required": true,
       "allowedStatuses": [
@@ -2028,7 +2102,6 @@
       "id": "documentation_completion",
       "title": "DOCUMENTATION: Complete inspection documentation",
       "description": "Complete and finalize all inspection documentation.\n\nRecord any abnormalities or concerns identified during remote inspection.\nDocument inspection completion with timestamp and operator details.\nNote any items requiring follow-up or on-site verification.\nComplete adverse events form if any abnormalities were found.",
-      "category": "documentation",
       "order": 27,
       "required": true,
       "allowedStatuses": [
@@ -2043,68 +2116,6 @@
         "Submit adverse events if needed"
       ],
       "roiBoxes": {}
-    }
-  ],
-  "categories": [
-    {
-      "id": "safety",
-      "name": "Safety & Setup",
-      "color": "#dc2626"
-    },
-    {
-      "id": "structure",
-      "name": "Structural Inspection",
-      "color": "#2563eb"
-    },
-    {
-      "id": "propulsion",
-      "name": "Propulsion System",
-      "color": "#16a34a"
-    },
-    {
-      "id": "electrical",
-      "name": "Electrical Systems",
-      "color": "#9333ea"
-    },
-    {
-      "id": "sensors",
-      "name": "Sensors & Cameras",
-      "color": "#ea580c"
-    },
-    {
-      "id": "parachute",
-      "name": "Parachute System",
-      "color": "#dc2626"
-    },
-    {
-      "id": "aed",
-      "name": "AED System",
-      "color": "#b91c1c"
-    },
-    {
-      "id": "winch",
-      "name": "Winch System",
-      "color": "#059669"
-    },
-    {
-      "id": "system",
-      "name": "System Components",
-      "color": "#7c3aed"
-    },
-    {
-      "id": "positioning",
-      "name": "Positioning & Alignment",
-      "color": "#0891b2"
-    },
-    {
-      "id": "final_check",
-      "name": "Final Verification",
-      "color": "#65a30d"
-    },
-    {
-      "id": "documentation",
-      "name": "Documentation",
-      "color": "#ea580c"
     }
   ],
   "settings": {
