@@ -2134,28 +2134,28 @@ export default function MultiCamInspector() {
     }
   }, [idx, applyTaskPresets, items, addLog]);
 
+  // --- Auto-open snapshot modal on initial load ---
+  useEffect(() => {
+    // Only auto-open if no images are loaded and modal isn't already shown
+    const hasImages = cams.some(cam => cam.src && cam.src !== "");
+    if (!hasImages && !showSnapshotModal && !isCapturing && !isWaitingToDisplay) {
+      // Small delay to ensure component is fully mounted
+      const timer = setTimeout(() => {
+        addLog("🎬 Opening snapshot configuration automatically...");
+        setSnapshotHangar(HANGARS[0].id);
+        setSnapshotDrone("");
+        setShowSnapshotModal(true);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showSnapshotModal, isCapturing, isWaitingToDisplay, cams, addLog]);
+
   // --- Render ---
   return (
     <div className="w-full h-full p-3 space-y-3 bg-white text-black">
       {/* Header – main controls */}
       <div className="flex flex-wrap items-center gap-3">
-        <Button 
-          onClick={snapshotAll} 
-          disabled={isCapturing || isWaitingToDisplay}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 font-semibold"
-        >
-          {isWaitingToDisplay ? "PREPARING..." : (isCapturing ? "CAPTURING..." : "📸 SNAPSHOT")}
-        </Button>
-
-
-        {/* Current Session - Inline and Subtle */}
-        {currentSession && (
-          <div className="text-xs text-gray-500 font-medium">
-            📂 {currentSession.name} <span className="text-gray-400">({currentSession.hangar})</span>
-          </div>
-        )}
-
-        
         {showLogs && (
           <>
             <Button 
@@ -2362,7 +2362,7 @@ export default function MultiCamInspector() {
 
       {/* Grid 4×2 */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3">
           {cams.map((cam) => {
             // Get current hangar (use current session hangar or default to first)
             const currentHangarId = currentSession?.hangar || HANGARS[0].id;
@@ -2621,6 +2621,15 @@ export default function MultiCamInspector() {
 
       {/* Image Enhancement Controls and Help - Below Inspection Task */}
       <div className="bg-gray-50 p-4 rounded-lg">
+        {/* Current Session Info */}
+        {currentSession && (
+          <div className="flex justify-center mb-3">
+            <div className="text-xs text-gray-500 font-medium">
+              📂 {currentSession.name} <span className="text-gray-400">({currentSession.hangar})</span>
+            </div>
+          </div>
+        )}
+        
         {/* Centered brightness and contrast controls */}
         <div className="flex items-center justify-center gap-6 text-sm">
           <div className="flex items-center gap-2">
@@ -3436,9 +3445,9 @@ export default function MultiCamInspector() {
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Images Required</h3>
               <p className="text-gray-600 mb-6">
                 You need to capture camera images before you can mark this task as pass or fail. 
-                Please take a snapshot first to inspect the drone.
+                The snapshot configuration will open automatically.
               </p>
-              <div className="flex gap-3 justify-center">
+              <div className="flex justify-center">
                 <Button
                   onClick={() => {
                     setShowNoImagesModal(false);
@@ -3446,13 +3455,7 @@ export default function MultiCamInspector() {
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
-                  Take Snapshot
-                </Button>
-                <Button
-                  onClick={() => setShowNoImagesModal(false)}
-                  variant="outline"
-                >
-                  Cancel
+                  Open Snapshot Config
                 </Button>
               </div>
             </div>
