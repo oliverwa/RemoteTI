@@ -534,21 +534,18 @@ app.post('/api/update-roi', (req, res) => {
       return res.status(404).json({ error: `Task ${taskId} not found` });
     }
     
-    // Update ROI data for the task
-    if (roi) {
-      jsonData.tasks[taskIndex].roi = roi; // Legacy format
-    }
+    // Update ROI data for the task (simplified to roiBoxes only)
     if (roiBoxes) {
-      jsonData.tasks[taskIndex].roiBoxes = roiBoxes; // Relative coordinate format
-    }
-    if (roiRectangles) {
-      jsonData.tasks[taskIndex].roiRectangles = roiRectangles; // Pixel coordinate format (NEW!)
+      jsonData.tasks[taskIndex].roiBoxes = roiBoxes; // Only format we need
+      // Remove legacy formats to avoid conflicts
+      delete jsonData.tasks[taskIndex].roi;
+      delete jsonData.tasks[taskIndex].roiRectangles;
     }
     
     // Write back to file
     fs.writeFileSync(jsonPath, JSON.stringify(jsonData, null, 2));
     
-    log('info', `ROI updated for task ${taskId}`, { roi, roiBoxes, roiRectangles });
+    log('info', `ROI updated for task ${taskId}`, { roiBoxes });
     
     res.json({ success: true, message: `ROI updated for task ${taskId}` });
     

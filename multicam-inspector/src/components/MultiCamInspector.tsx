@@ -5,7 +5,7 @@ import inspectionData from '../data/drone-remote-inspection.json';
 import jsPDF from 'jspdf';
 
 // ---------------------------------------------------------
-// Hangar MultiCam Inspector – 4×2 Grid + TI Checklist + ROI Presets (v8.6)
+// Hangar MultiCam Inspector – 4×2 Grid + TI Checklist (v8.6)
 // ---------------------------------------------------------
 // • 4×2 grid layout
 // • Zoom-to-center (scroll/pinch), pan on drag, dblclick reset
@@ -14,12 +14,7 @@ import jsPDF from 'jspdf';
 // • TI checklist BELOW cameras (original wording, left-aligned)
 //   Timeline with 27 dots (centered), active highlighted, clickable jump
 //   Pass/Fail big buttons, N/A radio; Pass/Fail auto-advance with slide-up
-// • ROI presets per task & camera
-//   - R = record ROI (hovered camera → current task)
-//   - G = apply ROI for current task (manual, ignores Auto ROI toggle)
-//   - Button: SAVE ZOOM/PAN FOR TASK (saves all 8 cams to the current task)
-// • Auto ROI toggle next to layout (decide if presets should auto-apply on task change)
-// • ROI persistence in localStorage (defaults applied once on load)
+// • Manual zoom/pan controls for each camera view
 // ---------------------------------------------------------
 
 // --- Consts & utils ---
@@ -89,25 +84,6 @@ interface ValidationBox {
   validated?: boolean;
 }
 
-// --- ROI Box Type (New relative coordinate system) ---
-interface ROIBox {
-  id: string;
-  x: number;        // 0-1, left edge of ROI relative to image
-  y: number;        // 0-1, top edge of ROI relative to image
-  width: number;    // 0-1, width relative to image
-  height: number;   // 0-1, height relative to image
-  label?: string;   // Optional label for the ROI
-}
-
-// --- ROI Rectangle Type (Pixel coordinate system like validation boxes) ---
-interface ROIRectangle {
-  id: string;
-  x: number;        // pixel X coordinate (left edge)
-  y: number;        // pixel Y coordinate (top edge)  
-  width: number;    // pixel width
-  height: number;   // pixel height
-  label?: string;   // Optional label for the ROI
-}
 
 // --- TI Checklist items ---
 interface TIItem {
@@ -121,9 +97,6 @@ interface TIItem {
   note?: string;
   comment?: string;
   completedAt?: string;
-  roi?: Partial<Record<string, { zoom: number; panX: number; panY: number }>>; // Legacy ROI system
-  roiBoxes?: Partial<Record<string, ROIBox[]>>; // New ROI system
-  roiRectangles?: Partial<Record<string, ROIRectangle[]>>; // Rectangle ROI system (pixel coordinates)
   validationBoxes?: Partial<Record<string, ValidationBox[]>>;
   instructions?: string[];
   // camera-id → transform (legacy support)
@@ -149,7 +122,6 @@ const TI_ITEMS: TIItem[] = inspectionData.tasks.map(task => ({
   required: task.required,
   allowedStatuses: task.allowedStatuses,
   status: undefined,
-  roi: task.roi,
   validationBoxes: (task as any).validationBoxes,
   instructions: task.instructions
 }));
@@ -316,8 +288,6 @@ export default function MultiCamInspector() {
   
   // Using innovative mode only
   
-  // Laptop mode toggle for zoom buttons
-  const [laptopMode, setLaptopMode] = useState(false);
   
   // Validation box tracking for innovative mode
   const [validatedBoxes, setValidatedBoxes] = useState<Record<string, Set<string>>>({}); // taskId -> Set of validated box IDs
@@ -347,6 +317,9 @@ export default function MultiCamInspector() {
   const [idx, setIdx] = useState(0); // current
   const [leaving, setLeaving] = useState(false);
   const didInitialApply = useRef(false);
+
+  // --- Layout preference state ---
+  const [useOneColumn, setUseOneColumn] = useState(false); // For iPad: false = 2 columns, true = 1 column
 
   // Handle validation box clicks (moved after state declarations)  
   const lastClickRef = useRef<{ boxId: string; timestamp: number } | null>(null);
@@ -551,173 +524,15 @@ export default function MultiCamInspector() {
   const resetView = useCallback((id: number) =>
     setCams((prev) => prev.map((c) => (c.id === id ? { ...c, zoom: 1, pan: { x: 0, y: 0 } } : c))), []);
   
-  // --- ROI helpers ---
-  const applyTaskPresets = useCallback((taskIndex: number, animated = true) => {
-    if (!animated) {
-      // Immediate application (for initial load)
-      setCams((prev) =>
-        prev.map((c) => {
-          const task = items[taskIndex];
-          
-          // Try new ROI rectangles format first (pixel coordinates - easiest to use!)
-          if (task?.roiRectangles?.[c.name]?.[0]) {
-            const roiRect = task.roiRectangles[c.name]![0];
-            const containerElement = document.querySelector(`[data-camera-id="${c.id}"]`) as HTMLElement;
-            if (containerElement) {
-              const containerRect = containerElement.getBoundingClientRect();
-              if (containerRect.width > 0 && containerRect.height > 0) {
-                // Get image dimensions
-                let imageWidth = 3840;
-                let imageHeight = 2160;
-                const imageElements = document.querySelectorAll('img');
-                for (let i = 0; i < imageElements.length; i++) {
-                  const img = imageElements[i];
-                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                    imageWidth = img.naturalWidth;
-                    imageHeight = img.naturalHeight;
-                    break;
-                  }
-                }
-                const viewport = roiRectangleToViewport(roiRect, containerRect, imageWidth, imageHeight);
-                return { ...c, zoom: viewport.zoom, pan: viewport.pan };
-              }
-            }
-          }
-          
-          // Try ROI boxes format second (relative coordinates)
-          if (task?.roiBoxes?.[c.name]?.[0]) {
-            const roiBox = task.roiBoxes[c.name]![0];
-            const containerElement = document.querySelector(`[data-camera-id="${c.id}"]`) as HTMLElement;
-            if (containerElement) {
-              const containerRect = containerElement.getBoundingClientRect();
-              if (containerRect.width > 0 && containerRect.height > 0) {
-                const viewport = roiBoxToViewport(roiBox, containerRect);
-                return { ...c, zoom: viewport.zoom, pan: viewport.pan };
-              }
-            }
-          }
-          
-          // Try legacy ROI format third
-          if (task?.roi?.[c.name]) {
-            const roi = task.roi[c.name]!;
-            return { ...c, zoom: roi.zoom, pan: { x: roi.panX, y: roi.panY } };
-          }
-          
-          // Fallback to legacy presets format
-          const p = task?.presets?.[c.id];
-          if (p) {
-            return { ...c, zoom: p.zoom, pan: { ...p.pan } };
-          }
-          
-          // Default reset view
-          return { ...c, zoom: 1, pan: { x: 0, y: 0 } };
-        })
-      );
-      return;
-    }
-
-    // Get current state for animation start points
-    setCams((prevCams) => {
-      // Calculate target positions for each camera
-      const animationTargets = prevCams.map((c) => {
-        const task = items[taskIndex];
-        let targetZoom = 1;
-        let targetPan = { x: 0, y: 0 };
-        
-        // Determine target values
-        // Try new ROI rectangles format first (pixel coordinates)
-        if (task?.roiRectangles?.[c.name]?.[0]) {
-          const roiRect = task.roiRectangles[c.name]![0];
-          const containerElement = document.querySelector(`[data-camera-id="${c.id}"]`) as HTMLElement;
-          if (containerElement) {
-            const containerRect = containerElement.getBoundingClientRect();
-            if (containerRect.width > 0 && containerRect.height > 0) {
-              // Get image dimensions
-              let imageWidth = 3840;
-              let imageHeight = 2160;
-              const imageElements = document.querySelectorAll('img');
-              for (let i = 0; i < imageElements.length; i++) {
-                const img = imageElements[i];
-                if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                  imageWidth = img.naturalWidth;
-                  imageHeight = img.naturalHeight;
-                  break;
-                }
-              }
-              const viewport = roiRectangleToViewport(roiRect, containerRect, imageWidth, imageHeight);
-              targetZoom = viewport.zoom;
-              targetPan = viewport.pan;
-            }
-          }
-        } else if (task?.roiBoxes?.[c.name]?.[0]) {
-          const roiBox = task.roiBoxes[c.name]![0];
-          const containerElement = document.querySelector(`[data-camera-id="${c.id}"]`) as HTMLElement;
-          if (containerElement) {
-            const containerRect = containerElement.getBoundingClientRect();
-            if (containerRect.width > 0 && containerRect.height > 0) {
-              const viewport = roiBoxToViewport(roiBox, containerRect);
-              targetZoom = viewport.zoom;
-              targetPan = viewport.pan;
-            }
-          }
-        } else if (task?.roi?.[c.name]) {
-          const roi = task.roi[c.name]!;
-          targetZoom = roi.zoom;
-          targetPan = { x: roi.panX, y: roi.panY };
-        } else if (task?.presets?.[c.id]) {
-          const p = task.presets[c.id];
-          targetZoom = p.zoom;
-          targetPan = { ...p.pan };
-        }
-
-        return {
-          camId: c.id,
-          startZoom: c.zoom,
-          startPan: { ...c.pan },
-          targetZoom,
-          targetPan
-        };
-      });
-
-      // Start animation
-      const duration = 800; // milliseconds
-      const startTime = Date.now();
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function (ease-out)
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        setCams((currentCams) =>
-          currentCams.map((c) => {
-            const target = animationTargets.find(t => t.camId === c.id);
-            if (!target) return c;
-            
-            const newZoom = target.startZoom + (target.targetZoom - target.startZoom) * easeOut;
-            const newPan = {
-              x: target.startPan.x + (target.targetPan.x - target.startPan.x) * easeOut,
-              y: target.startPan.y + (target.targetPan.y - target.startPan.y) * easeOut
-            };
-            
-            return { ...c, zoom: newZoom, pan: newPan };
-          })
-        );
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-      
-      requestAnimationFrame(animate);
-      return prevCams; // Keep current state for smooth start
-    });
-  }, [items]);
 
   const resetAll = () => setCams((prev) => prev.map((c) => ({ ...c, zoom: 1, pan: { x: 0, y: 0 } })));
 
-  // --- Hotkeys: fullscreen + ROI calibration --- (moved after selectStatus definition)
+  // --- Layout helpers ---
+  const isIPad = () => {
+    return /iPad|Android|Touch/i.test(navigator.userAgent) && window.innerWidth >= 768 && window.innerWidth < 1024;
+  };
+
+  // --- Hotkeys: fullscreen --- (moved after selectStatus definition)
 
   const onDropFile = async (id: number, file?: File) => {
     if (!file) return;
@@ -1644,7 +1459,7 @@ export default function MultiCamInspector() {
     }
   };
 
-  // --- Hotkeys: fullscreen + ROI calibration ---
+  // --- Hotkeys: fullscreen ---
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = e.key?.toLowerCase?.();
@@ -1689,10 +1504,6 @@ export default function MultiCamInspector() {
       } else if (k === "r") {
         // R = Reset all cameras (same as Reset All button)
         resetAll();
-      } else if (k === "l") {
-        // L = Toggle laptop mode (zoom buttons)
-        setLaptopMode(!laptopMode);
-        addLog(`💻 Laptop mode ${!laptopMode ? 'enabled' : 'disabled'} - zoom buttons ${!laptopMode ? 'shown' : 'hidden'}`);
       } else if (k === "d") {
         // D = Toggle debug mode (logs)
         setShowLogs(!showLogs);
@@ -1715,7 +1526,7 @@ export default function MultiCamInspector() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hoverId, fsId, resetView, resetAll, addLog, laptopMode, showLogs, selectStatus]);
+  }, [hoverId, fsId, resetView, resetAll, addLog, showLogs, selectStatus]);
   
   // Update task comment
   const updateTaskComment = (comment: string) => {
@@ -2073,28 +1884,6 @@ export default function MultiCamInspector() {
   };
 
 
-  // --- Persist ROI presets ---
-  useEffect(() => {
-    try {
-      const payload = items.map((it) => it.presets ?? null);
-      localStorage.setItem("ti_presets_v1", JSON.stringify(payload));
-    } catch {
-      /* ignore quota/private mode */
-    }
-  }, [items]);
-
-  // --- Load ROI presets on mount ---
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem("ti_presets_v1");
-      if (raw) {
-        const arr = JSON.parse(raw) as Array<Record<number, { zoom: number; pan: { x: number; y: number } }> | null>;
-        setItems((prev) => prev.map((it, i) => ({ ...it, presets: arr?.[i] ?? it.presets })));
-      }
-    } catch {
-      /* ignore parse errors */
-    }
-  }, []);
 
   // --- Backend health check ---
   useEffect(() => {
@@ -2121,18 +1910,17 @@ export default function MultiCamInspector() {
     if (!didInitialApply.current && items.length > 0) {
       addLog("🚀 MultiCam Inspector initialized - 8 cameras ready");
       addLog(`📋 TI Checklist loaded - ${items.length} tasks`);
-      applyTaskPresets(idx, false); // No animation on initial load
       didInitialApply.current = true;
     }
-  }, [items, idx, applyTaskPresets, addLog]);
+  }, [items, addLog]);
 
-  // --- Apply ROI settings when task changes ---
+  // --- Reset cameras when task changes ---
   useEffect(() => {
     if (didInitialApply.current && items.length > 0) {
-      addLog(`🎬 Animating to ROI for task ${idx + 1}: ${items[idx]?.title?.substring(0, 40)}...`);
-      applyTaskPresets(idx, true); // Animated transitions between tasks
+      resetAll();
+      addLog(`🔄 Reset camera views for task ${idx + 1}: ${items[idx]?.title?.substring(0, 40)}...`);
     }
-  }, [idx, applyTaskPresets, items, addLog]);
+  }, [idx, items, addLog]);
 
   // --- Auto-open snapshot modal on initial load ---
   useEffect(() => {
@@ -2153,136 +1941,22 @@ export default function MultiCamInspector() {
 
   // --- Render ---
   return (
-    <div className="w-full h-full p-3 space-y-3 bg-white text-black">
+    <div className="w-full min-h-screen max-h-screen overflow-y-auto p-3 space-y-3 bg-white text-black">
       {/* Header – main controls */}
       <div className="flex flex-wrap items-center gap-3">
         {showLogs && (
           <>
-            <Button 
-              variant="outline" 
+            {/* Layout toggle */}
+            <Button
+              variant="outline"
               size="sm"
-              onClick={async () => {
-                const currentTask = items[idx];
-                if (!currentTask) {
-                  addLog("❌ No current task to store ROI for");
-                  return;
-                }
-                
-                const taskInfo = `Task ${idx + 1} (${currentTask.id})`;
-                
-                // Get actual image dimensions
-                let imageWidth = 3840;
-                let imageHeight = 2160;
-                const imageElements = document.querySelectorAll('img');
-                for (let i = 0; i < imageElements.length; i++) {
-                  const img = imageElements[i];
-                  if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-                    imageWidth = img.naturalWidth;
-                    imageHeight = img.naturalHeight;
-                    break;
-                  }
-                }
-                
-                // Build legacy ROI object with only cameras that have adjustments
-                const newRoi: Record<string, { zoom: number; panX: number; panY: number }> = {};
-                
-                // Build new ROI boxes object using relative coordinates
-                const newRoiBoxes: Record<string, ROIBox[]> = {};
-                
-                // Build new ROI rectangles object using pixel coordinates
-                const newRoiRectangles: Record<string, ROIRectangle[]> = {};
-                
-                cams.forEach(cam => {
-                  // Only store ROI if camera is adjusted from default
-                  if (cam.zoom !== 1 || cam.pan.x !== 0 || cam.pan.y !== 0) {
-                    // Legacy format (for backwards compatibility)
-                    newRoi[cam.name] = {
-                      zoom: cam.zoom,
-                      panX: cam.pan.x,
-                      panY: cam.pan.y
-                    };
-                    
-                    const containerElement = document.querySelector(`[data-camera-id="${cam.id}"]`) as HTMLElement;
-                    if (containerElement) {
-                      const containerRect = containerElement.getBoundingClientRect();
-                      if (containerRect.width > 0 && containerRect.height > 0) {
-                        // ROI boxes format (relative coordinates)
-                        const roiBox = viewportToROIBox(
-                          cam.zoom,
-                          cam.pan,
-                          containerRect,
-                          `roi-${Date.now()}`,
-                          `ROI for ${cam.name}`
-                        );
-                        newRoiBoxes[cam.name] = [roiBox];
-                        
-                        // ROI rectangles format (pixel coordinates) - NEW!
-                        const roiRect = viewportToROIRectangle(
-                          cam.zoom,
-                          cam.pan,
-                          containerRect,
-                          imageWidth,
-                          imageHeight,
-                          `roi-rect-${Date.now()}`,
-                          `ROI Rectangle for ${cam.name}`
-                        );
-                        newRoiRectangles[cam.name] = [roiRect];
-                      }
-                    }
-                  }
-                });
-                
-                try {
-                  // Update JSON file via API (include both legacy and new ROI data)
-                  const response = await fetch('http://localhost:3001/api/update-roi', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      taskId: currentTask.id,
-                      roi: newRoi,                    // Legacy format
-                      roiBoxes: newRoiBoxes,          // Relative coordinate format
-                      roiRectangles: newRoiRectangles // Pixel coordinate format (NEW!)
-                    })
-                  });
-                  
-                  if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to update ROI');
-                  }
-                  
-                  // Update local state with both formats
-                  setItems(prev => prev.map((item, i) => {
-                    if (i === idx) {
-                      return { 
-                        ...item, 
-                        roi: newRoi,
-                        roiBoxes: newRoiBoxes,
-                        roiRectangles: newRoiRectangles
-                      };
-                    }
-                    return item;
-                  }));
-                  
-                  const roiData = cams
-                    .filter(cam => cam.zoom !== 1 || cam.pan.x !== 0 || cam.pan.y !== 0)
-                    .map(cam => `${cam.name},${cam.zoom.toFixed(1)},${cam.pan.x.toFixed(0)},${cam.pan.y.toFixed(0)}`)
-                    .join(' ');
-                  
-                  if (roiData) {
-                    addLog(`✅ ROI ${taskInfo}: ${roiData} - SAVED TO JSON`);
-                  } else {
-                    addLog(`✅ ROI ${taskInfo}: Reset to default (1.0,0,0) - SAVED TO JSON`);
-                  }
-                  
-                } catch (error) {
-                  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-                  addLog(`❌ Failed to save ROI for ${taskInfo}: ${errorMessage}`);
-                }
+              onClick={() => {
+                setUseOneColumn(!useOneColumn);
+                addLog(`📱 Layout changed to ${!useOneColumn ? '1 column' : '2 columns'}`);
               }}
+              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
             >
-              Store ROI
+              {useOneColumn ? '📱 1 Col' : '📱 2 Cols'}
             </Button>
             
             <Button 
@@ -2362,7 +2036,14 @@ export default function MultiCamInspector() {
 
       {/* Grid 4×2 */}
       <div className="flex-1 overflow-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-3">
+        <div className={`grid gap-3 p-3 ${
+          // Mobile: always 1 column
+          // iPad/tablet: 1 or 2 columns based on toggle
+          // Large screens: 4 columns
+          useOneColumn 
+            ? 'grid-cols-1' 
+            : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+        }`}>
           {cams.map((cam) => {
             // Get current hangar (use current session hangar or default to first)
             const currentHangarId = currentSession?.hangar || HANGARS[0].id;
@@ -2405,7 +2086,6 @@ export default function MultiCamInspector() {
                       }));
                     }}
                   showLogs={showLogs}
-                  laptopMode={laptopMode}
                   items={items}
                   idx={idx}
                   validatedBoxes={validatedBoxes}
@@ -2685,7 +2365,6 @@ export default function MultiCamInspector() {
                 <div>F = fullscreen</div>
                 <div>R = reset view</div>
                 <div>Esc = close modal/fullscreen</div>
-                <div>L = laptop mode</div>
                 <div>D = debug mode</div>
                 <div>P = pass</div>
                 <div>X = fail</div>
@@ -3577,7 +3256,6 @@ function CamTile({
   onPanUpdate,
   big,
   showLogs,
-  laptopMode = false,
   items,
   idx,
   validatedBoxes,
@@ -3600,7 +3278,6 @@ function CamTile({
     onPanUpdate?: (deltaX: number, deltaY: number) => void;
     big?: boolean;
     showLogs?: boolean;
-    laptopMode?: boolean;
     items: TIItem[];
     idx: number;
     validatedBoxes: Record<string, Set<string>>;
@@ -3906,6 +3583,36 @@ function Fullscreen({
 }
 
 // --- Helpers ---
+// Calculate actual image draw dimensions (matches canvas rendering logic)
+function calculateImageDrawDimensions(
+  imageWidth: number, 
+  imageHeight: number, 
+  containerWidth: number, 
+  containerHeight: number
+) {
+  const containerAspect = containerWidth / containerHeight;
+  const imageAspect = imageWidth / imageHeight;
+  
+  let result;
+  if (imageAspect > containerAspect) {
+    // Image is wider - fit to width
+    result = {
+      drawWidth: containerWidth,
+      drawHeight: containerWidth / imageAspect
+    };
+  } else {
+    // Image is taller - fit to height
+    result = {
+      drawWidth: containerHeight * imageAspect,
+      drawHeight: containerHeight
+    };
+  }
+  
+  console.log(`[Debug] calculateImageDrawDimensions: image=${imageWidth}x${imageHeight}, container=${containerWidth}x${containerHeight}, draw=${result.drawWidth}x${result.drawHeight}`);
+  return result;
+}
+
+
 function clampPan(pan: { x: number; y: number }, zoom: number, rect: DOMRect, limit: boolean) {
   // At zoom 1.0 or less, always center the image (no panning allowed)
   if (!limit || zoom <= 1) return { x: 0, y: 0 };
@@ -3929,165 +3636,6 @@ function clampPan(pan: { x: number; y: number }, zoom: number, rect: DOMRect, li
   };
 }
 
-// --- ROI Conversion Utilities ---
-function viewportToROIBox(
-  zoom: number, 
-  pan: { x: number; y: number }, 
-  containerRect: DOMRect,
-  roiId: string = 'roi',
-  label?: string
-): ROIBox {
-  // Calculate what portion of the original image is currently visible
-  const visibleWidth = 1 / zoom;  // How much of image width is visible (0-1)
-  const visibleHeight = 1 / zoom; // How much of image height is visible (0-1)
-  
-  // Calculate the center of the current viewport in normalized coordinates (0-1)
-  let centerX = 0.5;
-  let centerY = 0.5;
-  
-  if (zoom > 1) {
-    // Based on clampPan: maxPan = imageOverhang * zoom
-    // imageOverhang = (rect.width * zoom - rect.width) / 2 = rect.width * (zoom - 1) / 2
-    const imageOverhangX = (containerRect.width * (zoom - 1)) / 2;
-    const imageOverhangY = (containerRect.height * (zoom - 1)) / 2;
-    const maxPanX = imageOverhangX * zoom;
-    const maxPanY = imageOverhangY * zoom;
-    
-    // Normalize pan to -1 to +1 range
-    const normalizedPanX = maxPanX > 0 ? pan.x / maxPanX : 0;
-    const normalizedPanY = maxPanY > 0 ? pan.y / maxPanY : 0;
-    
-    // Convert to viewport center (0-1)
-    // When pan is positive, we're looking at the right/bottom part of the image
-    centerX = 0.5 + normalizedPanX * (1 - visibleWidth) / 2;
-    centerY = 0.5 + normalizedPanY * (1 - visibleHeight) / 2;
-  }
-  
-  // Calculate ROI box bounds (top-left corner)
-  const x = centerX - visibleWidth / 2;
-  const y = centerY - visibleHeight / 2;
-  
-  return {
-    id: roiId,
-    x: clamp(x, 0, 1 - visibleWidth),
-    y: clamp(y, 0, 1 - visibleHeight),
-    width: visibleWidth,
-    height: visibleHeight,
-    label
-  };
-}
-
-function roiBoxToViewport(
-  roiBox: ROIBox, 
-  containerRect: DOMRect
-): { zoom: number; pan: { x: number; y: number } } {
-  // Calculate zoom needed to show the ROI box area
-  const zoom = Math.min(
-    1 / roiBox.width,   // Zoom to fit width
-    1 / roiBox.height   // Zoom to fit height
-  );
-  
-  // Calculate the center of the ROI box
-  const roiCenterX = roiBox.x + roiBox.width / 2;
-  const roiCenterY = roiBox.y + roiBox.height / 2;
-  
-  // Convert ROI center to pan coordinates
-  let panX = 0;
-  let panY = 0;
-  
-  if (zoom > 1) {
-    // Based on clampPan calculation
-    const imageOverhangX = (containerRect.width * (zoom - 1)) / 2;
-    const imageOverhangY = (containerRect.height * (zoom - 1)) / 2;
-    const maxPanX = imageOverhangX * zoom;
-    const maxPanY = imageOverhangY * zoom;
-    
-    // Calculate visible area size at this zoom
-    const visibleWidth = 1 / zoom;
-    const visibleHeight = 1 / zoom;
-    
-    // Convert ROI center to normalized pan (-1 to +1)
-    const normalizedPanX = (roiCenterX - 0.5) / ((1 - visibleWidth) / 2);
-    const normalizedPanY = (roiCenterY - 0.5) / ((1 - visibleHeight) / 2);
-    
-    // Convert to actual pan values
-    panX = normalizedPanX * maxPanX;
-    panY = normalizedPanY * maxPanY;
-  }
-  
-  return {
-    zoom: clamp(zoom, 1, 10), // Respect zoom limits
-    pan: clampPan({ x: panX, y: panY }, zoom, containerRect, true)
-  };
-}
-
-// --- ROI Rectangle Conversion Functions ---
-function viewportToROIRectangle(
-  zoom: number,
-  pan: { x: number; y: number },
-  containerRect: DOMRect,
-  imageWidth: number,
-  imageHeight: number,
-  id: string,
-  label?: string
-): ROIRectangle {
-  // Calculate what portion of the image is visible
-  const visibleWidth = imageWidth / zoom;
-  const visibleHeight = imageHeight / zoom;
-  
-  // Calculate center of viewport in image coordinates
-  let centerX = imageWidth / 2; // Default center
-  let centerY = imageHeight / 2;
-  
-  if (zoom > 1) {
-    // Convert pan coordinates to image center offset
-    const imageOverhangX = (containerRect.width * (zoom - 1)) / 2;
-    const imageOverhangY = (containerRect.height * (zoom - 1)) / 2;
-    const maxPanX = imageOverhangX * zoom;
-    const maxPanY = imageOverhangY * zoom;
-    
-    const normalizedPanX = pan.x / maxPanX;
-    const normalizedPanY = pan.y / maxPanY;
-    
-    centerX = imageWidth / 2 + normalizedPanX * (imageWidth - visibleWidth) / 2;
-    centerY = imageHeight / 2 + normalizedPanY * (imageHeight - visibleHeight) / 2;
-  }
-  
-  // Calculate rectangle bounds
-  const x = Math.max(0, centerX - visibleWidth / 2);
-  const y = Math.max(0, centerY - visibleHeight / 2);
-  const width = Math.min(visibleWidth, imageWidth - x);
-  const height = Math.min(visibleHeight, imageHeight - y);
-  
-  return {
-    id,
-    x: Math.round(x),
-    y: Math.round(y),
-    width: Math.round(width),
-    height: Math.round(height),
-    label
-  };
-}
-
-function roiRectangleToViewport(
-  roiRect: ROIRectangle,
-  containerRect: DOMRect,
-  imageWidth: number,
-  imageHeight: number
-): { zoom: number; pan: { x: number; y: number } } {
-  // Convert pixel coordinates to normalized ROI box format (0-1 range)
-  const roiBox: ROIBox = {
-    id: 'temp',
-    x: roiRect.x / imageWidth,
-    y: roiRect.y / imageHeight,
-    width: roiRect.width / imageWidth,
-    height: roiRect.height / imageHeight,
-    label: roiRect.label
-  };
-  
-  // Use the existing working roiBoxToViewport function
-  return roiBoxToViewport(roiBox, containerRect);
-}
 
 // Canvas-based image component for crisp zoom with validation boxes
 function CanvasImage({ 
@@ -4752,11 +4300,6 @@ try {
   console.assert(arr.length === 8 && arr[0].id === 0 && arr[7].id === 7, "8 cams init");
   console.assert(HANGARS.some((h) => h.id === "hangar_sisjon_vpn") && HANGARS.some((h) => h.id === "hangar_rouen_vpn"), "hangars present");
   console.assert(TI_ITEMS.length === inspectionData.tasks.length, `TI has ${inspectionData.tasks.length} items`);
-  // ROI preset set/apply roundtrip (data only)
-  const tmpItems = JSON.parse(JSON.stringify(TI_ITEMS)) as TIItem[];
-  tmpItems[0].presets = { 3: { zoom: 2, pan: { x: 10, y: -5 } } };
-  const p = tmpItems[0].presets?.[3];
-  console.assert(p?.zoom === 2 && p?.pan.x === 10 && p?.pan.y === -5, "ROI store");
   // clampPan tests
   const rp = clampPan({ x: 9999, y: -9999 }, 3, { width: 1000, height: 800 } as any, true);
   console.assert(Math.abs(rp.x) <= (3 - 1) * (1000 / 2) + 1, "clampPan x");

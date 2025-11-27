@@ -83,7 +83,6 @@
         "fail",
         "na"
       ],
-      "roi": {},
       "validationBoxes": {
         "RUR": [
           {
@@ -179,8 +178,18 @@
         "Look for structural cracks or damage",
         "Verify proper lid fitting and no fabric protrusion"
       ],
-      "roiBoxes": {},
-      "roiRectangles": {}
+      "roiBoxes": {
+        "RUR": [
+          {
+            "id": "roi-1764254858299",
+            "x": 2040.8938449529983,
+            "y": 830.3931675346437,
+            "width": 805.306368,
+            "height": 452.984832,
+            "label": "ROI for RUR"
+          }
+        ]
+      }
     },
     {
       "id": "parachute_tube_mount",
