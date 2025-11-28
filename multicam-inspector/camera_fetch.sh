@@ -185,12 +185,12 @@ fetch_image() {
 
 trigger_autofocus() {
     local cam_name="$1"
-    echo "🎯 Triggering autofocus for ${cam_name} via working zoom method..."
+    echo "Triggering autofocus for ${cam_name}"
     
     local api_url="https://${HANGAR_HOST}:${FORWARD_PORT}/api.cgi?user=${CAM_USER}&password=${CAM_PASS}"
     
     # Get current zoom position first
-    echo "   📡 Getting current zoom position..."
+    echo "Getting current zoom position"
     local current_zoom_response=$(curl -sSLk --fail \
          --connect-timeout 3 \
          --max-time 10 \
@@ -205,7 +205,7 @@ trigger_autofocus() {
         current_zoom=$(echo "$current_zoom_response" | grep -o '"zoom"[[:space:]]*:[[:space:]]*{[^}]*"pos"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$' || echo "15")
     fi
     
-    echo "   📊 Current zoom position: $current_zoom"
+    echo "Current zoom position: $current_zoom"
     
     # Calculate temporary zoom position for autofocus trigger
     local temp_zoom=$((current_zoom + 5))
@@ -216,7 +216,7 @@ trigger_autofocus() {
         temp_zoom=$((current_zoom + 5))
     fi
     
-    echo "   🔍 Zooming to position $temp_zoom to trigger autofocus..."
+    echo "Zooming to position $temp_zoom to trigger autofocus"
     
     # Use working StartZoomFocus with ZoomPos operation
     curl -sSLk --fail \
@@ -228,10 +228,10 @@ trigger_autofocus() {
          "${api_url}" >/dev/null 2>&1 || true
 
     # Wait for zoom change and autofocus trigger
-    echo "   ⏳ Waiting for autofocus to trigger..."
+    echo "Waiting for autofocus to trigger"
     sleep 2
     
-    echo "   🔄 Returning to original zoom position $current_zoom..."
+    echo "Returning to original zoom position $current_zoom"
     
     # Return to original zoom position using working method
     curl -sSLk --fail \
@@ -243,25 +243,25 @@ trigger_autofocus() {
          "${api_url}" >/dev/null 2>&1 || true
 
     # Wait for autofocus to complete
-    echo "   ⏳ Waiting for focus to stabilize..."
+    echo "Waiting for focus to stabilize"
     sleep 3
-    echo "✓ Working zoom-triggered autofocus completed for ${cam_name}"
+    echo "Autofocus completed for ${cam_name}"
 }
 
 # Main execution
 echo "Fetching ${CAMERA_NAME} from ${CAM_IP} via ${HANGAR_HOST} on port ${FORWARD_PORT}"
-echo "📅 Start time: $(date '+%H:%M:%S')"
-echo "🔗 Step 1/6: Establishing SSH connection..."
+echo "Start time: $(date '+%H:%M:%S')"
+echo "Step 1/6: Establishing SSH connection"
 
 # Establish SSH connection
 ssh ${SSH_OPTS} "${HANGAR_HOST}" true || {
     echo "Error: Cannot connect to ${HANGAR_HOST}"
     exit 1
 }
-echo "   ✅ SSH connection established ($(date '+%H:%M:%S'))"
+echo "SSH connection established ($(date '+%H:%M:%S'))"
 
 # Kill any existing socat processes on our port
-echo "🧹 Step 2/6: Cleaning up existing processes..."
+echo "Step 2/6: Cleaning up existing processes"
 kill_existing_socat
 
 # Check if port is still busy after cleanup
@@ -271,20 +271,20 @@ if port_busy; then
 fi
 
 # Start tunnel
-echo "🚇 Step 3/6: Starting tunnel for ${CAM_IP}..."
+echo "Step 3/6: Starting tunnel for ${CAM_IP}"
 pidfile=$(start_tunnel)
-echo "   ✅ Tunnel started ($(date '+%H:%M:%S'))"
+echo "Tunnel started ($(date '+%H:%M:%S'))"
 
 # Wait a moment for tunnel to establish
 sleep 1
 
 # Trigger autofocus before capturing image
-echo "🎯 Step 4/6: Triggering autofocus..."
+echo "Step 4/6: Triggering autofocus"
 trigger_autofocus "${CAMERA_NAME}"
-echo "   ✅ Autofocus completed ($(date '+%H:%M:%S'))"
+echo "Autofocus completed ($(date '+%H:%M:%S'))"
 
 # Fetch the image
-echo "📸 Step 5/6: Capturing image from ${CAMERA_NAME}..."
+echo "Step 5/6: Capturing image from ${CAMERA_NAME}"
 if fetch_image; then
     echo "SUCCESS: ${OUTFILE}"
     file_size=$(stat -f%z "${OUTFILE}" 2>/dev/null || stat -c%s "${OUTFILE}" 2>/dev/null || echo "unknown")
@@ -296,9 +296,9 @@ else
 fi
 
 # Clean up tunnel
-echo "🧹 Step 6/6: Cleaning up tunnel..."
+echo "Step 6/6: Cleaning up tunnel"
 stop_tunnel "$pidfile"
-echo "   ✅ Cleanup completed ($(date '+%H:%M:%S'))"
+echo "Cleanup completed ($(date '+%H:%M:%S'))"
 
-echo "✅ Done: ${CAMERA_NAME} -> ${OUTFILE}"
-echo "⏱️ Total capture time: Completed at $(date '+%H:%M:%S')"
+echo "Done: ${CAMERA_NAME} -> ${OUTFILE}"
+echo "Total capture time: Completed at $(date '+%H:%M:%S')"
