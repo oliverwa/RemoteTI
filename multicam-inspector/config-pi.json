@@ -23,13 +23,13 @@
   },
   "hangars": {
     "hangar_sisjon_vpn": {
-      "ssh_host": "hangar_sisjon_vpn",
+      "ssh_host": "system@10.0.10.113",
       "ip": "10.0.10.113",
       "description": "Mölndal hangar"
     },
     "hangar_rouen_vpn": {
-      "ssh_host": "hangar_rouen_vpn", 
-      "ip": "10.0.10.114",
+      "ssh_host": "system@10.0.10.172", 
+      "ip": "10.0.10.172",
       "description": "Rouen hangar"
     }
   },
@@ -56,14 +56,14 @@
     }
   },
   "paths": {
-    "base": ".",
-    "snapshots": "hangar_snapshots",
-    "snapshotsAbsolute": null,
+    "base": "/home/pi/RemoteTI",
+    "snapshots": "data/sessions",
+    "snapshotsAbsolute": "/home/pi/RemoteTI/data/sessions",
     "scripts": {
       "cameraFetch": "camera_fetch.sh"
     },
     "data": {
-      "inspectionJson": "src/data/drone-remote-inspection.json"
+      "inspectionJson": "data/drone-remote-inspection.json"
     }
   },
   "validation": {

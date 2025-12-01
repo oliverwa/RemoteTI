@@ -11,9 +11,10 @@ const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), '
 const PORT = config.server.port;
 
 // Derived configurations
-const CAMERA_SCRIPT_PATH = path.join(__dirname, config.paths.scripts.cameraFetch);
-const INSPECTION_JSON_PATH = path.join(__dirname, config.paths.data.inspectionJson);
-const SNAPSHOTS_DIR = path.join(process.env.HOME, config.paths.snapshots);
+const BASE_DIR = config.paths.base === '.' ? __dirname : config.paths.base;
+const CAMERA_SCRIPT_PATH = path.join(BASE_DIR, config.paths.scripts.cameraFetch);
+const INSPECTION_JSON_PATH = path.join(BASE_DIR, config.paths.data.inspectionJson);
+const SNAPSHOTS_DIR = config.paths.snapshotsAbsolute || path.join(process.env.HOME, config.paths.snapshots);
 
 // Middleware
 app.use(cors());
@@ -176,7 +177,19 @@ app.post('/api/capture', async (req, res) => {
 
 // Optimized parallel capture function
 async function captureInParallel(requestId, hangar, drone, sessionTimestamp) {
-  const cameras = config.cameras.ids;
+  // Set a global timeout for the entire capture process (5 minutes)
+  const globalTimeout = setTimeout(() => {
+    if (global.captureProcesses[requestId] && global.captureProcesses[requestId].status === 'running') {
+      log('error', `[${requestId}] Global capture timeout reached - marking as failed`);
+      global.captureProcesses[requestId].status = 'failed';
+      global.captureProcesses[requestId].error = 'Capture process timed out after 5 minutes';
+      global.captureProcesses[requestId].currentCameras = [];
+      global.captureProcesses[requestId].currentPhase = null;
+    }
+  }, 300000); // 5 minutes
+  
+  try {
+    const cameras = config.cameras.ids;
   const batchSize = config.capture.batchSize;
   const batches = [];
   
@@ -226,17 +239,41 @@ async function captureInParallel(requestId, hangar, drone, sessionTimestamp) {
   // Clean up socat processes
   await cleanupSocatProcesses(requestId, hangar);
   
-  global.captureProcesses[requestId].status = 'completed';
+  // Determine final status based on success/failure counts
+  const successCount = global.captureProcesses[requestId].capturedImages.length;
+  const failureCount = global.captureProcesses[requestId].failedImages.length;
+  const totalCameras = config.cameras.ids.length;
+  
+  // Mark as failed if more than half the cameras failed or if no cameras succeeded
+  if (successCount === 0 || failureCount > totalCameras / 2) {
+    global.captureProcesses[requestId].status = 'failed';
+    global.captureProcesses[requestId].error = `Capture failed: ${successCount}/${totalCameras} cameras succeeded`;
+    log('error', `[${requestId}] Parallel capture FAILED. Success: ${successCount}, Failed: ${failureCount}`);
+  } else {
+    global.captureProcesses[requestId].status = 'completed';
+    log('info', `[${requestId}] Parallel capture completed. Success: ${successCount}, Failed: ${failureCount}`);
+  }
+  
   global.captureProcesses[requestId].currentCameras = [];
   global.captureProcesses[requestId].currentPhase = null;
   
-  log('info', `[${requestId}] Parallel capture completed. Success: ${global.captureProcesses[requestId].capturedImages.length}, Failed: ${global.captureProcesses[requestId].failedImages.length}`);
+  } catch (error) {
+    log('error', `[${requestId}] Critical error in capture process:`, error.message);
+    global.captureProcesses[requestId].status = 'failed';
+    global.captureProcesses[requestId].error = `Critical capture error: ${error.message}`;
+    global.captureProcesses[requestId].currentCameras = [];
+    global.captureProcesses[requestId].currentPhase = null;
+  } finally {
+    clearTimeout(globalTimeout);
+  }
 }
 
 // Camera capture function
 function captureCameraParallel(requestId, hangar, drone, camera, port, sessionTimestamp) {
   return new Promise((resolve, reject) => {
-    const child = spawn('bash', [CAMERA_SCRIPT_PATH, hangar, drone, camera, sessionTimestamp, port.toString()], {
+    const sshHost = config.hangars[hangar]?.ssh_host || hangar;
+    const folderName = config.hangars[hangar]?.description?.replace(/\s+/g, '_') || hangar;
+    const child = spawn('bash', [CAMERA_SCRIPT_PATH, sshHost, drone, camera, sessionTimestamp, port.toString(), folderName], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: __dirname,
       env: { ...process.env }
@@ -361,6 +398,7 @@ app.get('/api/capture/:requestId/status', async (req, res) => {
       currentPhase: captureProcess.currentPhase,
       capturedCameras: captureProcess.capturedImages,
       failedCameras: captureProcess.failedImages,
+      error: captureProcess.error,
       availableImages,
       totalImages: availableImages.length,
       runtime: Date.now() - captureProcess.startTime

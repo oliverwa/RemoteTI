@@ -474,7 +474,7 @@ export default function MultiCamInspector() {
     try {
       addLog(`💾 Saving validation box "${validationBox.id}" to JSON file...`);
       
-      const response = await fetch('http://localhost:3001/api/update-validation-box', {
+      const response = await fetch('http://172.20.1.93:3001/api/update-validation-box', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -898,7 +898,7 @@ export default function MultiCamInspector() {
     
     try {
       // Start the capture process (non-blocking)
-      const response = await fetch('http://localhost:3001/api/capture', {
+      const response = await fetch('http://172.20.1.93:3001/api/capture', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -929,7 +929,7 @@ export default function MultiCamInspector() {
       // Fast polling for image updates
       const pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await fetch(`http://localhost:3001/api/capture/${requestId}/status`);
+          const statusResponse = await fetch(`http://172.20.1.93:3001/api/capture/${requestId}/status`);
           if (!statusResponse.ok) {
             throw new Error('Failed to get capture status');
           }
@@ -944,18 +944,18 @@ export default function MultiCamInspector() {
             const isParallel = currentCameras.length > 1;
             
             if (status.currentPhase?.startsWith('batch_')) {
-              setProgressText(`🚀 Parallel batch ${status.currentPhase.replace('batch_', '').replace('_of_', '/')} - Processing: [${cameraList}]`);
+              setProgressText(`Parallel batch ${status.currentPhase.replace('batch_', '').replace('_of_', '/')} - Processing: [${cameraList}]`);
             } else if (status.currentPhase === 'autofocus') {
-              setProgressText(isParallel ? `🎯 Focusing multiple: [${cameraList}]...` : `🎯 Focusing ${cameraList}...`);
+              setProgressText(isParallel ? `Step 4/6: Triggering autofocus - [${cameraList}]` : `Step 4/6: Triggering autofocus - ${cameraList}`);
             } else if (status.currentPhase === 'capture') {
-              setProgressText(isParallel ? `📷 Capturing multiple: [${cameraList}]...` : `📷 Capturing ${cameraList}...`);
+              setProgressText(isParallel ? `Step 5/6: Capturing image - [${cameraList}]` : `Step 5/6: Capturing image - ${cameraList}`);
             } else if (status.currentPhase === 'connecting') {
-              setProgressText(isParallel ? `🔗 Connecting to multiple: [${cameraList}]...` : `🔗 Connecting to ${cameraList}...`);
+              setProgressText(isParallel ? `Step 1-3/6: Establishing connections - [${cameraList}]` : `Step 1-3/6: Establishing connections - ${cameraList}`);
             } else {
-              setProgressText(isParallel ? `⚙️ Processing: [${cameraList}]... (${status.currentStep}/8)` : `⚙️ Processing ${cameraList}... (${status.currentStep}/8)`);
+              setProgressText(isParallel ? `Processing: [${cameraList}] (${status.currentStep}/8)` : `Processing ${cameraList} (${status.currentStep}/8)`);
             }
           } else if (status.status === 'running') {
-            setProgressText(`🔄 Processing cameras... (${loadedCameras.size}/8)`);
+            setProgressText(`Parallel capture in progress...`);
           }
           
           // Update ETA countdown based on progress
@@ -1014,7 +1014,7 @@ export default function MultiCamInspector() {
                 if (cameraPosition) {
                   // Add cache-busting parameter to ensure fresh load
                   const timestamp = Date.now();
-                  const imageUrl = `http://localhost:3001/api/image/${snapshotHangar}/${imageInfo.session}/${imageInfo.filename}?t=${timestamp}`;
+                  const imageUrl = `http://172.20.1.93:3001/api/image/${snapshotHangar}/${imageInfo.session}/${imageInfo.filename}?t=${timestamp}`;
                   
                   console.log(`Storing image for ${cameraName}:`, imageUrl);
                   
@@ -1044,11 +1044,17 @@ export default function MultiCamInspector() {
           // Check if capture is complete - require both server completion AND all 8 images loaded
           const hasAllImages = loadedCameras.size >= 8;
           
-          if (status.status === 'completed' && hasAllImages) {
+          if (status.status === 'completed') {
             clearInterval(pollInterval);
+            clearTimeout(frontendTimeout);
             setEstimatedTimeRemaining(null); // Clear ETA timer
-            addLog(`🎉 All cameras completed! Total: ${status.totalImages} images (${loadedCameras.size}/8 loaded)`);
-            addLog(`⏳ Waiting 2 seconds before displaying all images...`);
+            addLog(`🎉 All cameras completed! Loading latest images...`);
+            
+            // Load the latest images from the server since capture is complete
+            loadLatestFolderGlobally().catch((error: Error) => {
+              console.error('Failed to load latest images after capture:', error);
+              addLog(`❌ Failed to load images: ${error.message}`);
+            });
             
             setIsWaitingToDisplay(true);
             
@@ -1130,12 +1136,23 @@ export default function MultiCamInspector() {
             
           } else if (status.status === 'failed' || status.status === 'error') {
             clearInterval(pollInterval);
-            addLog(`❌ Capture failed: ${status.error || 'Unknown error'}`);
+            clearTimeout(frontendTimeout);
+            const errorMessage = status.error || 'Unknown error occurred during capture';
+            addLog(`CAPTURE FAILED: ${errorMessage}`);
+            
+            // Show detailed failure information
+            if (status.capturedCameras && status.failedCameras) {
+              addLog(`Results: ${status.capturedCameras.length} cameras succeeded, ${status.failedCameras.length} cameras failed`);
+              if (status.failedCameras.length > 0) {
+                addLog(`Failed cameras: ${status.failedCameras.join(', ')}`);
+              }
+            }
             
             setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
             setIsCapturing(false);
             setCaptureStartTime(null);
             setEstimatedTimeRemaining(null);
+            setProgressText("");
           }
           
         } catch (error) {
@@ -1146,17 +1163,19 @@ export default function MultiCamInspector() {
         }
       }, 500); // Poll every 500ms for debugging
       
-      // Safety timeout
-      setTimeout(() => {
+      // Safety timeout - 6 minutes (longer than backend's 5 minute timeout)
+      const frontendTimeout = setTimeout(() => {
         clearInterval(pollInterval);
         if (isCapturing) {
-          addLog("⏰ Capture timeout - stopping polling");
+          addLog("CAPTURE TIMEOUT: No response from backend after 6 minutes - stopping capture");
+          addLog("This may indicate a network issue or hangar connectivity problem");
           setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
           setIsCapturing(false);
           setCaptureStartTime(null);
           setEstimatedTimeRemaining(null);
+          setProgressText("");
         }
-      }, 300000); // 5 minute timeout
+      }, 360000); // 6 minutes timeout
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -1177,7 +1196,7 @@ export default function MultiCamInspector() {
     try {
       addLog(`🔄 Looking for latest session across all hangars...`);
       
-      const response = await fetch(`http://localhost:3001/api/folders`);
+      const response = await fetch(`http://172.20.1.93:3001/api/folders`);
       if (!response.ok) {
         throw new Error(`Failed to load folders: ${response.statusText}`);
       }
@@ -1221,15 +1240,29 @@ export default function MultiCamInspector() {
         const imageFile = latestSession.images.find((img: string) => img.startsWith(cameraName));
         
         if (imageFile) {
-          const imageUrl = `http://localhost:3001/api/image/${latestHangar}/${latestSession.name}/${imageFile}?t=${timestamp}`;
+          const imageUrl = `http://172.20.1.93:3001/api/image/${latestHangar}/${latestSession.name}/${imageFile}?t=${timestamp}`;
+          console.log(`🖼️ Loading image ${index} (${cameraName}): ${imageUrl}`);
           return { ...cam, src: imageUrl, isLoading: false };
         } else {
+          console.log(`❌ No image found for camera ${index} (${cameraName})`);
           return { ...cam, src: "", isLoading: false };
         }
       });
       
+      // Map folder name back to hangar ID for API calls
+      const folderNameToHangarId = (folderName: string) => {
+        switch(folderName) {
+          case "Molndal": return "hangar_sisjon_vpn";
+          case "Forges-les-Eaux": return "hangar_rouen_vpn";
+          default: return folderName; // fallback to original name
+        }
+      };
+      
+      const hangarId = folderNameToHangarId(latestHangar);
+      console.log(`🏢 Mapped folder "${latestHangar}" to hangar ID "${hangarId}"`);
+      
       setCams(newCams);
-      setSnapshotHangar(latestHangar);
+      setSnapshotHangar(hangarId);
       setSnapshotDrone(latestSession.name.split('_')[0]); // Extract drone name from session
       setCurrentSession({ name: latestSession.name, hangar: latestHangar });
       
@@ -1247,7 +1280,7 @@ export default function MultiCamInspector() {
     try {
       addLog(`🔄 Loading latest folder for ${hangar}...`);
       
-      const response = await fetch(`http://localhost:3001/api/folders/latest/${hangar}`);
+      const response = await fetch(`http://172.20.1.93:3001/api/folders/latest/${hangar}`);
       if (!response.ok) {
         throw new Error(`Failed to load latest folder: ${response.statusText}`);
       }
@@ -1255,6 +1288,8 @@ export default function MultiCamInspector() {
       const data = await response.json();
       const session = data.session;
       
+      console.log('📊 Session data:', session);
+      console.log('🎯 Camera layout:', CAMERA_LAYOUT);
       addLog(`📂 Found latest session: ${session.name} with ${session.imageCount} images`);
       
       // Load images from this session
@@ -1265,7 +1300,7 @@ export default function MultiCamInspector() {
         const imageFile = session.images.find((img: string) => img.startsWith(cameraName));
         
         if (imageFile) {
-          const imageUrl = `http://localhost:3001/api/image/${session.hangar}/${session.name}/${imageFile}?t=${timestamp}`;
+          const imageUrl = `http://172.20.1.93:3001/api/image/${session.hangar}/${session.name}/${imageFile}?t=${timestamp}`;
           return { ...cam, src: imageUrl, sourceUrl: imageUrl };
         }
         return cam;
@@ -1288,7 +1323,7 @@ export default function MultiCamInspector() {
       setLoadingFolders(true);
       addLog('📁 Loading available folders...');
       
-      const response = await fetch('http://localhost:3001/api/folders');
+      const response = await fetch('http://172.20.1.93:3001/api/folders');
       if (!response.ok) {
         throw new Error(`Failed to load folders: ${response.statusText}`);
       }
@@ -1318,7 +1353,7 @@ export default function MultiCamInspector() {
         const imageFile = images.find((img: string) => img.startsWith(cameraName));
         
         if (imageFile) {
-          const imageUrl = `http://localhost:3001/api/image/${hangar}/${sessionName}/${imageFile}?t=${timestamp}`;
+          const imageUrl = `http://172.20.1.93:3001/api/image/${hangar}/${sessionName}/${imageFile}?t=${timestamp}`;
           return { ...cam, src: imageUrl, sourceUrl: imageUrl };
         }
         return cam;
@@ -1365,13 +1400,13 @@ export default function MultiCamInspector() {
       console.log('🔧 Using camera name:', cameraName);
       
       // Load Mölndal baseline image
-      const baselineUrl = `http://localhost:3001/api/image/hangar_sisjon_vpn/bender_251007_080145/${cameraName}_251007_080145.jpg?t=${Date.now()}`;
+      const baselineUrl = `http://172.20.1.93:3001/api/image/hangar_sisjon_vpn/bender_251007_080145/${cameraName}_251007_080145.jpg?t=${Date.now()}`;
       console.log('🔧 Baseline URL:', baselineUrl);
       setMolndalImage(baselineUrl);
       addLog(`📍 Loading baseline: ${cameraName} from Mölndal`);
       
       // Get latest session for selected hangar
-      const latestUrl = `http://localhost:3001/api/folders/latest/${hangarId}`;
+      const latestUrl = `http://172.20.1.93:3001/api/folders/latest/${hangarId}`;
       console.log('🔧 Latest session URL:', latestUrl);
       const latestResponse = await fetch(latestUrl);
       
@@ -1387,7 +1422,7 @@ export default function MultiCamInspector() {
         console.log('🔧 Target image filename:', targetImageFilename);
         
         if (targetImageFilename) {
-          const hangarImageUrl = `http://localhost:3001/api/image/${hangarId}/${latestData.name}/${targetImageFilename}?t=${Date.now()}`;
+          const hangarImageUrl = `http://172.20.1.93:3001/api/image/${hangarId}/${latestData.name}/${targetImageFilename}?t=${Date.now()}`;
           console.log('🔧 Hangar image URL:', hangarImageUrl);
           setHangarImage(hangarImageUrl);
           addLog(`🎯 Loading target: ${cameraName} from ${latestData.name}`);
@@ -1889,7 +1924,7 @@ export default function MultiCamInspector() {
   useEffect(() => {
     const checkBackendHealth = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/health');
+        const response = await fetch('http://172.20.1.93:3001/api/health');
         if (response.ok) {
           const health = await response.json();
           addLog("🔗 Backend API connected successfully");
@@ -2005,20 +2040,22 @@ export default function MultiCamInspector() {
                 Preparing images for display...
               </span>
             ) : estimatedTimeRemaining !== null && estimatedTimeRemaining > 0 ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">
-                  🚀 Parallel capture in progress
-                </span>
-                <span className="text-lg font-bold text-blue-600">
-                  {estimatedTimeRemaining}s
-                </span>
-                <span className="text-sm text-gray-600">
-                  remaining
-                </span>
+              <div className="flex flex-col items-center space-y-1">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-medium text-gray-700">
+                    {progressText || "Parallel capture in progress"}
+                  </span>
+                  <span className="text-lg font-bold text-blue-600">
+                    {estimatedTimeRemaining}s
+                  </span>
+                  <span className="text-sm text-gray-600">
+                    remaining
+                  </span>
+                </div>
               </div>
             ) : isCapturing ? (
               <span className="text-sm font-medium text-gray-700">
-                ✅ Capture completed - processing images...
+                Capture completed - processing images...
               </span>
             ) : (
               <span className="text-sm font-medium text-gray-700">
