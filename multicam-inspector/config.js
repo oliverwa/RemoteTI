@@ -131,14 +131,14 @@ const baseConfig = {
 const environmentConfigs = {
   pi: {
     paths: {
-      base: "/home/system/RemoteTI",
-      snapshots: "/home/system/RemoteTI/data/sessions",
-      snapshotsAbsolute: "/home/system/RemoteTI/data/sessions",
+      base: "/home/pi/RemoteTI",
+      snapshots: "data/sessions",
+      snapshotsAbsolute: "/home/pi/RemoteTI/data/sessions",
       scripts: {
-        cameraFetch: "/home/system/RemoteTI/camera_fetch.sh"
+        cameraFetch: "camera_fetch.sh"
       },
       data: {
-        inspectionJson: "/home/system/RemoteTI/data/drone-remote-inspection.json"
+        inspectionJson: "data/drone-remote-inspection.json"
       }
     }
   },

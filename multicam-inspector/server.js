@@ -280,7 +280,7 @@ function captureCameraParallel(requestId, hangar, drone, camera, port, sessionTi
       return;
     }
     
-    const child = spawn('bash', [CAMERA_SCRIPT_PATH, sshHost, drone, camera, cameraIP, sessionTimestamp, port.toString()], {
+    const child = spawn('bash', [CAMERA_SCRIPT_PATH, hangar, sshHost, drone, camera, cameraIP, sessionTimestamp, port.toString()], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: __dirname,
       env: { ...process.env }
