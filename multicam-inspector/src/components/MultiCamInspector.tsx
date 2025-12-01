@@ -173,6 +173,16 @@ const toDataUrl = (file: File) =>
   });
 
 export default function MultiCamInspector() {
+  // --- Hangar ID Mapping ---
+  const folderNameToHangarId = (folderName: string) => {
+    switch(folderName) {
+      case "Molndal": return "hangar_sisjon_vpn";
+      case "Rouen": return "hangar_rouen_vpn"; 
+      case "Forges-les-Eaux": return "hangar_rouen_vpn";
+      default: return folderName; // fallback to original name
+    }
+  };
+
   // --- Cameras ---
   const [cams, setCams] = useState<Cam[]>(() => Array.from({ length: 8 }, (_, i) => defaultCam(i)));
   const [hoverId, setHoverId] = useState<number | null>(null);
@@ -1253,6 +1263,7 @@ export default function MultiCamInspector() {
       const folderNameToHangarId = (folderName: string) => {
         switch(folderName) {
           case "Molndal": return "hangar_sisjon_vpn";
+          case "Rouen": return "hangar_rouen_vpn"; 
           case "Forges-les-Eaux": return "hangar_rouen_vpn";
           default: return folderName; // fallback to original name
         }
@@ -1399,40 +1410,62 @@ export default function MultiCamInspector() {
       const cameraName = cameraNames[cameraIndex];
       console.log('🔧 Using camera name:', cameraName);
       
-      // Load Mölndal baseline image
-      const baselineUrl = `http://172.20.1.93:3001/api/image/hangar_sisjon_vpn/bender_251007_080145/${cameraName}_251007_080145.jpg?t=${Date.now()}`;
+      // Convert hangar ID back to folder name for API calls
+      const hangarIdToFolderName = (id: string) => {
+        switch(id) {
+          case "hangar_sisjon_vpn": return "Molndal";
+          case "hangar_rouen_vpn": return "Rouen";
+          default: return id;
+        }
+      };
+      
+      const folderName = hangarIdToFolderName(hangarId);
+      console.log('🔧 Mapped hangar ID to folder name:', { hangarId, folderName });
+      
+      // Load Mölndal baseline image from actual available session
+      const baselineUrl = `http://172.20.1.93:3001/api/image/Molndal/bender_251201_092652/${cameraName}_251201_092652.jpg?t=${Date.now()}`;
       console.log('🔧 Baseline URL:', baselineUrl);
       setMolndalImage(baselineUrl);
       addLog(`📍 Loading baseline: ${cameraName} from Mölndal`);
       
-      // Get latest session for selected hangar
-      const latestUrl = `http://172.20.1.93:3001/api/folders/latest/${hangarId}`;
-      console.log('🔧 Latest session URL:', latestUrl);
-      const latestResponse = await fetch(latestUrl);
+      // Get all folders and find the latest session for selected hangar
+      const foldersUrl = `http://172.20.1.93:3001/api/folders`;
+      console.log('🔧 Folders URL:', foldersUrl);
+      const foldersResponse = await fetch(foldersUrl);
       
-      if (latestResponse.ok) {
-        const response = await latestResponse.json();
-        console.log('🔧 Latest API response:', response);
+      if (foldersResponse.ok) {
+        const response = await foldersResponse.json();
+        console.log('🔧 Folders API response:', response);
         
-        const latestData = response.session || response; // Handle both response formats
-        console.log('🔧 Latest session data:', latestData);
+        // Find the hangar in the response
+        const targetHangar = response.hangars?.find((h: any) => h.id === folderName || h.name === folderName);
+        console.log('🔧 Target hangar:', targetHangar);
         
-        // Find the image for this camera - the images array contains filenames
-        const targetImageFilename = latestData.images?.find((filename: string) => filename.startsWith(cameraName));
-        console.log('🔧 Target image filename:', targetImageFilename);
-        
-        if (targetImageFilename) {
-          const hangarImageUrl = `http://172.20.1.93:3001/api/image/${hangarId}/${latestData.name}/${targetImageFilename}?t=${Date.now()}`;
-          console.log('🔧 Hangar image URL:', hangarImageUrl);
-          setHangarImage(hangarImageUrl);
-          addLog(`🎯 Loading target: ${cameraName} from ${latestData.name}`);
+        if (targetHangar && targetHangar.sessions?.length > 0) {
+          // Get the latest session (first in the array, as they're sorted by date)
+          const latestSession = targetHangar.sessions[0];
+          console.log('🔧 Latest session:', latestSession);
+          
+          // Find the image for this camera - the images array contains filenames
+          const targetImageFilename = latestSession.images?.find((filename: string) => filename.startsWith(cameraName));
+          console.log('🔧 Target image filename:', targetImageFilename);
+          
+          if (targetImageFilename) {
+            const hangarImageUrl = `http://172.20.1.93:3001/api/image/${folderName}/${latestSession.name}/${targetImageFilename}?t=${Date.now()}`;
+            console.log('🔧 Hangar image URL:', hangarImageUrl);
+            setHangarImage(hangarImageUrl);
+            addLog(`🎯 Loading target: ${cameraName} from ${latestSession.name}`);
+          } else {
+            addLog(`⚠️ No image found for ${cameraName} in latest session from ${folderName}`);
+            console.log('🔧 Available images in session:', latestSession.images);
+          }
         } else {
-          addLog(`⚠️ No image found for ${cameraName} in latest session from ${hangarId}`);
-          console.log('🔧 Available images in session:', latestData.images);
+          addLog(`❌ No sessions found for hangar ${folderName}`);
+          console.log('🔧 Available hangars:', response.hangars?.map((h: any) => h.id));
         }
       } else {
-        addLog(`❌ Failed to load latest session from ${hangarId} - Status: ${latestResponse.status}`);
-        console.log('🔧 Latest response error:', await latestResponse.text());
+        addLog(`❌ Failed to load folders - Status: ${foldersResponse.status}`);
+        console.log('🔧 Folders response error:', await foldersResponse.text());
       }
     } catch (error) {
       addLog(`❌ Error loading calibration images: ${error}`);
@@ -2083,7 +2116,9 @@ export default function MultiCamInspector() {
         }`}>
           {cams.map((cam) => {
             // Get current hangar (use current session hangar or default to first)
-            const currentHangarId = currentSession?.hangar || HANGARS[0].id;
+            const currentFolderName = currentSession?.hangar || HANGARS[0].id;
+            // Map folder name to full hangar ID for transform lookup
+            const currentHangarId = folderNameToHangarId(currentFolderName);
             const transform = hangarTransforms[currentHangarId]?.[cam.id] || { x: 0, y: 0, scale: 1, rotation: 0 };
             
             return (

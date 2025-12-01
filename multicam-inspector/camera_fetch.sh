@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
-# Simple camera fetch script: camera_fetch.sh <hangar> <drone> <camera_name> [session_timestamp] [port]
+# Simple camera fetch script: camera_fetch.sh <hangar> <drone> <camera_name> <camera_ip> [session_timestamp] [port]
 set -euo pipefail
 
-if [ $# -lt 3 ] || [ $# -gt 5 ]; then
-    echo "Usage: $0 <hangar> <drone> <camera_name> [session_timestamp] [port]"
-    echo "Example: $0 hangar_sisjon_vpn bender FDR"
-    echo "Example: $0 hangar_sisjon_vpn bender FDR 251006_203000"
-    echo "Example: $0 hangar_sisjon_vpn bender FDR 251006_203000 8084"
+if [ $# -lt 4 ] || [ $# -gt 6 ]; then
+    echo "Usage: $0 <hangar> <drone> <camera_name> <camera_ip> [session_timestamp] [port]"
+    echo "Example: $0 hangar_sisjon_vpn bender FDR 10.20.1.208"
+    echo "Example: $0 hangar_sisjon_vpn bender FDR 10.20.1.208 251006_203000"
+    echo "Example: $0 hangar_sisjon_vpn bender FDR 10.20.1.208 251006_203000 8084"
     exit 1
 fi
 
 HANGAR_HOST="$1"
 DRONE_NAME="$2" 
 CAMERA_NAME="$3"
-SESSION_TIMESTAMP="${4:-}"
-CUSTOM_PORT="${5:-}"
+CAM_IP="$4"
+SESSION_TIMESTAMP="${5:-}"
+CUSTOM_PORT="${6:-}"
 
 # Configuration
 CAM_USER="admin"
@@ -23,19 +24,6 @@ FORWARD_PORT="${CUSTOM_PORT:-8083}"  # Use custom port if provided, otherwise de
 CURL_CONNECT_TIMEOUT=20
 CURL_TOTAL_TIMEOUT=90
 CURL_RETRIES=5
-
-# Camera IP mapping
-case "$CAMERA_NAME" in
-    "FDR") CAM_IP="10.20.1.208" ;;
-    "FUR") CAM_IP="10.20.1.209" ;;
-    "RUR") CAM_IP="10.20.1.210" ;;
-    "RDR") CAM_IP="10.20.1.211" ;;
-    "FDL") CAM_IP="10.20.1.212" ;;
-    "FUL") CAM_IP="10.20.1.213" ;;
-    "RUL") CAM_IP="10.20.1.214" ;;
-    "RDL") CAM_IP="10.20.1.215" ;;
-    *) echo "Error: Unknown camera $CAMERA_NAME"; exit 1 ;;
-esac
 
 # Output directory - use provided session timestamp or generate new one
 if [ -n "${SESSION_TIMESTAMP}" ]; then
