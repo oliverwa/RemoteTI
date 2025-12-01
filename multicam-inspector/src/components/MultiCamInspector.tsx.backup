@@ -4,15 +4,6 @@ import { Button } from "@/components/ui/button";
 import inspectionData from '../data/drone-remote-inspection.json';
 import jsPDF from 'jspdf';
 
-// Import extracted modals
-import { 
-  SnapshotConfigModal, 
-  CameraTransformModal, 
-  CameraCalibrationSelectionModal, 
-  CameraCalibrationModal, 
-  FolderBrowserModal 
-} from './modals';
-
 // ---------------------------------------------------------
 // Hangar MultiCam Inspector – 4×2 Grid + TI Checklist (v8.6)
 // ---------------------------------------------------------
@@ -2472,61 +2463,335 @@ export default function MultiCamInspector() {
       )}
 
       {/* Snapshot Modal */}
-      <SnapshotConfigModal
-        isOpen={showSnapshotModal}
-        onClose={() => setShowSnapshotModal(false)}
-        snapshotHangar={snapshotHangar}
-        setSnapshotHangar={setSnapshotHangar}
-        snapshotDrone={snapshotDrone}
-        setSnapshotDrone={setSnapshotDrone}
-        onExecuteSnapshot={executeSnapshot}
-        onLoadLatest={() => {
-          setShowSnapshotModal(false);
-          loadLatestFolderGlobally();
-        }}
-        onBrowseFolders={() => {
-          setShowSnapshotModal(false);
-          loadAvailableFolders();
-          setShowFolderModal(true);
-        }}
-      />
+      {showSnapshotModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
+            <h2 className="text-lg font-semibold mb-4">Snapshot Configuration</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Hangar</label>
+                <div className="space-y-2">
+                  {HANGARS.map((h) => (
+                    <label key={h.id} className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="hangar-selection"
+                        className="text-blue-600 focus:ring-blue-500"
+                        checked={snapshotHangar === h.id}
+                        onChange={() => setSnapshotHangar(h.id)}
+                      />
+                      <span className="text-sm">{h.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Drone Name</label>
+                <select 
+                  className="w-full border rounded px-3 py-2" 
+                  value={snapshotDrone} 
+                  onChange={(e) => setSnapshotDrone(e.target.value)}
+                >
+                  <option value="">Select drone...</option>
+                  {DRONE_OPTIONS.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="space-y-3 mt-6">
+              {/* Primary actions */}
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowSnapshotModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={executeSnapshot}
+                  className="flex-1"
+                  disabled={!snapshotHangar || !snapshotDrone.trim()}
+                >
+                  Capture
+                </Button>
+              </div>
+              
+              {/* Alternative actions */}
+              <div className="flex gap-2 pt-2 border-t border-gray-200">
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setShowSnapshotModal(false);
+                    loadLatestFolderGlobally();
+                  }}
+                  className="flex-1 bg-green-50 border-green-200 text-green-700 hover:bg-green-100"
+                >
+                  🔄 Latest
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setShowSnapshotModal(false);
+                    loadAvailableFolders();
+                    setShowFolderModal(true);
+                  }}
+                  className="flex-1 bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100"
+                >
+                  📁 Browse
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Camera Transform Settings Modal */}
-      <CameraTransformModal
-        isOpen={showTransformModal}
-        onClose={() => setShowTransformModal(false)}
-        selectedHangarTab={selectedHangarTab}
-        setSelectedHangarTab={setSelectedHangarTab}
-        hangarTransforms={hangarTransforms}
-        setHangarTransforms={setHangarTransforms}
-        onSave={() => {
-          localStorage.setItem('hangar_camera_transforms', JSON.stringify(hangarTransforms));
-          addLog('💾 Camera transform settings saved');
-          setShowTransformModal(false);
-        }}
-      />
+      {showTransformModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-4 w-[900px] max-w-full mx-4 max-h-[85vh] overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-2">⚙️ Camera Alignment Settings</h2>
+            <p className="text-xs text-gray-600 mb-3">
+              Configure camera transform corrections for each hangar to compensate for drone positioning differences.
+            </p>
+            
+            {/* Hangar Tabs */}
+            <div className="border-b mb-3">
+              <div className="flex space-x-1 overflow-x-auto">
+                {HANGARS.map((hangar) => (
+                  <button
+                    key={hangar.id}
+                    onClick={() => setSelectedHangarTab(hangar.id)}
+                    className={`px-2 py-1 text-xs font-medium rounded-t-lg whitespace-nowrap ${
+                      selectedHangarTab === hangar.id
+                        ? 'bg-blue-100 text-blue-700 border-b-2 border-blue-600'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    📍 {hangar.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Camera Settings Table for Selected Hangar */}
+            {(() => {
+              const selectedHangar = HANGARS.find(h => h.id === selectedHangarTab);
+              if (!selectedHangar) return null;
+              
+              return (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-blue-700">
+                    📍 {selectedHangar.label} - Camera Transforms
+                  </h3>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b bg-gray-50">
+                          <th className="text-left p-1 font-medium text-gray-700">Camera</th>
+                          <th className="text-center p-1 font-medium text-gray-700">X (px)</th>
+                          <th className="text-center p-1 font-medium text-gray-700">Y (px)</th>
+                          <th className="text-center p-1 font-medium text-gray-700">Scale</th>
+                          <th className="text-center p-1 font-medium text-gray-700">Rot (°)</th>
+                          <th className="text-left p-1 font-medium text-gray-700">Values</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: 8 }, (_, camIndex) => {
+                          const transform = hangarTransforms[selectedHangar.id]?.[camIndex] || { x: 0, y: 0, scale: 1, rotation: 0 };
+                          
+                          return (
+                            <tr key={camIndex} className="border-b hover:bg-gray-50">
+                              <td className="p-1 font-medium text-gray-700">
+                                📷 {CAMERA_LAYOUT[camIndex]?.name || `Cam${camIndex + 1}`}
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.x}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      x: parseFloat(e.target.value) || 0
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.y}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      y: parseFloat(e.target.value) || 0
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.scale}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      scale: parseFloat(e.target.value) || 1
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-1">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  className="w-16 text-xs border rounded px-1 py-0.5 text-center"
+                                  value={transform.rotation}
+                                  onChange={(e) => {
+                                    const newTransforms = { ...hangarTransforms };
+                                    if (!newTransforms[selectedHangar.id]) newTransforms[selectedHangar.id] = {};
+                                    newTransforms[selectedHangar.id][camIndex] = {
+                                      ...transform,
+                                      rotation: parseFloat(e.target.value) || 0
+                                    };
+                                    setHangarTransforms(newTransforms);
+                                  }}
+                                />
+                              </td>
+                              <td className="p-2 text-xs text-gray-500">
+                                X:{transform.x}, Y:{transform.y}, S:{transform.scale}, R:{transform.rotation}°
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              );
+            })()}
+            
+            <div className="flex gap-2 pt-3 border-t mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowTransformModal(false)}
+                className="flex-1 text-xs py-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  // Save transforms to localStorage
+                  localStorage.setItem('hangar_camera_transforms', JSON.stringify(hangarTransforms));
+                  addLog('💾 Camera transform settings saved');
+                  setShowTransformModal(false);
+                }}
+                className="flex-1 text-xs py-1"
+              >
+                💾 Save Settings
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Camera Calibration Selection Modal */}
-      <CameraCalibrationSelectionModal
-        isOpen={showCalibrateSelectionModal}
-        onClose={() => {
-          setCalibrateSelectionModal(false);
-          setCalibrateHangar("");
-          setCalibrateCamera(0);
-        }}
-        calibrateHangar={calibrateHangar}
-        setCalibrateHangar={setCalibrateHangar}
-        calibrateCamera={calibrateCamera}
-        setCalibrateCamera={setCalibrateCamera}
-        cameras={inspectionData.cameras}
-        onStartCalibration={() => {
-          if (calibrateHangar) {
-            setCalibrateSelectionModal(false);
-            loadCalibrationImages(calibrateHangar, calibrateCamera);
-            setCalibrateModal(true);
-          }
-        }}
-      />
+      {showCalibrateSelectionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-[600px] max-w-full mx-4">
+            <h2 className="text-lg font-semibold mb-4">🎯 Select Camera to Calibrate</h2>
+            <p className="text-sm text-gray-600 mb-6">
+              Choose which hangar and camera you want to calibrate against the Mölndal baseline.
+            </p>
+
+            <div className="space-y-4">
+              {/* Hangar Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Hangar:
+                </label>
+                <select
+                  value={calibrateHangar}
+                  onChange={(e) => setCalibrateHangar(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Choose a hangar...</option>
+                  {HANGARS.map((hangar) => (
+                    <option key={hangar.id} value={hangar.id}>
+                      {hangar.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Camera Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Camera:
+                </label>
+                <select
+                  value={calibrateCamera}
+                  onChange={(e) => setCalibrateCamera(parseInt(e.target.value))}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {inspectionData.cameras.map((camera, index) => (
+                    <option key={camera.id} value={index}>
+                      {camera.name} ({camera.id})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCalibrateSelectionModal(false);
+                  setCalibrateHangar("");
+                  setCalibrateCamera(0);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (calibrateHangar) {
+                    setCalibrateSelectionModal(false);
+                    loadCalibrationImages(calibrateHangar, calibrateCamera);
+                    setCalibrateModal(true);
+                  }
+                }}
+                disabled={!calibrateHangar}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Start Calibration
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Camera Calibration Modal */}
       {showCalibrateModal && (
@@ -2858,13 +3123,69 @@ export default function MultiCamInspector() {
       )}
 
       {/* Folder Browser Modal */}
-      <FolderBrowserModal
-        isOpen={showFolderModal}
-        onClose={() => setShowFolderModal(false)}
-        loadingFolders={loadingFolders}
-        availableFolders={availableFolders}
-        onLoadSession={loadSessionImages}
-      />
+      {showFolderModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 w-4/5 max-w-4xl max-h-4/5 mx-4 overflow-hidden flex flex-col">
+            <h2 className="text-lg font-semibold mb-4">Browse Snapshot Folders</h2>
+            
+            {loadingFolders ? (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-2xl mb-2">📁</div>
+                  <div>Loading folders...</div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto">
+                {availableFolders.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    No snapshot folders found
+                  </div>
+                ) : (
+                  availableFolders.map((hangar) => (
+                    <div key={hangar.id} className="mb-6">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3 border-b pb-2">
+                        📍 {hangar.name}
+                      </h3>
+                      <div className="grid gap-3 max-h-64 overflow-y-auto">
+                        {hangar.sessions.map((session: any) => (
+                          <div 
+                            key={session.id}
+                            className="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => loadSessionImages(hangar.id, session.name, session.images)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium text-gray-900">{session.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {session.imageCount} images • {new Date(session.created).toLocaleString()}
+                                </div>
+                              </div>
+                              <div className="text-blue-600">
+                                →
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+            
+            <div className="flex gap-2 mt-4 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowFolderModal(false)}
+                className="flex-1"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* No Images Modal */}
       {showNoImagesModal && (

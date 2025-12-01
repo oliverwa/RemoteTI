@@ -19,7 +19,12 @@ const SNAPSHOTS_DIR = config.paths.snapshotsAbsolute || path.join(process.env.HO
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+// Serve built React app
+app.use(express.static('build'));
+
+// Serve public directory for additional static files
+app.use('/public', express.static('public'));
+
 
 // Logging utility
 function log(level, message, data = null) {
@@ -633,6 +638,11 @@ app.post('/api/update-validation-box', (req, res) => {
     log('error', 'Validation box update error:', error.message);
     res.status(500).json({ error: 'Failed to update validation box' });
   }
+});
+
+// Catch all handler: send back React's index.html file for any non-API routes
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 // Start server
