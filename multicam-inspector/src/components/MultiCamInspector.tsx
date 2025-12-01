@@ -4,12 +4,21 @@ import { Button } from "@/components/ui/button";
 import inspectionData from '../data/drone-remote-inspection.json';
 import jsPDF from 'jspdf';
 
+// Import shared types and constants
+import type { 
+  Cam, 
+  CameraTransform, 
+  ValidationBox, 
+  TIItem, 
+  InspectionMetadata 
+} from '../types';
+import { HANGARS, CAMERA_LAYOUT, clamp } from '../constants';
+
 // Import extracted modals
 import { 
   SnapshotConfigModal, 
   CameraTransformModal, 
   CameraCalibrationSelectionModal, 
-  CameraCalibrationModal, 
   FolderBrowserModal 
 } from './modals';
 
@@ -27,100 +36,6 @@ import {
 // ---------------------------------------------------------
 
 // --- Consts & utils ---
-interface CameraTransform {
-  x: number;
-  y: number;
-  scale: number;
-  rotation: number;
-  flipped?: boolean;
-  opacity?: number;
-}
-
-interface HangarConfig {
-  id: string;
-  label: string;
-  cameraTransforms: { [cameraId: number]: CameraTransform };
-}
-
-const HANGARS: HangarConfig[] = [
-  { 
-    id: "hangar_sisjon_vpn", 
-    label: "Mölndal (hangar_sisjon_vpn) - BASELINE",
-    cameraTransforms: {
-      // Baseline - no transforms needed
-      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-    }
-  },
-  { 
-    id: "hangar_rouen_vpn", 
-    label: "Forges-les-Eaux (hangar_rouen_vpn)",
-    cameraTransforms: {
-      // Example with some alignment corrections
-      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-      6: { x: 118, y: -65, scale: 1.10, rotation: -1.4 },
-      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
-    }
-  },
-];
-const DRONE_OPTIONS = [
-  { id: "bender", label: "Bender" },
-  { id: "marvin", label: "Marvin" },
-  { id: "demo", label: "Demo" },
-];
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-
-// --- Validation Box Type ---
-interface ValidationBox {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  label: string;
-  description: string;
-  validated?: boolean;
-}
-
-
-// --- TI Checklist items ---
-interface TIItem {
-  id: string;
-  title: string;
-  detail: string;
-  order: number;
-  required: boolean;
-  allowedStatuses: string[];
-  status?: "pass" | "fail" | "na" | "" | undefined;
-  note?: string;
-  comment?: string;
-  completedAt?: string;
-  validationBoxes?: Partial<Record<string, ValidationBox[]>>;
-  instructions?: string[];
-  // camera-id → transform (legacy support)
-  presets?: Record<number, { zoom: number; pan: { x: number; y: number } }>;
-}
-
-// --- Inspection metadata ---
-interface InspectionMetadata {
-  inspectorName: string;
-  droneName: string;
-  hangarName: string;
-  startTime: string;
-  completedTime?: string;
-  sessionId: string;
-}
 
 // Convert JSON tasks to TIItem format
 const TI_ITEMS: TIItem[] = inspectionData.tasks.map(task => ({
@@ -132,7 +47,7 @@ const TI_ITEMS: TIItem[] = inspectionData.tasks.map(task => ({
   allowedStatuses: task.allowedStatuses,
   status: undefined,
   validationBoxes: (task as any).validationBoxes,
-  instructions: task.instructions
+  instructions: Array.isArray(task.instructions) ? task.instructions : (task.instructions ? [task.instructions] : [])
 }));
 
 function tone(s?: string) {
@@ -145,24 +60,6 @@ function tone(s?: string) {
 
 
 // --- Types ---
-type Cam = { 
-  id: number; 
-  src: string; 
-  sourceUrl: string; 
-  zoom: number; 
-  pan: { x: number; y: number };
-  isLoading?: boolean;
-  name: string;
-};
-
-// Camera layout: Top row (RUR, FUR, FUL, RUL), Bottom row (RDR, FDR, FDL, RDL)
-const CAMERA_LAYOUT = [
-  { id: 0, name: 'RUR' }, { id: 1, name: 'FUR' }, { id: 2, name: 'FUL' }, { id: 3, name: 'RUL' },
-  { id: 4, name: 'RDR' }, { id: 5, name: 'FDR' }, { id: 6, name: 'FDL' }, { id: 7, name: 'RDL' }
-];
-
-// Also make CAMERAS available as an alias for CAMERA_LAYOUT for backwards compatibility
-const CAMERAS = CAMERA_LAYOUT.map(cam => ({ ...cam, label: cam.name }));
 
 const defaultCam = (i: number): Cam => ({ 
   id: i, 
@@ -2459,15 +2356,15 @@ export default function MultiCamInspector() {
 
       {fsId != null && (
         <Fullscreen
-          cam={cams[fsId]}
+          cam={cams[fsId!]}
           brightness={brightness}
           contrast={contrast}
           onClose={() => {
-            resetView(fsId);
+            resetView(fsId!);
             setFsId(null);
           }}
-          onWheel={(e) => onWheel(fsId, e)}
-          onDragStart={(e) => onDrag(fsId, e)}
+          onWheel={(e) => onWheel(fsId!, e)}
+          onDragStart={(e) => onDrag(fsId!, e)}
         />
       )}
 
@@ -2899,10 +2796,10 @@ export default function MultiCamInspector() {
           <div className="bg-white rounded-lg p-4 max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
             <div className="text-center">
               <div className="text-3xl mb-2">
-                {darkImageDetails.darkCount > 0 ? '⚠️' : darkImageDetails.totalImages !== 8 ? '⚠️' : '✅'}
+                {darkImageDetails!.darkCount > 0 ? '⚠️' : darkImageDetails!.totalImages !== 8 ? '⚠️' : '✅'}
               </div>
               <h2 className={`text-lg font-bold mb-3 ${
-                darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 
+                darkImageDetails!.darkCount > 0 || darkImageDetails!.totalImages !== 8 
                   ? 'text-red-600' 
                   : 'text-green-600'
               }`}>
@@ -2911,13 +2808,13 @@ export default function MultiCamInspector() {
               
               <div className="text-left mb-4">
                 <p className="text-gray-700 mb-3 text-sm">
-                  Images: {darkImageDetails.totalImages}/8 • Dark: {darkImageDetails.darkCount}
+                  Images: {darkImageDetails!.totalImages}/8 • Dark: {darkImageDetails!.darkCount}
                 </p>
                 
-                {darkImageDetails.analysisResults && (
+                {darkImageDetails!.analysisResults && (
                   <div className="bg-gray-50 rounded p-3 mb-3">
                     <div className="grid grid-cols-4 gap-1 text-xs">
-                      {darkImageDetails.analysisResults.map((result, index) => (
+                      {darkImageDetails!.analysisResults!.map((result, index) => (
                         <div key={index} className={`p-1 rounded text-center ${
                           result.isDark ? 'bg-red-100' : 'bg-green-100'
                         }`}>
@@ -2933,7 +2830,7 @@ export default function MultiCamInspector() {
               </div>
               
               <div className="flex gap-2 justify-center">
-                {(darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8) && (
+                {(darkImageDetails!.darkCount > 0 || darkImageDetails!.totalImages !== 8) && (
                   <Button
                     onClick={deleteSessionFolder}
                     className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm"
@@ -2946,7 +2843,7 @@ export default function MultiCamInspector() {
                   variant="outline"
                   className="px-4 py-2 text-sm"
                 >
-                  {darkImageDetails.darkCount > 0 || darkImageDetails.totalImages !== 8 ? 'Keep' : 'Continue'}
+                  {darkImageDetails!.darkCount > 0 || darkImageDetails!.totalImages !== 8 ? 'Keep' : 'Continue'}
                 </Button>
               </div>
             </div>
@@ -3528,11 +3425,38 @@ function CanvasImage({
       const imageCenterY = finalY + scaledHeight / 2;
       
       // Apply position offset - scale to match alignment tool behavior
-      // The alignment tool works on larger containers, so we may need to scale the values
+      // The alignment tool works on larger containers, so we need to scale the values
       // to match the relative effect in our smaller camera views
-      const scaleFactorForTranslate = Math.min(rect.width, rect.height) / 500; // Approximate scaling
-      const transformedCenterX = imageCenterX + (transform.x * scaleFactorForTranslate);
-      const transformedCenterY = imageCenterY + (transform.y * scaleFactorForTranslate);
+      const baseReference = 500; // Reference size from calibration tool
+      const currentViewportSize = Math.min(rect.width, rect.height);
+      const scaleFactorForTranslate = currentViewportSize / baseReference;
+      // Apply transforms with bounds checking to prevent extreme offsets
+      const maxOffset = Math.max(rect.width, rect.height) * 0.5; // Max 50% of container size
+      const clampedOffsetX = clamp(transform.x * scaleFactorForTranslate, -maxOffset, maxOffset);
+      const clampedOffsetY = clamp(transform.y * scaleFactorForTranslate, -maxOffset, maxOffset);
+      
+      const transformedCenterX = imageCenterX + clampedOffsetX;
+      const transformedCenterY = imageCenterY + clampedOffsetY;
+      
+      // Debug output for camera transform alignment (remove in production)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 Camera Transform Debug:', {
+          cameraId,
+          rectSize: { width: rect.width, height: rect.height },
+          currentViewportSize,
+          scaleFactorForTranslate: scaleFactorForTranslate.toFixed(3),
+          transform,
+          calculatedOffset: { 
+            x: (transform.x * scaleFactorForTranslate).toFixed(1), 
+            y: (transform.y * scaleFactorForTranslate).toFixed(1) 
+          },
+          clampedOffset: {
+            x: clampedOffsetX.toFixed(1),
+            y: clampedOffsetY.toFixed(1)
+          },
+          maxOffset: maxOffset.toFixed(1)
+        });
+      }
       
       // Calculate final drawing position (top-left corner)
       const transformedX = transformedCenterX - transformedWidth / 2;
