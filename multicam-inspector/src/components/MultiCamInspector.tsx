@@ -1423,7 +1423,7 @@ export default function MultiCamInspector() {
       console.log('🔧 Mapped hangar ID to folder name:', { hangarId, folderName });
       
       // Load Mölndal baseline image from actual available session
-      const baselineUrl = `http://172.20.1.93:3001/api/image/Molndal/bender_251201_092652/${cameraName}_251201_092652.jpg?t=${Date.now()}`;
+      const baselineUrl = `http://172.20.1.93:3001/api/image/hangar_sisjon_vpn/bender_251201_125858/${cameraName}_251201_125858.jpg?t=${Date.now()}`;
       console.log('🔧 Baseline URL:', baselineUrl);
       setMolndalImage(baselineUrl);
       addLog(`📍 Loading baseline: ${cameraName} from Mölndal`);
@@ -1437,8 +1437,8 @@ export default function MultiCamInspector() {
         const response = await foldersResponse.json();
         console.log('🔧 Folders API response:', response);
         
-        // Find the hangar in the response
-        const targetHangar = response.hangars?.find((h: any) => h.id === folderName || h.name === folderName);
+        // Find the hangar in the response using the original hangar ID, not the folder name
+        const targetHangar = response.hangars?.find((h: any) => h.id === hangarId);
         console.log('🔧 Target hangar:', targetHangar);
         
         if (targetHangar && targetHangar.sessions?.length > 0) {
@@ -1451,7 +1451,7 @@ export default function MultiCamInspector() {
           console.log('🔧 Target image filename:', targetImageFilename);
           
           if (targetImageFilename) {
-            const hangarImageUrl = `http://172.20.1.93:3001/api/image/${folderName}/${latestSession.name}/${targetImageFilename}?t=${Date.now()}`;
+            const hangarImageUrl = `http://172.20.1.93:3001/api/image/${hangarId}/${latestSession.name}/${targetImageFilename}?t=${Date.now()}`;
             console.log('🔧 Hangar image URL:', hangarImageUrl);
             setHangarImage(hangarImageUrl);
             addLog(`🎯 Loading target: ${cameraName} from ${latestSession.name}`);
