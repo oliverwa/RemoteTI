@@ -1990,9 +1990,9 @@ export default function MultiCamInspector() {
 
   // --- Auto-open snapshot modal on initial load ---
   useEffect(() => {
-    // Only auto-open if no images are loaded and modal isn't already shown
+    // Only auto-open if no images are loaded and no other modals are shown
     const hasImages = cams.some(cam => cam.src && cam.src !== "");
-    if (!hasImages && !showSnapshotModal && !isCapturing && !isWaitingToDisplay) {
+    if (!hasImages && !showSnapshotModal && !isCapturing && !isWaitingToDisplay && !showFolderModal) {
       // Small delay to ensure component is fully mounted
       const timer = setTimeout(() => {
         addLog("🎬 Opening snapshot configuration automatically...");
@@ -2003,13 +2003,13 @@ export default function MultiCamInspector() {
       
       return () => clearTimeout(timer);
     }
-  }, [showSnapshotModal, isCapturing, isWaitingToDisplay, cams, addLog]);
+  }, [showSnapshotModal, isCapturing, isWaitingToDisplay, showFolderModal, cams, addLog]);
 
   // --- Render ---
   return (
-    <div className="w-full min-h-screen max-h-screen overflow-y-auto p-3 space-y-3 bg-white text-black">
+    <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white text-black">
       {/* Header – main controls */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         {showLogs && (
           <>
             {/* Layout toggle */}
@@ -2121,7 +2121,7 @@ export default function MultiCamInspector() {
 
       {/* ETA Countdown Display */}
       {(isCapturing || isWaitingToDisplay) && (
-        <div className="bg-gray-100 rounded-lg p-3">
+        <div className="bg-gray-100 rounded-lg p-2">
           <div className="flex items-center justify-center">
             {isWaitingToDisplay ? (
               <span className="text-sm font-medium text-gray-700">
@@ -2160,8 +2160,8 @@ export default function MultiCamInspector() {
       )}
 
       {/* Grid 4×2 */}
-      <div className="flex-1 overflow-auto">
-        <div className={`grid gap-3 p-3 ${
+      <div className="flex-1 overflow-auto px-2">
+        <div className={`grid gap-2 px-1 py-2 ${
           // Mobile: always 1 column
           // iPad/tablet: 1 or 2 columns based on toggle
           // Large screens: 4 columns
@@ -2189,8 +2189,8 @@ export default function MultiCamInspector() {
             }
             
             return (
-              <Card key={cam.id} className="overflow-hidden">
-                <CardContent className="p-0">
+              <Card key={cam.id} className="overflow-hidden border-0 shadow-sm">
+                <CardContent className="p-0 m-0">
                   <CamTile
                     cam={cam}
                     transform={transform}
@@ -2242,81 +2242,103 @@ export default function MultiCamInspector() {
 
         {/* Pass/Fail Buttons, Title, and Timeline - Below Camera Images */}
         {items.some(item => !item.status) && (
-          <div className="bg-white border rounded-lg p-4 space-y-4">
-            {/* Buttons */}
-            <div className="flex justify-between gap-4">
-              {(() => {
-                const currentTask = items[idx];
-                const currentValidations = validatedBoxes[currentTask.id] || new Set();
-                const totalBoxes = Object.values(currentTask.validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
-                const isValidationComplete = totalBoxes === 0 || currentValidations.size === totalBoxes;
-                
-                return (
-                  <>
-                    {/* FAIL Button - Left Side */}
-                    <Button 
-                      onClick={() => {
-                        console.log('FAIL clicked for task', idx);
-                        selectStatus("fail");
-                      }} 
-                      disabled={false}
-                      className={`flex-1 px-6 py-4 text-lg font-bold rounded-lg touch-manipulation ${
-                        items[idx].status === "fail" 
-                          ? "bg-red-600 hover:bg-red-700 text-white" 
-                          : "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
-                      }`}
-                    >
-                      ✗ FAIL
-                    </Button>
-                    
-                    {/* PASS Button - Right Side */}
-                    <Button 
-                      onClick={() => {
-                        console.log('PASS clicked for task', idx);
-                        selectStatus("pass");
-                      }} 
-                      disabled={!isValidationComplete}
-                      className={`flex-1 px-6 py-4 text-lg font-bold rounded-lg touch-manipulation ${
-                        items[idx].status === "pass" 
-                          ? "bg-green-600 hover:bg-green-700 text-white" 
-                          : isValidationComplete
-                            ? "bg-gray-100 hover:bg-gray-200 text-gray-700 border"
-                            : "bg-gray-50 text-gray-400 border cursor-not-allowed"
-                      }`}
-                    >
-                      ✓ PASS
-                    </Button>
-                  </>
-                );
-              })()}
+          <div className="space-y-4">
+            {/* Pass/Fail Buttons with Title */}
+            <div className="">
+              <div className="flex justify-center gap-6 mb-3">
+                {(() => {
+                  const currentTask = items[idx];
+                  const currentValidations = validatedBoxes[currentTask.id] || new Set();
+                  const totalBoxes = Object.values(currentTask.validationBoxes || {}).reduce((sum, boxes) => sum + (boxes?.length || 0), 0);
+                  const isValidationComplete = totalBoxes === 0 || currentValidations.size === totalBoxes;
+                  
+                  return (
+                    <>
+                      {/* FAIL Button */}
+                      <button 
+                        onClick={() => {
+                          console.log('FAIL clicked for task', idx);
+                          selectStatus("fail");
+                        }} 
+                        className={`py-3 px-16 text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[200px] ${
+                          items[idx].status === "fail" 
+                            ? "bg-red-500 text-white hover:bg-red-600 shadow-md" 
+                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        <span>FAIL</span>
+                      </button>
+                      
+                      {/* PASS Button */}
+                      <button 
+                        onClick={() => {
+                          console.log('PASS clicked for task', idx);
+                          selectStatus("pass");
+                        }} 
+                        disabled={!isValidationComplete}
+                        className={`py-3 px-16 text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[200px] ${
+                          items[idx].status === "pass" 
+                            ? "bg-green-500 text-white hover:bg-green-600 shadow-md" 
+                            : isValidationComplete
+                              ? "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                              : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>PASS</span>
+                      </button>
+                    </>
+                  );
+                })()}
+              </div>
+              
+              {/* Task Title directly below buttons */}
+              <div className="text-center">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  REMOTE INSPECTION: {items[idx].title}
+                  <button 
+                    onClick={() => setShowTaskDescriptionModal(true)}
+                    className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 text-sm font-medium"
+                    title="Task details"
+                  >
+                    ?
+                  </button>
+                </h2>
+              </div>
             </div>
             
-            {/* Title with Description Toggle */}
-            <div className="flex items-center justify-center gap-2">
-              <h2 className="text-xl font-bold text-gray-900">{items[idx].title}</h2>
-              <button 
-                onClick={() => setShowTaskDescriptionModal(true)}
-                className="text-sm text-neutral-400 hover:text-neutral-600 w-6 h-6 rounded-full border border-neutral-200 hover:border-neutral-300 transition-colors flex items-center justify-center touch-manipulation"
-              >
-                ?
-              </button>
-            </div>
-            
-            {/* Timeline Dots */}
-            <div className="flex justify-center">
-              <div className="flex items-center gap-2 flex-wrap">
+            {/* Progress Timeline */}
+            <div className="flex justify-center pb-3">
+              <div className="flex items-center gap-1.5">
                 {items.map((it, i) => {
-                  const c = it.status === "pass" ? "bg-green-500" : it.status === "fail" ? "bg-red-500" : it.status === "na" ? "bg-yellow-400" : "bg-neutral-300";
-                  const active = i === idx ? "ring-2 ring-blue-500 scale-110" : "opacity-80 hover:opacity-100";
+                  const isActive = i === idx;
+                  const isDone = it.status === "pass" || it.status === "fail" || it.status === "na";
+                  const statusColor = it.status === "pass" ? "bg-green-500" : 
+                                     it.status === "fail" ? "bg-red-500" : 
+                                     it.status === "na" ? "bg-yellow-500" : 
+                                     "bg-gray-300";
+                  
                   return (
                     <button
                       title={`${i + 1}. ${it.title}`}
                       key={i}
-                      className={`w-3 h-3 rounded-full ${c} ${active} shrink-0 outline-none focus:ring-2 focus:ring-blue-400 transition-transform`}
+                      className={`
+                        ${isActive ? 'w-3.5 h-3.5' : 'w-2.5 h-2.5'} 
+                        rounded-full transition-all
+                        ${statusColor}
+                        ${isActive ? 'ring-2 ring-offset-2 ring-blue-400' : ''}
+                        ${!isDone && !isActive ? 'opacity-30' : ''}
+                        hover:scale-125
+                      `}
                       onClick={() => {
                         if (i !== idx) {
                           setIdx(i);
-                          addLog(`📋 Jumped to task ${i + 1}: ${it.title}`);
+                          addLog(`Jumped to task ${i + 1}: ${it.title}`);
                         }
                       }}
                     />
@@ -2324,6 +2346,43 @@ export default function MultiCamInspector() {
                 })}
               </div>
             </div>
+            
+            {/* Thin Add Comments / N/A row */}
+            <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-lg">
+              <button
+                onClick={() => setShowComments(!showComments)}
+                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                </svg>
+                <span>Add Comments</span>
+              </button>
+              
+              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                <input 
+                  type="radio" 
+                  name={`task-${idx}`}
+                  checked={items[idx].status === "na"}
+                  onChange={() => selectStatus("na")}
+                  className="w-4 h-4"
+                />
+                <span>N/A</span>
+              </label>
+            </div>
+            
+            {/* Comments textarea if open */}
+            {showComments && (
+              <div className="px-4">
+                <textarea
+                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                  rows={2}
+                  placeholder="Add comments or notes for this inspection task..."
+                  value={items[idx].comment || ''}
+                  onChange={(e) => updateTaskComment(e.target.value)}
+                />
+              </div>
+            )}
           </div>
         )}
 
@@ -2357,69 +2416,9 @@ export default function MultiCamInspector() {
         </div>
       )}
 
-      {/* --- TI Checklist BELOW cameras --- */}
-      <div className="bg-white border rounded p-2">
-
-        {items.some(item => !item.status) ? (
-          <div className="px-3 md:px-6 lg:px-8">
-            <div
-              className={`border rounded p-4 shadow ${tone(items[idx].status)} w-full`}
-              style={{
-                transition: "transform 340ms ease, opacity 340ms ease",
-                transform: leaving ? "translateY(-8px) scale(0.98)" : "none",
-                opacity: leaving ? 0.15 : 1,
-              }}
-            >
-              <div className="space-y-2">
-                {/* Comments and N/A Section - Compact */}
-                <div className="flex items-center gap-3 text-xs">
-                  {/* Comment Toggle Button - Smaller */}
-                  <button
-                    onClick={() => setShowComments(!showComments)}
-                    className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                      items[idx].comment && items[idx].comment?.trim() 
-                        ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200' 
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    }`}
-                  >
-                    <span>{showComments ? '📝' : (items[idx].comment && items[idx].comment?.trim() ? '📋' : '💬')}</span>
-                    <span>{showComments ? 'Hide' : (items[idx].comment && items[idx].comment?.trim() ? 'View' : 'Add')} Comments</span>
-                  </button>
-                  
-                  {/* N/A Option - Compact */}
-                  <label className={`inline-flex items-center gap-1 px-2 py-1 border rounded cursor-pointer hover:bg-gray-50 ${
-                    items[idx].status === "na" ? "bg-blue-100 border-blue-300" : ""
-                  }`}>
-                    <input 
-                      type="radio" 
-                      name={`task-${idx}`}
-                      checked={items[idx].status === "na"}
-                      onChange={() => selectStatus("na")}
-                      className="text-blue-600 w-3 h-3"
-                    />
-                    <span className={`text-xs ${items[idx].status === "na" ? "text-blue-700 font-medium" : ""}`}>
-                      N/A
-                    </span>
-                  </label>
-                </div>
-
-                {/* Collapsible Comments Section - Compact */}
-                {showComments && (
-                  <div className="bg-gray-50 p-2 rounded">
-                    <textarea
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs resize-none bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      rows={2}
-                      placeholder="Add comments or notes for this inspection task..."
-                      value={items[idx].comment || ''}
-                      onChange={(e) => updateTaskComment(e.target.value)}
-                    />
-                  </div>
-                )}
-
-              </div>
-          </div>
-          </div>
-        ) : (
+      {/* Completion Section */}
+      {!items.some(item => !item.status) && (
+        <div className="bg-white py-3">
           <div className="text-center">
             <div className="text-lg font-semibold text-green-700 mb-4">🎉 Inspection Complete!</div>
             <div className="text-sm text-green-600 mb-6">All {items.length} tasks have been processed.</div>
@@ -2435,67 +2434,74 @@ export default function MultiCamInspector() {
               Generate a comprehensive PDF report with all task results, comments, and metadata
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Image Enhancement Controls and Help - Below Inspection Task */}
-      <div className="bg-gray-50 p-4 rounded-lg">
-        {/* Current Session Info */}
-        {currentSession && (
-          <div className="flex justify-center mb-3">
-            <div className="text-xs text-gray-500 font-medium">
-              📂 {currentSession.name} <span className="text-gray-400">({currentSession.hangar})</span>
-            </div>
-          </div>
-        )}
-        
-        {/* Centered brightness and contrast controls */}
-        <div className="flex items-center justify-center gap-6 text-sm">
-          <div className="flex items-center gap-2">
-            <label className="text-gray-600 font-medium">Bright:</label>
+      {/* Image Enhancement Controls - iPad friendly */}
+      <div className="bg-white px-6 py-4">
+        <div className="flex justify-center items-center gap-8">
+          {/* Brightness Control */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600 font-medium">BRIGHTNESS</span>
             <button
-              onClick={() => adjustBrightness(-5)}
-              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
-              title="Decrease brightness by 5%"
+              onClick={() => adjustBrightness(-10)}
+              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
             >
               −
             </button>
-            <span className="text-gray-700 w-16 text-center font-medium">{brightness}%</span>
+            <span className="text-base font-bold text-gray-800 w-16 text-center">{brightness}%</span>
             <button
-              onClick={() => adjustBrightness(5)}
-              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
-              title="Increase brightness by 5%"
+              onClick={() => adjustBrightness(10)}
+              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
             >
               +
             </button>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-gray-600 font-medium">Contrast:</label>
+          
+          {/* Contrast Control */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600 font-medium">CONTRAST</span>
             <button
-              onClick={() => adjustContrast(-5)}
-              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
-              title="Decrease contrast by 5%"
+              onClick={() => adjustContrast(-10)}
+              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
             >
               −
             </button>
-            <span className="text-gray-700 w-16 text-center font-medium">{contrast}%</span>
+            <span className="text-base font-bold text-gray-800 w-16 text-center">{contrast}%</span>
             <button
-              onClick={() => adjustContrast(5)}
-              className="px-3 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded border touch-manipulation"
-              title="Increase contrast by 5%"
+              onClick={() => adjustContrast(10)}
+              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
             >
               +
             </button>
           </div>
         </div>
-        
-        {/* Help button positioned separately */}
-        <div className="flex justify-end mt-3">
+      </div>
+      
+      {/* Session Info and Help - Bottom bar */}
+      <div className="bg-white border-t border-gray-200 px-6 py-3">
+        <div className="flex items-center justify-between">
+          {/* Session Info */}
+          <div className="flex items-center gap-2 text-sm">
+            {currentSession ? (
+              <>
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <span className="font-medium text-gray-700">{currentSession.name}</span>
+                <span className="text-gray-400">({currentSession.hangar})</span>
+              </>
+            ) : (
+              <span className="text-gray-400">No session loaded</span>
+            )}
+          </div>
+          
+          {/* Help button */}
           <div className="relative group">
-            <button className="text-sm text-neutral-400 hover:text-neutral-600 px-3 py-2 rounded border border-neutral-200 hover:border-neutral-300 transition-colors touch-manipulation">
-              ?
+            <button className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+              Help
             </button>
-            <div className="absolute right-0 top-12 bg-white border border-neutral-200 rounded-lg shadow-lg p-3 text-xs text-neutral-700 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
+            <div className="absolute right-0 bottom-10 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs text-gray-700 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
               <div className="font-semibold mb-2">Keyboard Shortcuts</div>
               <div className="space-y-1">
                 <div>Scroll = zoom</div>
@@ -3323,7 +3329,7 @@ function CamTile({
       </div>
 
       {/* Camera name and zoom controls overlay */}
-      <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-semibold">
+      <div className="absolute top-1 left-1 bg-black/60 text-white px-1 py-0.5 rounded text-xs font-medium">
         {cam.name}
       </div>
 
@@ -3767,12 +3773,12 @@ function CanvasImage({
           boxWidth = baselineBoxWidth * zoomFactor;
           boxHeight = baselineBoxHeight * zoomFactor;
         } else {
-          // For untransformed images - convert normalized coordinates to viewport pixels
-          // box.x, box.y, box.width, box.height are normalized (0-1), convert to current viewport
-          boxX = finalX + (box.x * scaledWidth);
-          boxY = finalY + (box.y * scaledHeight);
-          boxWidth = box.width * scaledWidth;
-          boxHeight = box.height * scaledHeight;
+          // For untransformed images - normalize pixel coordinates first, then convert to viewport
+          // box.x, box.y are in pixel coordinates, need to normalize by image dimensions
+          boxX = finalX + ((box.x / img.width) * scaledWidth);
+          boxY = finalY + ((box.y / img.height) * scaledHeight);
+          boxWidth = (box.width / img.width) * scaledWidth;
+          boxHeight = (box.height / img.height) * scaledHeight;
         }
         
         // Draw box outline
@@ -4152,12 +4158,12 @@ function CanvasImage({
           boxWidth = baselineBoxWidth * zoomFactor;
           boxHeight = baselineBoxHeight * zoomFactor;
         } else {
-          // For untransformed images - convert normalized coordinates to viewport pixels
-          // box.x, box.y, box.width, box.height are normalized (0-1), convert to current viewport
-          boxX = finalX + (box.x * scaledWidth);
-          boxY = finalY + (box.y * scaledHeight);
-          boxWidth = box.width * scaledWidth;
-          boxHeight = box.height * scaledHeight;
+          // For untransformed images - normalize pixel coordinates first, then convert to viewport
+          // box.x, box.y are in pixel coordinates, need to normalize by image dimensions
+          boxX = finalX + ((box.x / img.width) * scaledWidth);
+          boxY = finalY + ((box.y / img.height) * scaledHeight);
+          boxWidth = (box.width / img.width) * scaledWidth;
+          boxHeight = (box.height / img.height) * scaledHeight;
         }
         
         if (mouseX >= boxX && mouseX <= boxX + boxWidth && 

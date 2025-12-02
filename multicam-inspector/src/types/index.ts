@@ -56,6 +56,7 @@ export interface TIItem {
 export interface HangarConfig {
   id: string;
   label: string;
+  assignedDrone?: string;
   cameraTransforms: { [cameraId: number]: CameraTransform };
 }
 

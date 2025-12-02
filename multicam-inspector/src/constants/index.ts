@@ -13,7 +13,8 @@ export const CAMERAS = CAMERA_LAYOUT.map(cam => ({ ...cam, label: cam.name }));
 export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_sisjon_vpn", 
-    label: "Mölndal (hangar_sisjon_vpn) - BASELINE",
+    label: "Mölndal",
+    assignedDrone: "bender",
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -27,7 +28,8 @@ export const HANGARS: HangarConfig[] = [
   },
   { 
     id: "hangar_rouen_vpn", 
-    label: "Forges-les-Eaux (hangar_rouen_vpn)",
+    label: "Forges-les-Eaux",
+    assignedDrone: "marvin",
     cameraTransforms: {
       0: { x: 73, y: -3, scale: 1.02, rotation: 1.0 },      // FDR (actually RUR in display order)
       1: { x: -30, y: -17, scale: 1.05, rotation: 2.3 },    // FUR
@@ -44,7 +46,6 @@ export const HANGARS: HangarConfig[] = [
 export const DRONE_OPTIONS = [
   { id: "bender", label: "Bender" },
   { id: "marvin", label: "Marvin" },
-  { id: "demo", label: "Demo" },
 ];
 
 // Utility functions
