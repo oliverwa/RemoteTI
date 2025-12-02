@@ -2243,9 +2243,26 @@ export default function MultiCamInspector() {
         {/* Pass/Fail Buttons, Title, and Timeline - Below Camera Images */}
         {items.some(item => !item.status) && (
           <div className="space-y-4">
-            {/* Pass/Fail Buttons with Title */}
+            {/* Title with Pass/Fail Buttons */}
             <div className="">
-              <div className="flex justify-center gap-6 mb-3">
+              {/* Task Title first */}
+              <div className="text-center mb-4 px-4">
+                <h2 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center justify-center gap-2">
+                  <span className="truncate max-w-[90%]">
+                    {items[idx].title}
+                  </span>
+                  <button 
+                    onClick={() => setShowTaskDescriptionModal(true)}
+                    className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 text-sm font-medium"
+                    title="Task details"
+                  >
+                    ?
+                  </button>
+                </h2>
+              </div>
+              
+              {/* Pass/Fail Buttons below title */}
+              <div className="flex justify-center gap-6">
                 {(() => {
                   const currentTask = items[idx];
                   const currentValidations = validatedBoxes[currentTask.id] || new Set();
@@ -2295,20 +2312,6 @@ export default function MultiCamInspector() {
                     </>
                   );
                 })()}
-              </div>
-              
-              {/* Task Title directly below buttons */}
-              <div className="text-center">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  REMOTE INSPECTION: {items[idx].title}
-                  <button 
-                    onClick={() => setShowTaskDescriptionModal(true)}
-                    className="ml-2 inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 text-sm font-medium"
-                    title="Task details"
-                  >
-                    ?
-                  </button>
-                </h2>
               </div>
             </div>
             
