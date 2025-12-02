@@ -29,14 +29,14 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_rouen_vpn", 
     label: "Forges-les-Eaux (hangar_rouen_vpn)",
     cameraTransforms: {
-      0: { x: 42, y: -15, scale: 1.15, rotation: 1.2 },
-      1: { x: 38, y: -12, scale: 1.12, rotation: 0.8 },
-      2: { x: -35, y: -18, scale: 1.08, rotation: -0.9 },
-      3: { x: -32, y: -14, scale: 1.05, rotation: -1.1 },
-      4: { x: 28, y: 22, scale: 1.18, rotation: 2.1 },
-      5: { x: 25, y: 18, scale: 1.14, rotation: 1.8 },
-      6: { x: -28, y: 25, scale: 1.11, rotation: -1.5 },
-      7: { x: -25, y: 20, scale: 1.09, rotation: -1.8 },
+      0: { x: 73, y: -3, scale: 1.02, rotation: 1.0 },      // FDR (actually RUR in display order)
+      1: { x: -30, y: -17, scale: 1.05, rotation: 2.3 },    // FUR
+      2: { x: -29, y: 17, scale: 0.99, rotation: -3.9 },    // RUR (actually FUL in display order)
+      3: { x: -94, y: -7, scale: 0.92, rotation: -1.8 },    // RDR (actually RUL in display order)
+      4: { x: 0, y: -27, scale: 1.07, rotation: -1.3 },     // FDL (actually RDR in display order)
+      5: { x: 7, y: -9, scale: 1.0, rotation: -5.8 },       // FUL (actually FDR in display order)
+      6: { x: 1, y: -4, scale: 1.0, rotation: -5.1 },       // RUL (actually FDL in display order)
+      7: { x: 66, y: -72, scale: 1.05, rotation: -9.1 },    // RDL
     }
   }
 ];

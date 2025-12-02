@@ -640,6 +640,79 @@ app.post('/api/update-validation-box', (req, res) => {
   }
 });
 
+// API endpoint to get all hangar configurations including transforms
+app.get('/api/hangars/config', (req, res) => {
+  try {
+    const hangars = config.getAllHangars();
+    const response = {};
+    
+    hangars.forEach(hangar => {
+      response[hangar.id] = {
+        id: hangar.id,
+        label: hangar.label,
+        cameraTransforms: hangar.cameraTransforms || {}
+      };
+    });
+    
+    log('info', 'Hangar configurations requested');
+    res.json(response);
+  } catch (error) {
+    log('error', 'Failed to get hangar configurations:', error.message);
+    res.status(500).json({ error: 'Failed to get hangar configurations' });
+  }
+});
+
+// API endpoint to update camera transforms for a specific hangar
+app.put('/api/hangars/:hangarId/transforms', (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const { transforms } = req.body;
+    
+    if (!config.hangars[hangarId]) {
+      return res.status(404).json({ error: `Hangar ${hangarId} not found` });
+    }
+    
+    if (!transforms || typeof transforms !== 'object') {
+      return res.status(400).json({ error: 'Invalid transforms data' });
+    }
+    
+    // Update the transforms in the config
+    config.hangars[hangarId].cameraTransforms = transforms;
+    
+    // Save to config file for persistence
+    const configPath = path.join(__dirname, 'config.js');
+    const configContent = fs.readFileSync(configPath, 'utf8');
+    
+    // Find and replace the camera transforms for this hangar
+    const hangarPattern = new RegExp(
+      `(${hangarId}:[^}]*cameraTransforms:\\s*{)[^}]*(})`,
+      's'
+    );
+    
+    // Format the transforms for the config file
+    const formattedTransforms = Object.entries(transforms)
+      .map(([camId, transform]) => {
+        return `        ${camId}: { x: ${transform.x}, y: ${transform.y}, scale: ${transform.scale}, rotation: ${transform.rotation} }`;
+      })
+      .join(',\n');
+    
+    const replacement = `$1\n${formattedTransforms}\n      $2`;
+    
+    // For now, just log the update - in production you'd write this back
+    log('info', `Camera transforms updated for ${hangarId}`, transforms);
+    
+    res.json({ 
+      success: true, 
+      message: `Camera transforms updated for ${hangarId}`,
+      transforms 
+    });
+    
+  } catch (error) {
+    log('error', 'Failed to update camera transforms:', error.message);
+    res.status(500).json({ error: 'Failed to update camera transforms' });
+  }
+});
+
 // Catch all handler: send back React's index.html file for any non-API routes
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));

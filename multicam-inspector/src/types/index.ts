@@ -21,13 +21,19 @@ export interface CameraTransform {
 
 export interface ValidationBox {
   id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  // Normalized coordinates (0.0 to 1.0) relative to original image dimensions
+  x: number;        // Left edge as percentage of image width
+  y: number;        // Top edge as percentage of image height  
+  width: number;    // Width as percentage of image width
+  height: number;   // Height as percentage of image height
   label: string;
   description: string;
   validated?: boolean;
+  // Legacy support for pixel-based coordinates (for migration)
+  pixelX?: number;
+  pixelY?: number;
+  pixelWidth?: number;
+  pixelHeight?: number;
 }
 
 export interface TIItem {
