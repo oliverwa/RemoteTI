@@ -1554,7 +1554,7 @@ export default function MultiCamInspector() {
         }
         if (showCalibrateModal) {
           setCalibrateModal(false);
-          setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
+          // Don't reset transform - keep current values for next time
           setMolndalImage("");
           setHangarImage("");
           addLog("🎯 Camera Calibration closed");
@@ -2598,6 +2598,16 @@ export default function MultiCamInspector() {
         onStartCalibration={() => {
           if (calibrateHangar) {
             setCalibrateSelectionModal(false);
+            // Convert from inspectionData.cameras index to CAMERA_LAYOUT index
+            const selectedCameraName = inspectionData.cameras[calibrateCamera]?.id;
+            const cameraLayoutIndex = CAMERA_LAYOUT.findIndex(layout => layout.name === selectedCameraName);
+            
+            // Load current transform values for this camera and hangar using the correct index
+            const currentTransform = hangarTransforms[calibrateHangar]?.[cameraLayoutIndex] || { x: 0, y: 0, scale: 1, rotation: 0 };
+            
+            // Note: The stored transforms are in "normalized" units that get scaled by calculateTransformScaleFactor
+            // For the calibration UI, we show them as-is since the calibration modal will save them in the same format
+            setCalibrationTransform(currentTransform);
             loadCalibrationImages(calibrateHangar, calibrateCamera);
             setCalibrateModal(true);
           }
@@ -2637,10 +2647,11 @@ export default function MultiCamInspector() {
                         const handleMouseMove = (moveEvent: MouseEvent) => {
                           const deltaX = moveEvent.clientX - startX;
                           const deltaY = moveEvent.clientY - startY;
+                          // Scale the delta by 2 since we apply 0.5 scaling in the display
                           setCalibrationTransform(prev => ({
                             ...prev,
-                            x: startTransformX + deltaX,
-                            y: startTransformY + deltaY
+                            x: startTransformX + deltaX * 2,
+                            y: startTransformY + deltaY * 2
                           }));
                         };
 
@@ -2667,7 +2678,10 @@ export default function MultiCamInspector() {
                       <div 
                         className="absolute inset-0 cursor-move"
                         style={{
-                          transform: `translate(${calibrationTransform.x}px, ${calibrationTransform.y}px) scale(${calibrationTransform.flipped ? -1 : 1}, 1) scale(${calibrationTransform.scale}) rotate(${calibrationTransform.rotation}deg)`,
+                          // Apply the same transform scaling as in the viewport
+                          // The container is 500px height, so calculate the scale factor
+                          // Using the same logic as calculateTransformScaleFactor
+                          transform: `translate(${calibrationTransform.x * 0.5}px, ${calibrationTransform.y * 0.5}px) scale(${calibrationTransform.flipped ? -1 : 1}, 1) scale(${calibrationTransform.scale}) rotate(${calibrationTransform.rotation}deg)`,
                           transformOrigin: '50% 50%',
                           opacity: 0.7
                         }}
@@ -2807,7 +2821,7 @@ export default function MultiCamInspector() {
                         variant="outline"
                         onClick={() => {
                           setCalibrateModal(false);
-                          setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
+                          // Don't reset transform - keep current values for next time
                           setMolndalImage("");
                           setHangarImage("");
                         }}
@@ -2837,9 +2851,9 @@ export default function MultiCamInspector() {
                               addLog(`⚠️ Calibration updated locally but failed to save to backend`);
                             }
                             
-                            // Reset and close
+                            // Close modal but keep transform for next time
                             setCalibrateModal(false);
-                            setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0 });
+                            // Don't reset transform - keep current values for next time
                             setMolndalImage("");
                             setHangarImage("");
                           }}
