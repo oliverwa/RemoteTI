@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import backgroundImage from '../background.jpg';
 
 interface LoginPageProps {
   onLogin: (username: string) => void;
@@ -15,8 +16,20 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-96">
+    <div className="min-h-screen flex items-center justify-center relative">
+      {/* Background image with opacity */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.3
+        }}
+      />
+      {/* Content */}
+      <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-xl w-96 relative z-10">
         {/* Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">

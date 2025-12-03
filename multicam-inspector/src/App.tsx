@@ -23,16 +23,17 @@ function App() {
         <LoginPage onLogin={handleLogin} />
       ) : (
         <div>
-          {/* Add a simple header with user info and logout */}
-          <div className="fixed top-4 right-4 z-50 flex items-center space-x-3 bg-gray-800 px-4 py-2 rounded-lg">
-            <span className="text-gray-400 text-sm">
+          {/* Minimal user indicator in bottom-left corner */}
+          <div className="fixed bottom-4 left-4 z-50 flex items-center space-x-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-gray-200">
+            <span className="text-gray-600 text-xs">
               {currentUser}
             </span>
             <button
               onClick={handleLogout}
-              className="px-3 py-1 text-xs bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
+              className="text-xs text-gray-500 hover:text-red-600 transition-colors"
+              title="Logout"
             >
-              Logout
+              ×
             </button>
           </div>
           <MultiCamInspector />
