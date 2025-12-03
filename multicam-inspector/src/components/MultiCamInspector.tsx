@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import inspectionData from '../data/drone-remote-inspection.json';
+// Removed static import - will fetch from API instead
 import jsPDF from 'jspdf';
 
 // Import shared types and constants
@@ -48,18 +48,7 @@ const calculateTransformScaleFactor = (imageDrawnWidth: number, imageDrawnHeight
   return referenceSize / 1000;
 };
 
-// Convert JSON tasks to TIItem format
-const TI_ITEMS: TIItem[] = inspectionData.tasks.map(task => ({
-  id: task.id,
-  title: task.title,
-  detail: task.description,
-  order: task.order,
-  required: task.required,
-  allowedStatuses: task.allowedStatuses,
-  status: undefined,
-  validationBoxes: (task as any).validationBoxes,
-  instructions: Array.isArray(task.instructions) ? task.instructions : (task.instructions ? [task.instructions] : [])
-}));
+// TI_ITEMS will be populated from API
 
 function tone(s?: string) {
   return s === "pass"
@@ -90,6 +79,11 @@ const toDataUrl = (file: File) =>
   });
 
 export default function MultiCamInspector() {
+  // --- State for inspection data ---
+  const [inspectionData, setInspectionData] = useState<any>(null);
+  const [tiItems, setTiItems] = useState<TIItem[]>([]);
+  const [isLoadingInspection, setIsLoadingInspection] = useState(true);
+
   // --- Hangar ID Mapping ---
   const folderNameToHangarId = (folderName: string) => {
     switch(folderName) {
@@ -138,6 +132,7 @@ export default function MultiCamInspector() {
   const adjustContrast = (delta: number) => {
     setContrast(prev => Math.max(50, Math.min(150, prev + delta)));
   };
+
 
   // Debug effect for calibration state
   useEffect(() => {
@@ -282,6 +277,57 @@ export default function MultiCamInspector() {
     setLogs(prev => [...prev.slice(-49), logEntry]); // Keep last 50 logs
   }, []);
 
+  // Fetch inspection data from backend
+  useEffect(() => {
+    const fetchInspectionData = async () => {
+      try {
+        console.log('Starting to fetch inspection data...');
+        setIsLoadingInspection(true);
+        
+        // Point to Pi backend
+        const apiUrl = 'http://172.20.1.93:3001/api/inspection-data';
+        
+        console.log('Fetching from:', apiUrl);
+        const response = await fetch(apiUrl);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch inspection data: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Received inspection data:', data);
+        console.log('Number of tasks:', data.tasks?.length || 0);
+        
+        setInspectionData(data);
+        
+        // Convert JSON tasks to TIItem format
+        const items: TIItem[] = data.tasks.map((task: any) => ({
+          id: task.id,
+          title: task.title,
+          detail: task.description,
+          order: task.order,
+          required: task.required,
+          allowedStatuses: task.allowedStatuses,
+          status: undefined,
+          validationBoxes: task.validationBoxes,
+          instructions: Array.isArray(task.instructions) ? task.instructions : (task.instructions ? [task.instructions] : [])
+        }));
+        
+        console.log('Converted items:', items.length);
+        setTiItems(items);
+        addLog(`✅ Loaded ${items.length} inspection tasks`);
+      } catch (error) {
+        console.error('Error loading inspection data:', error);
+        addLog(`❌ Failed to load inspection data: ${error}`);
+      } finally {
+        setIsLoadingInspection(false);
+      }
+    };
+
+    fetchInspectionData();
+  }, [addLog]);
+
   // Folder browser state
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [availableFolders, setAvailableFolders] = useState<any[]>([]);
@@ -289,7 +335,12 @@ export default function MultiCamInspector() {
   const [currentSession, setCurrentSession] = useState<{name: string, hangar: string} | null>(null);
 
   // --- TI checklist state ---
-  const [items, setItems] = useState<TIItem[]>(TI_ITEMS);
+  const [items, setItems] = useState<TIItem[]>([]);
+  
+  // Update items when tiItems changes
+  useEffect(() => {
+    setItems(tiItems);
+  }, [tiItems]);
   const [idx, setIdx] = useState(0); // current
   const [leaving, setLeaving] = useState(false);
   const didInitialApply = useRef(false);
@@ -2006,6 +2057,17 @@ export default function MultiCamInspector() {
   }, [showSnapshotModal, isCapturing, isWaitingToDisplay, showFolderModal, cams, addLog]);
 
   // --- Render ---
+  if (isLoadingInspection) {
+    return (
+      <div className="w-full min-h-screen max-h-screen flex items-center justify-center bg-white text-black">
+        <div className="text-center">
+          <div className="text-xl font-semibold mb-2">Loading inspection data...</div>
+          <div className="text-sm text-gray-500">Please wait</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white text-black">
       {/* Header – main controls */}
@@ -2597,12 +2659,12 @@ export default function MultiCamInspector() {
         setCalibrateHangar={setCalibrateHangar}
         calibrateCamera={calibrateCamera}
         setCalibrateCamera={setCalibrateCamera}
-        cameras={inspectionData.cameras}
+        cameras={inspectionData?.cameras || []}
         onStartCalibration={() => {
           if (calibrateHangar) {
             setCalibrateSelectionModal(false);
             // Convert from inspectionData.cameras index to CAMERA_LAYOUT index
-            const selectedCameraName = inspectionData.cameras[calibrateCamera]?.id;
+            const selectedCameraName = inspectionData?.cameras?.[calibrateCamera]?.id;
             const cameraLayoutIndex = CAMERA_LAYOUT.findIndex(layout => layout.name === selectedCameraName);
             
             // Load current transform values for this camera and hangar using the correct index
@@ -2621,7 +2683,7 @@ export default function MultiCamInspector() {
       {showCalibrateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-4 w-[1100px] max-w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-2">🎯 Camera Calibration - {inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
+            <h2 className="text-lg font-semibold mb-2">🎯 Camera Calibration - {inspectionData?.cameras?.[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
             <p className="text-sm text-gray-600 mb-4">
               Align the {HANGARS.find(h => h.id === calibrateHangar)?.label || 'hangar'} image with the Mölndal baseline. Drag to pan or use controls.
             </p>
@@ -2836,7 +2898,7 @@ export default function MultiCamInspector() {
                         <Button
                           onClick={async () => {
                             // Convert from inspectionData.cameras index to CAMERA_LAYOUT index
-                            const selectedCameraName = inspectionData.cameras[calibrateCamera]?.id;
+                            const selectedCameraName = inspectionData?.cameras?.[calibrateCamera]?.id;
                             const cameraLayoutIndex = CAMERA_LAYOUT.findIndex(layout => layout.name === selectedCameraName);
                             
                             // Save the calibration to the hangar transforms
@@ -2849,7 +2911,7 @@ export default function MultiCamInspector() {
                             const saved = await saveTransformsToBackend(calibrateHangar, newTransforms[calibrateHangar]);
                             
                             if (saved) {
-                              addLog(`✅ Calibration saved to backend for ${inspectionData.cameras[calibrateCamera]?.name || 'Camera'} in ${HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}`);
+                              addLog(`✅ Calibration saved to backend for ${inspectionData?.cameras?.[calibrateCamera]?.name || 'Camera'} in ${HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}`);
                             } else {
                               addLog(`⚠️ Calibration updated locally but failed to save to backend`);
                             }
@@ -4230,7 +4292,9 @@ try {
   const arr = Array.from({ length: 8 }, (_, i) => defaultCam(i));
   console.assert(arr.length === 8 && arr[0].id === 0 && arr[7].id === 7, "8 cams init");
   console.assert(HANGARS.some((h) => h.id === "hangar_sisjon_vpn") && HANGARS.some((h) => h.id === "hangar_rouen_vpn"), "hangars present");
-  console.assert(TI_ITEMS.length === inspectionData.tasks.length, `TI has ${inspectionData.tasks.length} items`);
+  if (inspectionData) {
+    console.assert(tiItems.length === inspectionData?.tasks?.length, `TI has ${inspectionData?.tasks?.length} items`);
+  }
   // clampPan tests
   const rp = clampPan({ x: 9999, y: -9999 }, 3, { width: 1000, height: 800 } as any, true);
   console.assert(Math.abs(rp.x) <= (3 - 1) * (1000 / 2) + 1, "clampPan x");

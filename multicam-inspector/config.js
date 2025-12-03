@@ -138,7 +138,7 @@ const environmentConfigs = {
         cameraFetch: "camera_fetch.sh"
       },
       data: {
-        inspectionJson: "data/drone-remote-inspection.json"
+        inspectionJson: "data/templates/drone-remote-inspection.json"
       }
     }
   },
@@ -152,7 +152,7 @@ const environmentConfigs = {
         cameraFetch: path.join(process.cwd(), "camera_fetch.sh")
       },
       data: {
-        inspectionJson: path.join(process.cwd(), "src/data/drone-remote-inspection.json")
+        inspectionJson: "data/templates/drone-remote-inspection.json"
       }
     }
   },
@@ -166,7 +166,7 @@ const environmentConfigs = {
         cameraFetch: "/opt/multicam-inspector/camera_fetch.sh"
       },
       data: {
-        inspectionJson: "/opt/multicam-inspector/data/drone-remote-inspection.json"
+        inspectionJson: "/opt/multicam-inspector/data/templates/drone-remote-inspection.json"
       }
     }
   }
