@@ -18,7 +18,11 @@
         "Confirm remote inspection setup is operational",
         "Review safety protocols for remote inspection"
       ],
-      "validationBoxes": {}
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
     },
     {
       "id": "parachute_yellow_lid",
@@ -102,6 +106,10 @@
             "height": 140
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -168,6 +176,10 @@
             "height": 514
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -216,6 +228,10 @@
             "height": 895
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -264,6 +280,10 @@
             "height": 643
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -312,6 +332,10 @@
             "height": 197
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -360,6 +384,10 @@
             "height": 204
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -408,6 +436,10 @@
             "height": 105
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -515,6 +547,10 @@
             "height": 620
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -619,6 +655,10 @@
             "height": 343
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -640,6 +680,10 @@
             "height": 421
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -689,6 +733,10 @@
             "height": 497
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -738,6 +786,10 @@
             "height": 282
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -759,6 +811,10 @@
             "height": 205
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -780,6 +836,10 @@
             "height": 108
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -846,6 +906,10 @@
             "height": 113
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -913,6 +977,10 @@
             "height": 521
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -969,6 +1037,10 @@
             "height": 237
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1014,6 +1086,10 @@
             "height": 229
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1036,6 +1112,10 @@
             "height": 1957
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1095,6 +1175,10 @@
             "height": 114
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1126,6 +1210,10 @@
             "height": 132
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1157,6 +1245,10 @@
             "height": 1018
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1206,6 +1298,10 @@
             "height": 239
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1237,6 +1333,10 @@
             "height": 229
           }
         ]
+      },
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
       }
     },
     {
@@ -1249,7 +1349,11 @@
         "Verify overall system readiness",
         "Confirm inspection completeness"
       ],
-      "validationBoxes": {}
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
     },
     {
       "id": "documentation_completion",
@@ -1261,7 +1365,18 @@
         "Complete inspection records",
         "Submit adverse events if needed"
       ],
-      "validationBoxes": {}
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
     }
-  ]
+  ],
+  "completionStatus": {
+    "status": "not_started",
+    "startedBy": null,
+    "startedAt": null,
+    "completedBy": null,
+    "completedAt": null
+  }
 }

@@ -1,0 +1,105 @@
+{
+  "inspectionType": "drone_scheduled_service_inspection",
+  "name": "Drone Scheduled Service Inspection Checklist",
+  "version": "1.0",
+  "description": "Scheduled service and maintenance inspection checklist for drone systems",
+  "metadata": {
+    "author": "RemoteTI",
+    "created": "2024-12-03",
+    "inspectionMode": "onsite"
+  },
+  "tasks": [
+    {
+      "id": "component_replacement",
+      "title": "MAINTENANCE: Scheduled component replacement",
+      "description": "Replace time-limited components according to maintenance schedule.\n\nReplace propellers if at hour limit.\nChange dampeners and vibration isolators.\nReplace battery if at cycle limit.\nUpdate expired safety equipment.\nReplace worn cable ties and protective sleeves.",
+      "instructions": [
+        "Check maintenance schedule for due replacements",
+        "Replace propellers if needed",
+        "Change vibration dampeners",
+        "Replace time-expired components",
+        "Update maintenance log with replacements"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "lubrication_service",
+      "title": "LUBRICATION: Apply lubrication and protective coatings",
+      "description": "Perform all lubrication and protection services.\n\nLubricate gimbal bearings if applicable.\nApply dielectric grease to electrical connections.\nLubricate folding propeller mechanisms.\nApply corrosion protection to exposed metal.\nClean and lubricate mechanical linkages.",
+      "instructions": [
+        "Lubricate all specified bearing points",
+        "Apply dielectric grease to connectors",
+        "Service folding mechanisms",
+        "Apply corrosion preventive compounds",
+        "Document all lubrication performed"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "firmware_updates",
+      "title": "SOFTWARE: Firmware and software updates",
+      "description": "Update all firmware and software to latest stable versions.\n\nUpdate flight controller firmware.\nUpdate ESC firmware if available.\nUpdate companion computer software.\nUpdate ground station software.\nVerify parameter file after updates.\nTest all functions after updates.",
+      "instructions": [
+        "Check for available firmware updates",
+        "Backup current parameters",
+        "Perform firmware updates",
+        "Restore and verify parameters",
+        "Conduct post-update function test"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "deep_cleaning",
+      "title": "CLEANING: Deep cleaning and inspection",
+      "description": "Perform thorough cleaning of all components.\n\nClean all optical sensors and lenses.\nRemove dust and debris from motors.\nClean cooling fins and heat sinks.\nClean electrical contacts and connectors.\nRemove any corrosion or oxidation.\nClean and inspect propellers thoroughly.",
+      "instructions": [
+        "Clean all camera lenses and sensors",
+        "Blow out motors with compressed air",
+        "Clean all cooling surfaces",
+        "Clean electrical contacts",
+        "Detail clean entire airframe"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "compliance_documentation",
+      "title": "COMPLIANCE: Regulatory compliance and documentation",
+      "description": "Ensure all regulatory compliance requirements are met.\n\nVerify registration is current.\nCheck insurance documentation.\nUpdate maintenance logbook.\nVerify pilot certifications are current.\nEnsure all required markings are legible.\nFile any required service bulletins.",
+      "instructions": [
+        "Verify registration status",
+        "Check insurance expiration",
+        "Complete maintenance logbook entries",
+        "Verify all required documentation",
+        "Submit compliance reports if required"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    }
+  ],
+  "completionStatus": {
+    "status": "not_started",
+    "startedBy": null,
+    "startedAt": null,
+    "completedBy": null,
+    "completedAt": null
+  }
+}

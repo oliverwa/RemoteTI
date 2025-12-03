@@ -1,0 +1,104 @@
+{
+  "inspectionType": "drone_onsite_physical_inspection",
+  "name": "Drone Onsite Physical Inspection Checklist",
+  "version": "1.0",
+  "description": "Onsite physical inspection checklist for drone systems performed at the hangar with direct access",
+  "metadata": {
+    "author": "RemoteTI",
+    "created": "2024-12-03",
+    "inspectionMode": "onsite"
+  },
+  "tasks": [
+    {
+      "id": "safety_preparation",
+      "title": "SAFETY: Pre-inspection safety check",
+      "description": "Ensure all safety protocols are followed before beginning physical inspection.\n\nConfirm drone is powered down and secured.\nVerify workspace is clear and safe.\nEnsure proper PPE is available if required.\nConfirm emergency procedures are understood.",
+      "instructions": [
+        "Power down drone completely",
+        "Clear and secure workspace",
+        "Brief team on safety procedures",
+        "Verify emergency stop access"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "structural_inspection",
+      "title": "STRUCTURE: Physical airframe and mounting inspection",
+      "description": "Physically inspect drone structure and all mounting points.\n\nCheck motor arms for cracks or damage.\nVerify all mounting bolts are secure and torqued.\nInspect landing gear integrity.\nCheck drone core for any structural damage.\nVerify WASP and payload attachments.",
+      "instructions": [
+        "Inspect all motor arms thoroughly",
+        "Check torque on critical bolts",
+        "Test landing gear stability",
+        "Examine core structure for cracks",
+        "Verify payload mounting security"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "propulsion_inspection",
+      "title": "PROPULSION: Motors and propellers physical check",
+      "description": "Manually inspect propulsion system components.\n\nRotate each motor by hand to check for resistance.\nFlex test propellers for cracks or damage.\nCheck propeller mounting and locking.\nInspect ESCs for damage or overheating signs.\nVerify motor mount security.",
+      "instructions": [
+        "Manually rotate all motors",
+        "Flex test each propeller",
+        "Check propeller mounting hardware",
+        "Inspect ESC condition",
+        "Verify no play in motor mounts"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "power_systems_check",
+      "title": "POWER: Battery and electrical inspection",
+      "description": "Inspect power systems and connections.\n\nRemove and inspect battery for swelling.\nCheck all power connectors for damage.\nInspect main power distribution.\nVerify umbilical connection contacts.\nCheck for any signs of electrical damage.",
+      "instructions": [
+        "Inspect battery physical condition",
+        "Check all power connectors",
+        "Clean umbilical contacts",
+        "Look for burn marks or damage",
+        "Verify cable routing and protection"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "sensors_communication_check",
+      "title": "SYSTEMS: Sensors and communication verification",
+      "description": "Check all sensors and communication equipment.\n\nClean all camera lenses and sensors.\nVerify antenna connections and condition.\nCheck GPS/compass module mounting.\nInspect gimbal movement and wiring.\nPower on and verify basic system operation.",
+      "instructions": [
+        "Clean all optical sensors",
+        "Check antenna connections",
+        "Verify GPS mounting and cables",
+        "Test gimbal range of motion",
+        "Perform basic power-on test"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    }
+  ],
+  "completionStatus": {
+    "status": "not_started",
+    "startedBy": null,
+    "startedAt": null,
+    "completedBy": null,
+    "completedAt": null
+  }
+}
