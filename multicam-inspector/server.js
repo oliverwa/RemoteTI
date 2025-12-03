@@ -577,6 +577,8 @@ app.get('/api/inspection-data', (req, res) => {
     }
     
     const jsonData = JSON.parse(fs.readFileSync(INSPECTION_JSON_PATH, 'utf8'));
+    // Add cameras from config
+    jsonData.cameras = config.cameras.details;
     res.json(jsonData);
     
   } catch (error) {

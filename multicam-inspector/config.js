@@ -33,6 +33,16 @@ const baseConfig = {
   
   cameras: {
     ids: ["FDR", "FUR", "RUR", "RDR", "FDL", "FUL", "RUL", "RDL"],
+    details: [
+      { id: "FDR", name: "Front Down Right", position: "front_down_right" },
+      { id: "FUR", name: "Front Up Right", position: "front_up_right" },
+      { id: "RUR", name: "Rear Up Right", position: "rear_up_right" },
+      { id: "RDR", name: "Rear Down Right", position: "rear_down_right" },
+      { id: "FDL", name: "Front Down Left", position: "front_down_left" },
+      { id: "FUL", name: "Front Up Left", position: "front_up_left" },
+      { id: "RUL", name: "Rear Up Left", position: "rear_up_left" },
+      { id: "RDL", name: "Rear Down Left", position: "rear_down_left" }
+    ],
     ips: {
       "FDR": "10.20.1.208",
       "FUR": "10.20.1.209", 
@@ -138,7 +148,7 @@ const environmentConfigs = {
         cameraFetch: "camera_fetch.sh"
       },
       data: {
-        inspectionJson: "data/templates/drone-remote-inspection.json"
+        inspectionJson: "data/templates/remote-ti-inspection.json"
       }
     }
   },
@@ -152,7 +162,7 @@ const environmentConfigs = {
         cameraFetch: path.join(process.cwd(), "camera_fetch.sh")
       },
       data: {
-        inspectionJson: "data/templates/drone-remote-inspection.json"
+        inspectionJson: "data/templates/remote-ti-inspection.json"
       }
     }
   },
@@ -166,7 +176,7 @@ const environmentConfigs = {
         cameraFetch: "/opt/multicam-inspector/camera_fetch.sh"
       },
       data: {
-        inspectionJson: "/opt/multicam-inspector/data/templates/drone-remote-inspection.json"
+        inspectionJson: "/opt/multicam-inspector/data/templates/remote-ti-inspection.json"
       }
     }
   }

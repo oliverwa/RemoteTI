@@ -3872,11 +3872,6 @@ function CanvasImage({
           ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
         }
         
-        // Draw label
-        ctx.font = '14px Arial';
-        ctx.fillStyle = isValidated ? '#065f46' : '#7f1d1d';
-        ctx.fillText(box.label, boxX + 5, boxY + 20);
-        
         // Draw checkmark for validated boxes only
         if (isValidated) {
           ctx.font = '18px Arial';
