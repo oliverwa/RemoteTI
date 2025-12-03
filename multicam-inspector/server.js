@@ -569,14 +569,52 @@ app.get('/api/folders', (req, res) => {
   }
 });
 
-// Inspection data management
-app.get('/api/inspection-data', (req, res) => {
+// List available inspection types
+app.get('/api/inspection-types', (req, res) => {
   try {
-    if (!fs.existsSync(INSPECTION_JSON_PATH)) {
-      return res.status(404).json({ error: 'Inspection JSON file not found' });
+    const templatesDir = path.join(BASE_DIR, 'data', 'templates');
+    
+    if (!fs.existsSync(templatesDir)) {
+      return res.json([]);
     }
     
-    const jsonData = JSON.parse(fs.readFileSync(INSPECTION_JSON_PATH, 'utf8'));
+    const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+    const inspectionTypes = files.map(file => {
+      const filePath = path.join(templatesDir, file);
+      const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      const taskCount = content.tasks ? content.tasks.length : 0;
+      
+      // Extract type from filename (e.g., "remote-ti-inspection.json" -> "remote")
+      const type = file.replace('-ti-inspection.json', '').replace('-inspection.json', '');
+      
+      return {
+        file: file.replace('.json', ''),
+        type: type,
+        name: type.charAt(0).toUpperCase() + type.slice(1) + ' TI Inspection',
+        description: content.description || `${type.charAt(0).toUpperCase() + type.slice(1)} technical inspection`,
+        mode: type === 'remote' ? 'remote' : 'onsite',
+        taskCount: taskCount
+      };
+    });
+    
+    res.json(inspectionTypes);
+  } catch (error) {
+    log('error', 'Error listing inspection types:', error.message);
+    res.status(500).json({ error: 'Failed to list inspection types' });
+  }
+});
+
+// Get specific inspection template
+app.get('/api/inspection-data/:type', (req, res) => {
+  try {
+    const inspectionType = req.params.type;
+    const inspectionPath = path.join(BASE_DIR, 'data', 'templates', `${inspectionType}.json`);
+    
+    if (!fs.existsSync(inspectionPath)) {
+      return res.status(404).json({ error: 'Inspection type not found' });
+    }
+    
+    const jsonData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
     // Add cameras from config
     jsonData.cameras = config.cameras.details;
     res.json(jsonData);
@@ -584,6 +622,26 @@ app.get('/api/inspection-data', (req, res) => {
   } catch (error) {
     log('error', 'Error serving inspection data:', error.message);
     res.status(500).json({ error: 'Failed to load inspection data' });
+  }
+});
+
+// Get default inspection template (remote-ti-inspection)
+app.get('/api/inspection-data', (req, res) => {
+  try {
+    const inspectionType = 'remote-ti-inspection';
+    const inspectionPath = path.join(BASE_DIR, 'data', 'templates', `${inspectionType}.json`);
+    
+    if (!fs.existsSync(inspectionPath)) {
+      return res.status(404).json({ error: 'Default inspection type not found' });
+    }
+    
+    const jsonData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
+    // Add cameras from config
+    jsonData.cameras = config.cameras.details;
+    res.json(jsonData);
+  } catch (error) {
+    log('error', 'Error serving default inspection data:', error.message);
+    res.status(500).json({ error: 'Failed to load default inspection data' });
   }
 });
 

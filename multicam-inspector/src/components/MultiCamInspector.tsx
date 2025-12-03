@@ -78,7 +78,11 @@ const toDataUrl = (file: File) =>
     r.readAsDataURL(file);
   });
 
-export default function MultiCamInspector() {
+interface MultiCamInspectorProps {
+  selectedInspection?: string | null;
+}
+
+export default function MultiCamInspector({ selectedInspection }: MultiCamInspectorProps = {}) {
   // --- State for inspection data ---
   const [inspectionData, setInspectionData] = useState<any>(null);
   const [tiItems, setTiItems] = useState<TIItem[]>([]);
@@ -284,8 +288,14 @@ export default function MultiCamInspector() {
         console.log('Starting to fetch inspection data...');
         setIsLoadingInspection(true);
         
-        // Point to Pi backend
-        const apiUrl = 'http://172.20.1.93:3001/api/inspection-data';
+        // Determine the API URL based on environment and selected inspection
+        const baseUrl = window.location.hostname === 'localhost' 
+          ? 'http://localhost:3001' 
+          : 'http://172.20.1.93:3001';
+        
+        const apiUrl = selectedInspection 
+          ? `${baseUrl}/api/inspection-data/${selectedInspection}`
+          : `${baseUrl}/api/inspection-data`;
         
         console.log('Fetching from:', apiUrl);
         const response = await fetch(apiUrl);
@@ -326,7 +336,7 @@ export default function MultiCamInspector() {
     };
 
     fetchInspectionData();
-  }, [addLog]);
+  }, [addLog, selectedInspection]);
 
   // Folder browser state
   const [showFolderModal, setShowFolderModal] = useState(false);
