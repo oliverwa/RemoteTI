@@ -91,16 +91,16 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6">
-        <h1 className="text-xl font-bold text-center text-gray-900 mb-6">
+      <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-4">
+        <h1 className="text-lg font-bold text-center text-gray-900 mb-4">
           Inspection Configuration
         </h1>
 
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Inspection Type Selection */}
-          <div className="pb-4 border-b border-gray-200">
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
-              1. Select Inspection Type
+          <div className="bg-gray-50 rounded-lg p-3">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Select Inspection Type
             </label>
             {loading ? (
               <div className="text-center py-4 text-gray-500">Loading inspection types...</div>
@@ -110,7 +110,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
                   <button
                     key={inspection.file}
                     onClick={() => setSelectedInspection(inspection.file)}
-                    className={`p-3 rounded-lg border-2 text-left transition-all ${
+                    className={`p-2 rounded-lg border-2 text-left transition-all ${
                       selectedInspection === inspection.file
                         ? inspection.mode === 'remote' 
                           ? 'border-blue-500 bg-blue-50'
@@ -136,16 +136,16 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           </div>
 
           {/* Hangar Selection */}
-          <div className="pb-4 border-b border-gray-200">
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
-              2. Select Hangar
+          <div className="bg-gray-50 rounded-lg p-3">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Select Hangar
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {HANGARS.map((h) => (
                 <button
                   key={h.id}
                   onClick={() => setSelectedHangar(h.id)}
-                  className={`p-4 rounded-lg border-2 text-left transition-all ${
+                  className={`p-3 rounded-lg border-2 text-left transition-all ${
                     selectedHangar === h.id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -163,13 +163,13 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           </div>
           
           {/* Drone Display/Selection */}
-          <div className="pb-4 border-b border-gray-200">
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
-              3. Drone Assignment
+          <div className="bg-gray-50 rounded-lg p-3">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Drone Assignment
             </label>
             {selectedHangarObj?.assignedDrone && !isEditingDrone ? (
-              <div className="flex items-center gap-3">
-                <div className="flex-1 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="font-medium">{assignedDroneName}</span>
                     <span className="text-sm text-gray-500">(Auto-selected)</span>
@@ -182,24 +182,32 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
                 </div>
                 <button
                   onClick={() => setIsEditingDrone(true)}
-                  className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-2 py-1.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
                 >
                   Change
                 </button>
               </div>
-            ) : (
+            ) : !selectedHangar ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">Select a hangar first</span>
+                  </div>
+                </div>
+              </div>
+            ) : isEditingDrone ? (
               <div>
                 <select
                   value={selectedDrone}
                   onChange={(e) => setSelectedDrone(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select a drone...</option>
                   {DRONE_OPTIONS.map((drone) => (
                     <option key={drone.id} value={drone.id}>{drone.label}</option>
                   ))}
                 </select>
-                {isEditingDrone && selectedHangarObj?.assignedDrone && (
+                {selectedHangarObj?.assignedDrone && (
                   <button
                     onClick={() => {
                       if (selectedHangarObj.assignedDrone) {
@@ -213,45 +221,53 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
                   </button>
                 )}
               </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">No drone assigned</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsEditingDrone(true)}
+                  className="px-2 py-1.5 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Select
+                </button>
+              </div>
             )}
           </div>
 
           {/* Action Buttons */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-800 mb-3">
-              4. Actions
+          <div className="pt-2">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">
+              Actions
             </label>
             
             {/* Primary Action */}
             <Button 
               onClick={handleCaptureSnapshot}
               disabled={!selectedInspection || !selectedHangar || !selectedDrone}
-              className="w-full mb-3 py-2.5 text-base font-medium bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300"
+              className="w-full mb-3 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500"
             >
-              Capture New Snapshot
+              Start Inspection
             </Button>
 
             {/* Secondary Actions */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={handleLoadLatest}
                 disabled={!selectedInspection || !selectedHangar || !selectedDrone}
-                className="py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all text-base font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Load Latest
               </button>
               <button
                 onClick={handleBrowseHistory}
                 disabled={!selectedInspection || !selectedHangar || !selectedDrone}
-                className="py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all text-base font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Browse
-              </button>
-              <button
-                onClick={onLogout}
-                className="py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
-              >
-                Cancel
+                Browse History
               </button>
             </div>
           </div>
