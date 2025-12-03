@@ -80,9 +80,15 @@ const toDataUrl = (file: File) =>
 
 interface MultiCamInspectorProps {
   selectedInspection?: string | null;
+  selectedHangar?: string;
+  selectedDrone?: string;
 }
 
-export default function MultiCamInspector({ selectedInspection }: MultiCamInspectorProps = {}) {
+export default function MultiCamInspector({ 
+  selectedInspection,
+  selectedHangar,
+  selectedDrone 
+}: MultiCamInspectorProps = {}) {
   // --- State for inspection data ---
   const [inspectionData, setInspectionData] = useState<any>(null);
   const [tiItems, setTiItems] = useState<TIItem[]>([]);

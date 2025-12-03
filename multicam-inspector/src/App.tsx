@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 import MultiCamInspector from './components/MultiCamInspector';
 import LoginPage from './components/LoginPage';
-import InspectionSelectionScreen from './components/InspectionSelectionScreen';
+import UnifiedInspectionScreen from './components/UnifiedInspectionScreen';
 import './App.css';
+
+interface InspectionConfig {
+  inspectionType: string;
+  hangar: string;
+  drone: string;
+  action?: 'capture' | 'load' | 'browse';
+}
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string>('');
-  const [selectedInspection, setSelectedInspection] = useState<string | null>(null);
+  const [inspectionConfig, setInspectionConfig] = useState<InspectionConfig | null>(null);
 
   const handleLogin = (username: string) => {
     setCurrentUser(username);
@@ -17,25 +24,31 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser('');
-    setSelectedInspection(null);
+    setInspectionConfig(null);
   };
 
-  const handleSelectInspection = (inspectionType: string) => {
-    setSelectedInspection(inspectionType);
+  const handleStartInspection = (action: 'capture' | 'load' | 'browse', inspectionType: string, hangar: string, drone: string) => {
+    // Pass the action type along with the config so MultiCamInspector knows what to do
+    setInspectionConfig({ 
+      inspectionType, 
+      hangar, 
+      drone,
+      action 
+    });
   };
 
   const handleBackToSelection = () => {
-    setSelectedInspection(null);
+    setInspectionConfig(null);
   };
 
   return (
     <div className="App">
       {!isAuthenticated ? (
         <LoginPage onLogin={handleLogin} />
-      ) : !selectedInspection ? (
-        <InspectionSelectionScreen 
+      ) : !inspectionConfig ? (
+        <UnifiedInspectionScreen 
           currentUser={currentUser}
-          onSelectInspection={handleSelectInspection}
+          onStartInspection={handleStartInspection}
           onLogout={handleLogout}
         />
       ) : (
@@ -50,7 +63,7 @@ function App() {
               ← Back
             </button>
             <span className="text-gray-600 text-xs px-2 border-l border-gray-300">
-              {currentUser}
+              {currentUser} | {inspectionConfig.hangar}
             </span>
             <button
               onClick={handleLogout}
@@ -60,7 +73,11 @@ function App() {
               ×
             </button>
           </div>
-          <MultiCamInspector selectedInspection={selectedInspection} />
+          <MultiCamInspector 
+            selectedInspection={inspectionConfig.inspectionType}
+            selectedHangar={inspectionConfig.hangar}
+            selectedDrone={inspectionConfig.drone}
+          />
         </div>
       )}
     </div>
