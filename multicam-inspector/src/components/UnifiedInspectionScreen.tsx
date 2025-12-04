@@ -83,9 +83,63 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
     }
   };
 
-  const handleLoadLatest = () => {
-    // Load Latest should work without requiring all fields
-    onStartInspection('load', selectedInspection, selectedHangar, selectedDrone);
+  const handleLoadLatest = async () => {
+    // Find the most recent inspection across all hangars
+    try {
+      const response = await fetch(`http://172.20.1.93:3001/api/folders`);
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Collect all sessions from all hangars with their timestamps
+        let allSessions: any[] = [];
+        
+        if (data.hangars) {
+          data.hangars.forEach((hangar: any) => {
+            hangar.sessions.forEach((session: any) => {
+              allSessions.push({
+                ...session,
+                hangarId: hangar.id,
+                hangarName: hangar.name,
+                timestamp: new Date(session.created).getTime()
+              });
+            });
+          });
+        }
+        
+        // Sort by timestamp to find the most recent
+        allSessions.sort((a, b) => b.timestamp - a.timestamp);
+        
+        if (allSessions.length > 0) {
+          const latestSession = allSessions[0];
+          console.log('Loading latest session:', latestSession.name, 'from', latestSession.hangarName);
+          
+          // Detect inspection type from session name
+          const nameLower = latestSession.name.toLowerCase();
+          const firstPart = latestSession.name.split('_')[0].toLowerCase();
+          let inspectionType = 'remote-ti-inspection';
+          
+          if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
+            inspectionType = 'remote-ti-inspection';
+          } else if (firstPart === 'onsite' || nameLower.startsWith('onsite_')) {
+            inspectionType = 'onsite-ti-inspection';
+          } else if (firstPart === 'extended' || nameLower.startsWith('extended_')) {
+            inspectionType = 'extended-ti-inspection';
+          } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
+            inspectionType = 'service-ti-inspection';
+          }
+          
+          // Load the session using the same mechanism as browse
+          const sessionData = `${latestSession.hangarId}|${latestSession.name}`;
+          onStartInspection('load-session', inspectionType, sessionData, 'session');
+        } else {
+          console.log('No sessions found');
+          alert('No inspection sessions found');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load latest session:', error);
+      alert('Failed to load latest session');
+    }
   };
 
   const handleBrowseHistory = async () => {
