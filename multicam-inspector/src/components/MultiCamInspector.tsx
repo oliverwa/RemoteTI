@@ -2240,8 +2240,22 @@ export default function MultiCamInspector({
           const [hangarId, sessionName] = selectedHangar.split('|');
           if (hangarId && sessionName) {
             addLog(`Loading session: ${sessionName}`);
-            // Load the specific session
-            loadSessionImages(hangarId, sessionName, []);
+            // Fetch images for this session from the server
+            fetch(`http://172.20.1.93:3001/api/folders`)
+              .then(res => res.json())
+              .then(data => {
+                // Find the session in the data
+                const hangarData = data.hangars?.find((h: any) => h.id === hangarId);
+                const session = hangarData?.sessions?.find((s: any) => s.name === sessionName);
+                const images = session?.images || [];
+                // Load the specific session with images
+                loadSessionImages(hangarId, sessionName, images);
+              })
+              .catch(err => {
+                console.error('Failed to fetch session images:', err);
+                // Still try to load without image list
+                loadSessionImages(hangarId, sessionName, []);
+              });
           }
         }
       }, 500);

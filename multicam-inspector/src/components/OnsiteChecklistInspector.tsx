@@ -149,10 +149,60 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         
         // Initialize task statuses
         const initialStatuses: { [key: string]: 'pass' | 'fail' | 'pending' } = {};
+        const initialNotes: { [key: string]: string } = {};
+        
+        // First set all tasks to pending
         mappedTasks.forEach((task: Task) => {
           initialStatuses[task.taskNumber] = 'pending';
         });
+        
+        // If loading an existing session, load the saved progress
+        if (action === 'load-session' && sessionFolderPath) {
+          try {
+            const existingInspectionResponse = await fetch(
+              `http://172.20.1.93:3001/api/inspection/${sessionFolderPath}/data`
+            );
+            if (existingInspectionResponse.ok) {
+              const existingData = await existingInspectionResponse.json();
+              console.log('Loading existing inspection progress:', existingData);
+              
+              // Update task statuses and notes from saved data
+              if (existingData.tasks) {
+                existingData.tasks.forEach((savedTask: any) => {
+                  const taskId = savedTask.id || savedTask.taskNumber;
+                  
+                  // Find corresponding task in the template
+                  const templateTask = mappedTasks.find((t: Task) => t.id === taskId || t.taskNumber === taskId);
+                  if (templateTask) {
+                    // Update completion status
+                    if (savedTask.completion?.completedAt) {
+                      templateTask.completion = savedTask.completion;
+                      // Determine pass/fail based on saved data
+                      initialStatuses[templateTask.taskNumber] = savedTask.status || 'pass';
+                    }
+                    
+                    // Load notes if available
+                    if (savedTask.notes) {
+                      initialNotes[templateTask.taskNumber] = savedTask.notes;
+                    }
+                  }
+                });
+                
+                // Update formatted data with loaded completion info
+                formattedData.tasks = mappedTasks;
+                if (existingData.completionStatus) {
+                  formattedData.completionStatus = existingData.completionStatus;
+                }
+                setInspectionData(formattedData);
+              }
+            }
+          } catch (err) {
+            console.log('No existing inspection progress found');
+          }
+        }
+        
         setTaskStatuses(initialStatuses);
+        setNotes(initialNotes);
         
         // Mark inspection as started if not already
         if (formattedData.completionStatus.status === 'not_started') {
