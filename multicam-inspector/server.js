@@ -446,12 +446,13 @@ app.get('/api/health', (req, res) => {
 });
 
 // Configuration endpoint
-// Health check endpoint
+// Health check endpoint - simple check that server is running
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    server: 'running'
   });
 });
 

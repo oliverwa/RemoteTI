@@ -14,9 +14,8 @@ const BackendConnectionCheck: React.FC<BackendConnectionCheckProps> = ({ childre
     setIsChecking(true);
     
     try {
-      const apiUrl = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3001/api/health'
-        : 'http://172.20.1.93:3001/api/health';
+      // Always use Pi backend when available, fallback to localhost for development
+      const apiUrl = 'http://172.20.1.93:3001/api/health';
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -114,7 +113,7 @@ const BackendConnectionCheck: React.FC<BackendConnectionCheckProps> = ({ childre
                 <div>
                   <p className="font-medium">Backend Connection Lost</p>
                   <p className="text-xs opacity-90">
-                    Some features may not work. Check network connection to {window.location.hostname === 'localhost' ? 'localhost:3001' : '172.20.1.93:3001'}
+                    Some features may not work. Check network connection to 172.20.1.93:3001
                   </p>
                 </div>
               </div>

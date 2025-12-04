@@ -53,26 +53,60 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   useEffect(() => {
     const loadInspectionData = async () => {
       try {
-        const apiUrl = window.location.hostname === 'localhost' 
-          ? `http://localhost:3001/api/inspection-data/${selectedInspection}`
-          : `http://172.20.1.93:3001/api/inspection-data/${selectedInspection}`;
+        // Always use Pi backend for consistency
+        const apiUrl = `http://172.20.1.93:3001/api/inspection-data/${selectedInspection}`;
+        
+        console.log('Loading inspection data from:', apiUrl);
         
         const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to load inspection data: ${response.status}`);
+        }
         const data = await response.json();
-        setInspectionData(data.inspection);
+        console.log('Loaded inspection data:', data);
+        
+        // Handle both response structures (with or without 'inspection' wrapper)
+        const inspectionData = data.inspection || data;
+        
+        // Map the tasks to our expected structure
+        const mappedTasks = inspectionData.tasks.map((task: any, index: number) => ({
+          taskName: task.title || task.taskName || `Task ${index + 1}`,
+          taskNumber: task.id || task.taskNumber || String(index + 1),
+          category: task.category || 'General',
+          description: task.description || '',
+          presetType: task.presetType || '',
+          completion: task.completion || {
+            completedBy: null,
+            completedAt: null
+          }
+        }));
+        
+        const formattedData = {
+          metadata: inspectionData.metadata || {},
+          completionStatus: inspectionData.completionStatus || {
+            status: 'not_started',
+            startedBy: null,
+            startedAt: null,
+            completedBy: null,
+            completedAt: null
+          },
+          tasks: mappedTasks
+        };
+        
+        setInspectionData(formattedData);
         
         // Initialize task statuses
         const initialStatuses: { [key: string]: 'pass' | 'fail' | 'pending' } = {};
-        data.inspection.tasks.forEach((task: Task) => {
+        mappedTasks.forEach((task: Task) => {
           initialStatuses[task.taskNumber] = 'pending';
         });
         setTaskStatuses(initialStatuses);
         
         // Mark inspection as started if not already
-        if (data.inspection.completionStatus.status === 'not_started') {
-          data.inspection.completionStatus.status = 'in_progress';
-          data.inspection.completionStatus.startedBy = currentUser;
-          data.inspection.completionStatus.startedAt = new Date().toISOString();
+        if (formattedData.completionStatus.status === 'not_started') {
+          formattedData.completionStatus.status = 'in_progress';
+          formattedData.completionStatus.startedBy = currentUser;
+          formattedData.completionStatus.startedAt = new Date().toISOString();
         }
         
         setLoading(false);
@@ -104,6 +138,13 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           ...inspectionData,
           tasks: updatedTasks
         });
+        
+        // Auto-advance to next task after a short delay
+        setTimeout(() => {
+          if (taskIndex < inspectionData.tasks.length - 1) {
+            setCurrentTaskIndex(taskIndex + 1);
+          }
+        }, 500);
       }
     }
   };
@@ -163,38 +204,20 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   const completedTasksCount = Object.values(taskStatuses).filter(s => s !== 'pending').length;
   const progressPercentage = (completedTasksCount / inspectionData.tasks.length) * 100;
 
-  // Group tasks by category for overview
-  const tasksByCategory = inspectionData.tasks.reduce((acc, task) => {
-    if (!acc[task.category]) {
-      acc[task.category] = [];
-    }
-    acc[task.category].push(task);
-    return acc;
-  }, {} as { [key: string]: Task[] });
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b px-6 py-4">
+      <div className="bg-white border-b px-6 py-3">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Onsite Inspection</h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <h1 className="text-xl font-bold text-gray-900">Onsite Inspection</h1>
+            <p className="text-sm text-gray-600">
               {selectedHangar} • {selectedDrone} • {currentUser}
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <div className="text-sm text-gray-600">Progress</div>
-              <div className="text-lg font-semibold">
-                {completedTasksCount} / {inspectionData.tasks.length} tasks
-              </div>
-            </div>
-            <div className="w-32 bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progressPercentage}%` }}
-              />
+          <div className="text-right">
+            <div className="text-sm font-medium text-gray-700">
+              Task {currentTaskIndex + 1} of {inspectionData.tasks.length}
             </div>
           </div>
         </div>
@@ -202,42 +225,46 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
       <div className="flex h-[calc(100vh-80px)]">
         {/* Sidebar - Task List */}
-        <div className="w-80 bg-white border-r overflow-y-auto">
+        <div className="w-64 bg-white border-r overflow-y-auto">
           <div className="p-4">
-            <h2 className="font-semibold text-gray-900 mb-4">Task Overview</h2>
-            {Object.entries(tasksByCategory).map(([category, tasks]) => (
-              <div key={category} className="mb-6">
-                <h3 className="text-sm font-semibold text-gray-600 mb-2">{category}</h3>
-                <div className="space-y-1">
-                  {tasks.map((task, idx) => {
-                    const globalIdx = inspectionData.tasks.findIndex(t => t.taskNumber === task.taskNumber);
-                    const status = taskStatuses[task.taskNumber];
-                    return (
-                      <button
-                        key={task.taskNumber}
-                        onClick={() => setCurrentTaskIndex(globalIdx)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
-                          globalIdx === currentTaskIndex
-                            ? 'bg-blue-50 border-blue-300 border'
-                            : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="flex items-center gap-2">
-                            <span className="text-gray-500">#{task.taskNumber}</span>
-                            <span className={globalIdx === currentTaskIndex ? 'font-medium' : ''}>
-                              {task.taskName}
-                            </span>
-                          </span>
-                          {status === 'pass' && <Check className="w-4 h-4 text-green-600" />}
-                          {status === 'fail' && <X className="w-4 h-4 text-red-600" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+            <div className="space-y-0.5">
+              {inspectionData.tasks.map((task, idx) => {
+                const status = taskStatuses[task.taskNumber];
+                const isCurrent = idx === currentTaskIndex;
+                return (
+                  <button
+                    key={task.taskNumber}
+                    onClick={() => setCurrentTaskIndex(idx)}
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2 ${
+                      isCurrent
+                        ? 'bg-blue-50 text-blue-900 font-medium'
+                        : status !== 'pending'
+                        ? 'text-gray-600'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      status === 'pass'
+                        ? 'border-green-500 bg-green-500'
+                        : status === 'fail'
+                        ? 'border-red-500 bg-red-500'
+                        : isCurrent
+                        ? 'border-blue-500'
+                        : 'border-gray-300'
+                    }`}>
+                      {status === 'pass' && <Check className="w-3 h-3 text-white" />}
+                      {status === 'fail' && <X className="w-3 h-3 text-white" />}
+                      {status === 'pending' && isCurrent && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
+                    </div>
+                    <span className={`truncate ${
+                      status !== 'pending' && !isCurrent ? 'line-through opacity-60' : ''
+                    }`}>
+                      {task.taskName}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
