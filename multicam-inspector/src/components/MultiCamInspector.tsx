@@ -1778,10 +1778,6 @@ export default function MultiCamInspector({
       } else if (k === "r") {
         // R = Reset all cameras (same as Reset All button)
         resetAll();
-      } else if (k === "d") {
-        // D = Toggle debug mode (logs)
-        setShowLogs(!showLogs);
-        addLog(`🐛 Debug mode ${!showLogs ? 'enabled' : 'disabled'}`);
       } else if (k === "p") {
         // P = Pass current inspection task
         selectStatus("pass");
@@ -2280,111 +2276,6 @@ export default function MultiCamInspector({
     <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white text-black">
       {/* Header – main controls */}
       <div className="flex flex-wrap items-center gap-2">
-        {showLogs && (
-          <>
-            {/* Layout toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setUseOneColumn(!useOneColumn);
-                addLog(`📱 Layout changed to ${!useOneColumn ? '1 column' : '2 columns'}`);
-              }}
-              className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
-            >
-              {useOneColumn ? '📱 1 Col' : '📱 2 Cols'}
-            </Button>
-
-            {/* Debug button for iPad testing */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                // Better iPad detection
-                const isIPad = /iPad/.test(navigator.userAgent) || 
-                              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                const transformCount = Object.keys(hangarTransforms || {}).length;
-                
-                // Debug current transforms
-                console.log('📦 Transform Debug:', {
-                  hangarCount: transformCount,
-                  hangars: Object.keys(hangarTransforms),
-                  currentSession,
-                  transforms: hangarTransforms
-                });
-                
-                const sampleTransforms = hangarTransforms && transformCount > 0 
-                  ? Object.entries(hangarTransforms)[0] 
-                  : null;
-                
-                let sampleText = '';
-                let transformStatus = '';
-                if (sampleTransforms) {
-                  const [hangarId, transforms] = sampleTransforms;
-                  const firstCam = Object.entries(transforms as any)[0];
-                  if (firstCam) {
-                    const [camId, transform] = firstCam;
-                    const hasNonZeroTransform = transform.x !== 0 || transform.y !== 0 || transform.scale !== 1 || transform.rotation !== 0;
-                    sampleText = `\nSample - ${hangarId} Cam${camId}: x:${transform.x || 0}, y:${transform.y || 0}, scale:${transform.scale || 1}`;
-                    transformStatus = `\nTransform Active: ${hasNonZeroTransform ? 'YES' : 'NO (all values zero)'}`;
-                  }
-                }
-                
-                // Show Rouen transforms specifically
-                const rouenText = hangarTransforms['hangar_rouen_vpn'] 
-                  ? `\n\nRouen Cam0: x:${hangarTransforms['hangar_rouen_vpn'][0]?.x}, y:${hangarTransforms['hangar_rouen_vpn'][0]?.y}, scale:${hangarTransforms['hangar_rouen_vpn'][0]?.scale}`
-                  : '\n\nRouen: Not loaded';
-                
-                // Session info
-                const sessionInfo = currentSession 
-                  ? `\nSession: ${currentSession.name}\nHangar: ${currentSession.hangar}\nMapped ID: ${folderNameToHangarId(currentSession.hangar)}`
-                  : '\nSession: None loaded';
-                
-                // Check current viewport size to understand scaling
-                const viewportInfo = `\nViewport: ${window.innerWidth}x${window.innerHeight}`;
-                const pixelRatio = `\nPixel Ratio: ${window.devicePixelRatio}`;
-
-                alert(`🔧 TRANSFORM DEBUG\n\nDevice: ${isIPad ? 'iOS/iPad' : 'Desktop'}${viewportInfo}${pixelRatio}\nTransforms: ${transformCount} hangars loaded\nDefaults loaded from constants${sessionInfo}${sampleText}${transformStatus}${rouenText}\n\nCheck console for detailed transform logs`);
-              }}
-              className="bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100"
-            >
-              🔧 DEBUG
-            </Button>
-
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => {
-                if (isCreatingValidationBox) {
-                  // Cancel validation box creation
-                  setIsCreatingValidationBox(false);
-                  setValidationBoxCreation(null);
-                  addLog('❌ Validation box creation cancelled');
-                  return;
-                }
-                
-                const currentTask = items[idx];
-                if (!currentTask) {
-                  addLog('❌ Store Validation Box: No current task');
-                  return;
-                }
-                
-                // Auto-generate unique validation box ID using timestamp
-                const timestamp = Date.now();
-                const id = `box_${timestamp}`;
-                
-                setValidationBoxCreation({ id, label: '', description: '' });
-                setIsCreatingValidationBox(true);
-                addLog(`📦 Creating validation box "${id}" - click and drag on any camera image to define the area`);
-              }}
-              className={isCreatingValidationBox ? 'bg-orange-100 border-orange-300' : ''}
-            >
-              {isCreatingValidationBox ? 'Cancel Validation Box' : 'Store Validation Box'}
-            </Button>
-            
-          </>
-        )}
         
       </div>
 
@@ -2661,33 +2552,6 @@ export default function MultiCamInspector({
 
       </div>
 
-      {/* Log Panel */}
-      {showLogs && (
-        <div className="bg-gray-900 text-green-400 rounded p-3 font-mono text-xs max-h-32 overflow-y-auto">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-gray-300 font-semibold">Activity Log</span>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setLogs([])}
-              className="text-xs h-6 px-2"
-            >
-              Clear
-            </Button>
-          </div>
-          <div className="space-y-1">
-            {logs.length === 0 ? (
-              <div className="text-gray-500 italic">No activity yet...</div>
-            ) : (
-              logs.map((log, i) => (
-                <div key={i} className="text-green-400">
-                  {log}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Completion Section */}
       {!items.some(item => !item.status) && (
@@ -3601,14 +3465,6 @@ function CamTile({
         {cam.name}
       </div>
 
-      
-      {cam.src && showLogs && (cam.zoom !== 1 || cam.pan.x !== 0 || cam.pan.y !== 0) && (
-        <div className="absolute bottom-2 right-2">
-          <div className="bg-black/70 text-white px-2 py-1 rounded text-xs">
-            {cam.zoom.toFixed(1)}x | Pan: {cam.pan.x.toFixed(0)},{cam.pan.y.toFixed(0)}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
