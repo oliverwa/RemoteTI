@@ -906,24 +906,39 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
     
     // Build the full path to the inspection JSON
     const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    log('info', `Looking for session at: ${sessionPath}`);
+    
+    // Check if parent directory exists
+    const parentDir = path.dirname(sessionPath);
+    if (fs.existsSync(parentDir)) {
+      const dirs = fs.readdirSync(parentDir).filter(f => fs.statSync(path.join(parentDir, f)).isDirectory());
+      log('info', `Directories in ${parentDir}: ${dirs.join(', ')}`);
+    }
     
     if (!fs.existsSync(sessionPath)) {
+      log('error', `Session folder not found: ${sessionPath}`);
+      // Try to list what IS in the parent directory to debug
       return res.status(404).json({ error: 'Session folder not found' });
     }
     
     const files = fs.readdirSync(sessionPath);
+    log('info', `Files in session folder: ${files.join(', ')}`);
     const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
     
     if (!inspectionFile) {
+      log('error', 'No inspection JSON file found in session folder');
       return res.status(404).json({ error: 'Inspection file not found' });
     }
     
     const filePath = path.join(sessionPath, inspectionFile);
+    log('info', `Reading inspection file: ${filePath}`);
     const inspectionData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     
     // Find and update the task
+    log('info', `Looking for task with ID: ${taskId}`);
     const task = inspectionData.tasks.find(t => t.id === taskId);
     if (!task) {
+      log('error', `Task not found. Available task IDs: ${inspectionData.tasks.map(t => t.id).join(', ')}`);
       return res.status(404).json({ error: 'Task not found' });
     }
     

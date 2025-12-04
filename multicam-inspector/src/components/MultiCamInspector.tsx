@@ -900,6 +900,24 @@ export default function MultiCamInspector({
       alert("Please select a hangar and a drone name");
       return;
     }
+    
+    // Create the inspection session name to match what will be created by the server
+    // Server creates: remote_drone_YYMMDD_HHMMSS using LOCAL time (not UTC)
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+    const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
+    const cleanDrone = droneToUse.toLowerCase().replace(/[^a-z0-9]/g, '_');
+    const expectedSessionName = `remote_${cleanDrone}_${timestamp}`;
+    const fullSessionPath = `${hangarToUse}/${expectedSessionName}`;
+    
+    // Store this immediately so it's available for API calls
+    setCurrentSessionName(fullSessionPath);
+    console.log(`📝 Pre-setting session path: ${fullSessionPath}`);
 
     // Handle demo mode with local images
     if (droneToUse === 'demo') {
@@ -953,8 +971,8 @@ export default function MultiCamInspector({
     hangarRef.current = hangarToUse;
     console.log(`📝 Stored hangar in ref: ${hangarRef.current}`);
     
-    // Reset session name for new capture
-    setCurrentSessionName("");
+    // Session name already set above - don't reset it!
+    console.log(`📝 Using session path: ${fullSessionPath}`);
     
     setIsCapturing(true);
     setShowSnapshotModal(false);
@@ -987,7 +1005,7 @@ export default function MultiCamInspector({
         body: JSON.stringify({
           hangar: hangarToUse,
           drone: droneToUse,
-          inspectionType: selectedInspection || 'remote'
+          inspectionType: 'remote-ti-inspection'  // Always use this for remote TI
         })
       });
       
@@ -1100,13 +1118,17 @@ export default function MultiCamInspector({
                   
                   console.log(`Storing image for ${cameraName}:`, imageUrl);
                   
-                  // Capture session name from the first image processed (includes hangar folder)
-                  if (!currentSessionName) {
-                    const fullSessionPath = `${hangarToUse}/${imageInfo.session}`;
-                    setCurrentSessionName(fullSessionPath);
+                  // Store session in ref (without hangar prefix) for reference
+                  if (!sessionRef.current) {
                     sessionRef.current = imageInfo.session;
-                    console.log(`Captured session name: ${fullSessionPath}`);
                     console.log(`📝 Stored session in ref: ${sessionRef.current}`);
+                    // Verify our pre-set session name matches
+                    const actualFullPath = `${hangarToUse}/${imageInfo.session}`;
+                    if (currentSessionName !== actualFullPath) {
+                      console.warn(`⚠️ Session name mismatch! Expected: ${currentSessionName}, Actual: ${actualFullPath}`);
+                      // Update to the actual session name if different
+                      setCurrentSessionName(actualFullPath);
+                    }
                   }
                   
                   // Store in pending images instead of displaying
@@ -1582,22 +1604,39 @@ export default function MultiCamInspector({
     } : x)));
     
     // Update backend if we have session info
+    console.log('Backend update check:', {
+      currentSessionName,
+      taskId: currentTask.id,
+      status: s,
+      inspector: inspectionMeta.inspectorName
+    });
+    
     if (currentSessionName && currentTask.id) {
+      const url = `http://172.20.1.93:3001/api/inspection/${currentSessionName}/task/${currentTask.id}/status`;
+      const payload = {
+        status: s,
+        completedBy: inspectionMeta.inspectorName || 'Inspector',
+        comment: currentTask.comment || ''
+      };
+      
+      console.log('Sending POST request to:', url);
+      console.log('Payload:', payload);
+      addLog(`📤 Sending status update to backend...`);
+      
       try {
-        const response = await fetch(`http://172.20.1.93:3001/api/inspection/${currentSessionName}/task/${currentTask.id}/status`, {
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            status: s,
-            completedBy: inspectionMeta.inspectorName || 'Inspector',
-            comment: currentTask.comment || ''
-          })
+          body: JSON.stringify(payload)
         });
+        
+        console.log('Response status:', response.status);
         
         if (response.ok) {
           const result = await response.json();
+          console.log('Backend response:', result);
           addLog(`✅ Task status saved to backend (${result.progress.completed}/${result.progress.total} complete)`);
           
           // Update inspection metadata if completed
@@ -1609,12 +1648,20 @@ export default function MultiCamInspector({
             addLog("🎉 Inspection completed and saved!");
           }
         } else {
-          addLog(`⚠️ Failed to save task status to backend`);
+          const errorText = await response.text();
+          console.error('Backend error response:', errorText);
+          addLog(`⚠️ Failed to save task status to backend: ${response.status}`);
         }
       } catch (error) {
         console.error('Error updating task status:', error);
         addLog(`⚠️ Error saving task status: ${error.message}`);
       }
+    } else {
+      console.log('Skipping backend update - missing data:', {
+        hasSessionName: !!currentSessionName,
+        hasTaskId: !!currentTask.id
+      });
+      addLog(`⚠️ Cannot save to backend - ${!currentSessionName ? 'no session' : 'no task ID'}`);
     }
     
     if (s === "pass" || s === "fail") {
