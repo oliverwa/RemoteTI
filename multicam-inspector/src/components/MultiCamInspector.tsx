@@ -891,14 +891,18 @@ export default function MultiCamInspector({
   };
 
   const executeSnapshot = async () => {
-    if (!snapshotHangar || !snapshotDrone.trim()) {
+    // Use props if snapshotHangar/snapshotDrone aren't set yet
+    const hangarToUse = snapshotHangar || selectedHangar;
+    const droneToUse = snapshotDrone || selectedDrone;
+    
+    if (!hangarToUse || !droneToUse?.trim()) {
       addLog("❌ Snapshot cancelled - missing hangar or drone name");
       alert("Please select a hangar and a drone name");
       return;
     }
 
     // Handle demo mode with local images
-    if (snapshotDrone === 'demo') {
+    if (droneToUse === 'demo') {
       addLog("🎭 Demo mode selected - loading local demo images");
       setIsCapturing(true);
       setShowSnapshotModal(false);
@@ -907,7 +911,7 @@ export default function MultiCamInspector({
       setInspectionMeta(prev => ({
         ...prev,
         droneName: "Demo Drone",
-        hangarName: snapshotHangar
+        hangarName: hangarToUse
       }));
       
       // Set loading state
@@ -941,11 +945,11 @@ export default function MultiCamInspector({
       return;
     }
 
-    addLog(`📸 Starting fast camera capture for ${snapshotDrone} at ${snapshotHangar}`);
+    addLog(`📸 Starting fast camera capture for ${droneToUse} at ${hangarToUse}`);
     addLog("🔗 Connecting to backend API...");
     
     // Store hangar in ref for dark analysis (persists across state resets)
-    hangarRef.current = snapshotHangar;
+    hangarRef.current = hangarToUse;
     console.log(`📝 Stored hangar in ref: ${hangarRef.current}`);
     
     // Reset session name for new capture
@@ -957,8 +961,8 @@ export default function MultiCamInspector({
     // Update inspection metadata with capture info
     setInspectionMeta(prev => ({
       ...prev,
-      droneName: snapshotDrone,
-      hangarName: snapshotHangar
+      droneName: droneToUse,
+      hangarName: hangarToUse
     }));
     
     // Reset delayed display state
@@ -979,8 +983,8 @@ export default function MultiCamInspector({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          hangar: snapshotHangar,
-          drone: snapshotDrone,
+          hangar: hangarToUse,
+          drone: droneToUse,
           inspectionType: selectedInspection || 'remote'
         })
       });
@@ -2056,22 +2060,25 @@ export default function MultiCamInspector({
     }
   }, [idx, items, addLog]);
 
-  // --- Auto-open snapshot modal on initial load ---
+  // --- Auto-start capture when component mounts with props ---
   useEffect(() => {
-    // Only auto-open if no images are loaded and no other modals are shown
+    // Auto-start capture when component mounts with hangar and drone from props
     const hasImages = cams.some(cam => cam.src && cam.src !== "");
-    if (!hasImages && !showSnapshotModal && !isCapturing && !isWaitingToDisplay && !showFolderModal) {
-      // Small delay to ensure component is fully mounted
+    if (!hasImages && !isCapturing && !isWaitingToDisplay && selectedHangar && selectedDrone) {
+      // Set the snapshot values from props
+      setSnapshotHangar(selectedHangar);
+      setSnapshotDrone(selectedDrone);
+      
+      // Small delay to ensure component is fully mounted and state is set
       const timer = setTimeout(() => {
-        addLog("🎬 Opening snapshot configuration automatically...");
-        setSnapshotHangar(HANGARS[0].id);
-        setSnapshotDrone("");
-        setShowSnapshotModal(true);
+        addLog("🎬 Starting remote inspection capture...");
+        // Directly start capture without showing modal
+        executeSnapshot();
       }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [showSnapshotModal, isCapturing, isWaitingToDisplay, showFolderModal, cams, addLog]);
+  }, [selectedHangar, selectedDrone]);
 
   // --- Render ---
   if (isLoadingInspection) {
