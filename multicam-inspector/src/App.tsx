@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import MultiCamInspector from './components/MultiCamInspector';
+import OnsiteChecklistInspector from './components/OnsiteChecklistInspector';
 import LoginPage from './components/LoginPage';
 import UnifiedInspectionScreen from './components/UnifiedInspectionScreen';
+import BackendConnectionCheck from './components/BackendConnectionCheck';
 import './App.css';
 
 interface InspectionConfig {
@@ -42,10 +44,11 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {!isAuthenticated ? (
-        <LoginPage onLogin={handleLogin} />
-      ) : !inspectionConfig ? (
+    <BackendConnectionCheck>
+      <div className="App">
+        {!isAuthenticated ? (
+          <LoginPage onLogin={handleLogin} />
+        ) : !inspectionConfig ? (
         <UnifiedInspectionScreen 
           currentUser={currentUser}
           onStartInspection={handleStartInspection}
@@ -73,14 +76,24 @@ function App() {
               ×
             </button>
           </div>
-          <MultiCamInspector 
-            selectedInspection={inspectionConfig.inspectionType}
-            selectedHangar={inspectionConfig.hangar}
-            selectedDrone={inspectionConfig.drone}
-          />
+          {inspectionConfig.inspectionType === 'remote-ti-inspection' ? (
+            <MultiCamInspector 
+              selectedInspection={inspectionConfig.inspectionType}
+              selectedHangar={inspectionConfig.hangar}
+              selectedDrone={inspectionConfig.drone}
+            />
+          ) : (
+            <OnsiteChecklistInspector
+              selectedInspection={inspectionConfig.inspectionType}
+              selectedHangar={inspectionConfig.hangar}
+              selectedDrone={inspectionConfig.drone}
+              currentUser={currentUser}
+            />
+          )}
         </div>
       )}
-    </div>
+      </div>
+    </BackendConnectionCheck>
   );
 }
 

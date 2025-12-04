@@ -446,6 +446,15 @@ app.get('/api/health', (req, res) => {
 });
 
 // Configuration endpoint
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 app.get('/api/config', (req, res) => {
   try {
     // Return safe subset of configuration for frontend use
