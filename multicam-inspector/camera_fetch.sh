@@ -25,17 +25,27 @@ CURL_CONNECT_TIMEOUT=20
 CURL_TOTAL_TIMEOUT=90
 CURL_RETRIES=5
 
-# Output directory - use provided session timestamp or generate new one
+# Output directory - use provided session folder path
+# The SESSION_TIMESTAMP parameter now contains the full subfolder path
+# e.g., "hangar_sisjon_vpn/remote_bender_251204_093440"
 if [ -n "${SESSION_TIMESTAMP}" ]; then
-    RUN_STAMP="${SESSION_TIMESTAMP}"
+    OUT_DIR="${HOME}/RemoteTI/data/sessions/${SESSION_TIMESTAMP}"
 else
+    # Fallback to old format if not provided
     RUN_STAMP="$(date +'%y%m%d_%H%M%S')"
+    OUT_DIR="${HOME}/RemoteTI/data/sessions/${HANGAR_HOST}/${DRONE_NAME}_${RUN_STAMP}"
 fi
 
-OUT_DIR="${HOME}/hangar_snapshots/${HANGAR_HOST}/${DRONE_NAME}_${RUN_STAMP}"
 mkdir -p "${OUT_DIR}"
 
-OUTFILE="${OUT_DIR}/${CAMERA_NAME}_${RUN_STAMP}.jpg"
+# Extract timestamp from folder name or use current time
+if [[ "${SESSION_TIMESTAMP}" =~ ([0-9]{6}_[0-9]{6})$ ]]; then
+    FILE_TIMESTAMP="${BASH_REMATCH[1]}"
+else
+    FILE_TIMESTAMP="$(date +'%y%m%d_%H%M%S')"
+fi
+
+OUTFILE="${OUT_DIR}/${CAMERA_NAME}_${FILE_TIMESTAMP}.jpg"
 
 echo "Fetching ${CAMERA_NAME} from ${CAM_IP} via ${HANGAR_HOST}"
 

@@ -53,6 +53,40 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   useEffect(() => {
     const loadInspectionData = async () => {
       try {
+        // First, create an inspection session folder on the backend
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2);
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const hour = now.getHours().toString().padStart(2, '0');
+        const minute = now.getMinutes().toString().padStart(2, '0');
+        const second = now.getSeconds().toString().padStart(2, '0');
+        const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
+        
+        const cleanType = selectedInspection.replace('-ti-inspection', '').replace(/-/g, '_');
+        const sessionName = `${cleanType}_${selectedDrone}_${timestamp}`;
+        const sessionFolder = `${selectedHangar}/${sessionName}`;
+        
+        console.log('Creating inspection session:', sessionFolder);
+        
+        // Create session and get inspection data
+        const createSessionResponse = await fetch('http://172.20.1.93:3001/api/create-inspection-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inspectionType: selectedInspection,
+            hangar: selectedHangar,
+            drone: selectedDrone,
+            sessionFolder: sessionFolder
+          })
+        });
+        
+        if (!createSessionResponse.ok) {
+          console.error('Failed to create inspection session');
+        }
+        
         // Always use Pi backend for consistency
         const apiUrl = `http://172.20.1.93:3001/api/inspection-data/${selectedInspection}`;
         

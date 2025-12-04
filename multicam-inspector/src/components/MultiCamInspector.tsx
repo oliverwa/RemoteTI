@@ -980,7 +980,8 @@ export default function MultiCamInspector({
         },
         body: JSON.stringify({
           hangar: snapshotHangar,
-          drone: snapshotDrone
+          drone: snapshotDrone,
+          inspectionType: selectedInspection || 'remote'
         })
       });
       

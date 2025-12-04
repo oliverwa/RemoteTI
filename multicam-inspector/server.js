@@ -94,12 +94,12 @@ function generateSessionTimestamp() {
   return `${year}${month}${day}_${hour}${minute}${second}`;
 }
 
-function initializeCaptureProcess(requestId, hangar, drone, sessionTimestamp) {
+function initializeCaptureProcess(requestId, hangar, drone, sessionFolder) {
   global.captureProcesses = global.captureProcesses || {};
   global.captureProcesses[requestId] = {
     hangar,
     drone,
-    sessionTimestamp,
+    sessionFolder,
     startTime: Date.now(),
     capturedImages: [],
     failedImages: [],
@@ -153,9 +153,10 @@ app.post('/api/capture', async (req, res) => {
   try {
     log('info', `[${requestId}] Received snapshot request`, req.body);
     
-    const { hangar, drone } = validateSnapshotRequest(req);
+    const { hangar, drone, inspectionType = 'remote' } = req.body;
+    validateSnapshotRequest(req);
     
-    log('info', `[${requestId}] Starting parallel camera capture`, { hangar, drone });
+    log('info', `[${requestId}] Starting parallel camera capture`, { hangar, drone, inspectionType });
     
     res.json({
       success: true,
@@ -165,10 +166,42 @@ app.post('/api/capture', async (req, res) => {
     });
     
     const sessionTimestamp = generateSessionTimestamp();
-    initializeCaptureProcess(requestId, hangar, drone, sessionTimestamp);
+    const cleanType = inspectionType.replace('-ti-inspection', '').replace(/-/g, '_');
+    const sessionName = `${cleanType}_${drone}_${sessionTimestamp}`;
+    const sessionFolder = `${hangar}/${sessionName}`;
+    
+    // Create session directory and copy inspection template for remote inspections too
+    const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    if (!fs.existsSync(sessionPath)) {
+      fs.mkdirSync(sessionPath, { recursive: true });
+    }
+    
+    // Copy the inspection template JSON
+    const templateFile = path.join(BASE_DIR, 'data', 'templates', `${inspectionType}.json`);
+    const destinationFile = path.join(sessionPath, `${cleanType}_${drone}_${sessionTimestamp}_inspection.json`);
+    
+    if (fs.existsSync(templateFile)) {
+      const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      
+      // Add session metadata
+      templateData.sessionInfo = {
+        inspectionType: inspectionType,
+        hangar: hangar,
+        drone: drone,
+        sessionFolder: sessionFolder,
+        sessionName: sessionName,
+        createdAt: new Date().toISOString(),
+        timestamp: sessionTimestamp
+      };
+      
+      fs.writeFileSync(destinationFile, JSON.stringify(templateData, null, 2));
+      log('info', `Created inspection file: ${destinationFile}`);
+    }
+    
+    initializeCaptureProcess(requestId, hangar, drone, sessionFolder);
     
     // Start capture in background
-    captureInParallel(requestId, hangar, drone, sessionTimestamp);
+    captureInParallel(requestId, hangar, drone, sessionFolder);
     
   } catch (error) {
     log('error', `[${requestId}] Request validation error:`, error.message);
@@ -181,7 +214,7 @@ app.post('/api/capture', async (req, res) => {
 });
 
 // Optimized parallel capture function
-async function captureInParallel(requestId, hangar, drone, sessionTimestamp) {
+async function captureInParallel(requestId, hangar, drone, sessionFolder) {
   // Set a global timeout for the entire capture process (5 minutes)
   const globalTimeout = setTimeout(() => {
     if (global.captureProcesses[requestId] && global.captureProcesses[requestId].status === 'running') {
@@ -222,7 +255,7 @@ async function captureInParallel(requestId, hangar, drone, sessionTimestamp) {
       
       log('info', `[${requestId}] Starting ${camera} on port ${port} (${cameraIndex + 1}/${cameras.length})`);
       
-      return captureCameraParallel(requestId, hangar, drone, camera, port, sessionTimestamp)
+      return captureCameraParallel(requestId, hangar, drone, camera, port, sessionFolder)
         .then(() => {
           global.captureProcesses[requestId].capturedImages.push(camera);
           log('info', `[${requestId}] ${camera} SUCCESS`);
@@ -274,7 +307,7 @@ async function captureInParallel(requestId, hangar, drone, sessionTimestamp) {
 }
 
 // Camera capture function
-function captureCameraParallel(requestId, hangar, drone, camera, port, sessionTimestamp) {
+function captureCameraParallel(requestId, hangar, drone, camera, port, sessionFolder) {
   return new Promise((resolve, reject) => {
     const hangarConfig = config.getHangar(hangar);
     const sshHost = hangarConfig?.connection?.ssh_host || hangar;
@@ -285,7 +318,7 @@ function captureCameraParallel(requestId, hangar, drone, camera, port, sessionTi
       return;
     }
     
-    const child = spawn('bash', [CAMERA_SCRIPT_PATH, hangar, sshHost, drone, camera, cameraIP, sessionTimestamp, port.toString()], {
+    const child = spawn('bash', [CAMERA_SCRIPT_PATH, sshHost, drone, camera, cameraIP, sessionFolder, port.toString()], {
       stdio: ['pipe', 'pipe', 'pipe'],
       cwd: __dirname,
       env: { ...process.env }
@@ -454,6 +487,55 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0',
     server: 'running'
   });
+});
+
+// Create inspection session for onsite/extended/service inspections
+app.post('/api/create-inspection-session', async (req, res) => {
+  const { inspectionType, hangar, drone, sessionFolder } = req.body;
+  
+  try {
+    // Create the session folder
+    const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    
+    // Create directory
+    if (!fs.existsSync(sessionPath)) {
+      fs.mkdirSync(sessionPath, { recursive: true });
+    }
+    
+    // Copy the template JSON file to the session folder
+    const templateFile = path.join(BASE_DIR, 'data', 'templates', `${inspectionType}.json`);
+    // Extract just the folder name from the full path for the filename
+    const folderName = sessionFolder.split('/').pop();
+    const destinationFile = path.join(sessionPath, `${folderName}_inspection.json`);
+    
+    if (fs.existsSync(templateFile)) {
+      // Read template
+      const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      
+      // Add session metadata
+      templateData.sessionInfo = {
+        inspectionType: inspectionType,
+        hangar: hangar,
+        drone: drone,
+        sessionFolder: sessionFolder,
+        sessionName: folderName,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Write to session folder
+      fs.writeFileSync(destinationFile, JSON.stringify(templateData, null, 2));
+      log('info', `Created inspection file: ${destinationFile}`);
+    }
+    
+    res.json({ 
+      success: true, 
+      sessionPath: sessionPath,
+      sessionFolder: sessionFolder 
+    });
+  } catch (error) {
+    log('error', 'Error creating inspection session:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/api/config', (req, res) => {

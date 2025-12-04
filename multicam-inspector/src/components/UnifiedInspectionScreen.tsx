@@ -32,13 +32,19 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   // Fetch available inspection types
   useEffect(() => {
     setLoading(true);
-    const apiUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3001/api/inspection-types'
-      : `http://172.20.1.93:3001/api/inspection-types`;
+    // Always use Pi backend for consistency, add cache busting
+    const apiUrl = `http://172.20.1.93:3001/api/inspection-types?t=${Date.now()}`;
     
-    fetch(apiUrl)
+    fetch(apiUrl, {
+      cache: 'no-cache',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
       .then(res => res.json())
       .then(data => {
+        console.log('Fetched inspection types:', data);
         // Sort inspection types in desired order
         const sortOrder = ['remote', 'onsite', 'extended', 'service'];
         const sortedData = data.sort((a: InspectionType, b: InspectionType) => {
@@ -47,6 +53,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           return aIndex - bIndex;
         });
         
+        console.log('Sorted inspection types:', sortedData);
         setInspectionTypes(sortedData);
         // Auto-select first inspection (Remote)
         if (sortedData.length > 0) {
@@ -250,7 +257,9 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
               disabled={!selectedInspection || !selectedHangar || !selectedDrone}
               className="w-full mb-3 py-4 text-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:text-gray-500"
             >
-              Start Inspection
+              {selectedInspection === 'remote-ti-inspection' 
+                ? 'Start Remote Inspection' 
+                : 'Start Inspection'}
             </Button>
 
             {/* Secondary Actions */}
