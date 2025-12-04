@@ -19,11 +19,11 @@ const SNAPSHOTS_DIR = config.paths.snapshotsAbsolute || path.join(process.env.HO
 // Middleware
 app.use(cors());
 app.use(express.json());
-// Serve built React app
-app.use(express.static('build'));
-
-// Serve public directory for additional static files
+// Serve public directory for additional static files  
 app.use('/public', express.static('public'));
+
+// Serve static files from build directory (but don't catch all routes yet)
+app.use('/static', express.static(path.join(__dirname, 'build/static')));
 
 
 // Logging utility
@@ -865,10 +865,7 @@ app.put('/api/hangars/:hangarId/transforms', (req, res) => {
   }
 });
 
-// Catch all handler: send back React's index.html file for any non-API routes
-app.use((req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
+// Catch-all route removed to avoid conflicts with API endpoints on Pi
 
 // Start server
 app.listen(PORT, () => {
@@ -896,6 +893,153 @@ process.on('SIGTERM', () => {
   log('info', 'Received SIGTERM, shutting down gracefully');
   process.exit(0);
 });
+
+// API endpoint to update inspection task status in remote inspection JSON
+// Modified to handle sessionFolder with slashes using regex
+app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
+  try {
+    const sessionFolder = req.params[0];  // First capture group
+    const taskId = req.params[1];  // Second capture group
+    const { status, completedBy, comment } = req.body;
+    
+    log('info', `Updating task ${taskId} status to ${status} for session ${sessionFolder}`);
+    
+    // Build the full path to the inspection JSON
+    const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    
+    if (!fs.existsSync(sessionPath)) {
+      return res.status(404).json({ error: 'Session folder not found' });
+    }
+    
+    const files = fs.readdirSync(sessionPath);
+    const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
+    
+    if (!inspectionFile) {
+      return res.status(404).json({ error: 'Inspection file not found' });
+    }
+    
+    const filePath = path.join(sessionPath, inspectionFile);
+    const inspectionData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    
+    // Find and update the task
+    const task = inspectionData.tasks.find(t => t.id === taskId);
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    
+    // Update task completion data
+    task.status = status;
+    task.completion = {
+      completedBy: completedBy || 'Unknown',
+      completedAt: new Date().toISOString()
+    };
+    if (comment) {
+      task.comment = comment;
+    }
+    
+    // Update overall completion status
+    const allTasks = inspectionData.tasks;
+    const completedTasks = allTasks.filter(t => t.status === 'pass' || t.status === 'fail' || t.status === 'na');
+    
+    if (!inspectionData.completionStatus) {
+      inspectionData.completionStatus = {
+        status: 'not_started',
+        startedBy: null,
+        startedAt: null,
+        completedBy: null,
+        completedAt: null
+      };
+    }
+    
+    if (completedTasks.length === 0) {
+      inspectionData.completionStatus.status = 'not_started';
+    } else if (completedTasks.length === allTasks.length) {
+      inspectionData.completionStatus.status = 'completed';
+      inspectionData.completionStatus.completedBy = completedBy || 'Unknown';
+      inspectionData.completionStatus.completedAt = new Date().toISOString();
+    } else {
+      inspectionData.completionStatus.status = 'in_progress';
+      if (!inspectionData.completionStatus.startedBy) {
+        inspectionData.completionStatus.startedBy = completedBy || 'Unknown';
+        inspectionData.completionStatus.startedAt = new Date().toISOString();
+      }
+    }
+    
+    // Save the updated inspection data
+    fs.writeFileSync(filePath, JSON.stringify(inspectionData, null, 2));
+    
+    log('info', `Task ${taskId} updated successfully`);
+    
+    res.json({ 
+      success: true, 
+      task: task,
+      completionStatus: inspectionData.completionStatus,
+      progress: {
+        completed: completedTasks.length,
+        total: allTasks.length
+      }
+    });
+    
+  } catch (err) {
+    log('error', 'Error updating inspection task:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API endpoint to get inspection session status
+// Modified to handle sessionFolder with slashes using regex
+app.get(/^\/api\/inspection\/(.+)\/status$/, async (req, res) => {
+  try {
+    const sessionFolder = req.params[0];  // First capture group
+    
+    // Build the full path to the inspection JSON
+    const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    
+    if (!fs.existsSync(sessionPath)) {
+      return res.status(404).json({ error: 'Session folder not found' });
+    }
+    
+    const files = fs.readdirSync(sessionPath);
+    const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
+    
+    if (!inspectionFile) {
+      return res.status(404).json({ error: 'Inspection file not found' });
+    }
+    
+    const filePath = path.join(sessionPath, inspectionFile);
+    const inspectionData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    
+    const allTasks = inspectionData.tasks;
+    const completedTasks = allTasks.filter(t => t.status === 'pass' || t.status === 'fail' || t.status === 'na');
+    
+    res.json({ 
+      completionStatus: inspectionData.completionStatus || {
+        status: 'not_started',
+        startedBy: null,
+        startedAt: null,
+        completedBy: null,
+        completedAt: null
+      },
+      progress: {
+        completed: completedTasks.length,
+        total: allTasks.length
+      },
+      tasks: allTasks.map(t => ({
+        id: t.id,
+        title: t.title,
+        status: t.status,
+        completion: t.completion
+      }))
+    });
+    
+  } catch (err) {
+    log('error', 'Error getting inspection status:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Note: Frontend serving removed to avoid conflicts with API endpoints
+// The React app should be served from a separate process or different port
 
 process.on('SIGINT', () => {
   log('info', 'Received SIGINT, shutting down gracefully');

@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Check, X, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface Task {
+  id: string;  // Backend ID for the task
   taskName: string;
   taskNumber: string;
   category: string;
@@ -48,6 +49,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   const [taskStatuses, setTaskStatuses] = useState<{ [key: string]: 'pass' | 'fail' | 'pending' }>({});
   const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
+  const [sessionFolder, setSessionFolder] = useState<string>('');
 
   // Load inspection data
   useEffect(() => {
@@ -65,9 +67,10 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         
         const cleanType = selectedInspection.replace('-ti-inspection', '').replace(/-/g, '_');
         const sessionName = `${cleanType}_${selectedDrone}_${timestamp}`;
-        const sessionFolder = `${selectedHangar}/${sessionName}`;
+        const sessionFolderPath = `${selectedHangar}/${sessionName}`;
+        setSessionFolder(sessionFolderPath);
         
-        console.log('Creating inspection session:', sessionFolder);
+        console.log('Creating inspection session:', sessionFolderPath);
         
         // Create session and get inspection data
         const createSessionResponse = await fetch('http://172.20.1.93:3001/api/create-inspection-session', {
@@ -79,7 +82,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
             inspectionType: selectedInspection,
             hangar: selectedHangar,
             drone: selectedDrone,
-            sessionFolder: sessionFolder
+            sessionFolder: sessionFolderPath
           })
         });
         
@@ -104,6 +107,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         
         // Map the tasks to our expected structure
         const mappedTasks = inspectionData.tasks.map((task: any, index: number) => ({
+          id: task.id || `task_${index + 1}`,  // Keep original ID for backend
           taskName: task.title || task.taskName || `Task ${index + 1}`,
           taskNumber: task.id || task.taskNumber || String(index + 1),
           category: task.category || 'General',
@@ -153,7 +157,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
     loadInspectionData();
   }, [selectedInspection, currentUser]);
 
-  const handleTaskStatus = (taskNumber: string, status: 'pass' | 'fail') => {
+  const handleTaskStatus = async (taskNumber: string, status: 'pass' | 'fail') => {
     setTaskStatuses(prev => ({
       ...prev,
       [taskNumber]: status
@@ -163,6 +167,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
     if (inspectionData) {
       const taskIndex = inspectionData.tasks.findIndex(t => t.taskNumber === taskNumber);
       if (taskIndex !== -1) {
+        const task = inspectionData.tasks[taskIndex];
         const updatedTasks = [...inspectionData.tasks];
         updatedTasks[taskIndex].completion = {
           completedBy: currentUser,
@@ -172,6 +177,43 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           ...inspectionData,
           tasks: updatedTasks
         });
+        
+        // Update backend if we have session info
+        if (sessionFolder && task.id) {
+          console.log('Sending task update to backend:', {
+            sessionFolder,
+            taskId: task.id,
+            status,
+            url: `http://172.20.1.93:3001/api/inspection/${sessionFolder}/task/${task.id}/status`
+          });
+          try {
+            const response = await fetch(`http://172.20.1.93:3001/api/inspection/${sessionFolder}/task/${task.id}/status`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                status: status,
+                completedBy: currentUser,
+                comment: notes[taskNumber] || ''
+              })
+            });
+            
+            if (response.ok) {
+              const result = await response.json();
+              console.log(`Task status saved to backend (${result.progress.completed}/${result.progress.total} complete)`);
+              
+              // Update inspection metadata if completed
+              if (result.completionStatus.status === 'completed') {
+                console.log('Inspection completed and saved!');
+              }
+            } else {
+              console.error('Failed to save task status to backend');
+            }
+          } catch (error) {
+            console.error('Error updating task status:', error);
+          }
+        }
         
         // Auto-advance to next task after a short delay
         setTimeout(() => {
@@ -373,10 +415,32 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                 </label>
                 <textarea
                   value={notes[currentTask.taskNumber] || ''}
-                  onChange={(e) => setNotes(prev => ({
-                    ...prev,
-                    [currentTask.taskNumber]: e.target.value
-                  }))}
+                  onChange={async (e) => {
+                    const newNote = e.target.value;
+                    setNotes(prev => ({
+                      ...prev,
+                      [currentTask.taskNumber]: newNote
+                    }));
+                    
+                    // Update backend if task has been completed
+                    if (sessionFolder && currentTask.id && taskStatuses[currentTask.taskNumber] !== 'pending') {
+                      try {
+                        await fetch(`http://172.20.1.93:3001/api/inspection/${sessionFolder}/task/${currentTask.id}/status`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            status: taskStatuses[currentTask.taskNumber],
+                            completedBy: currentUser,
+                            comment: newNote
+                          })
+                        });
+                      } catch (error) {
+                        console.error('Error updating task comment:', error);
+                      }
+                    }
+                  }}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   rows={4}
                   placeholder="Add any observations or notes about this task..."

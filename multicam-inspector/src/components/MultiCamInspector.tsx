@@ -911,7 +911,8 @@ export default function MultiCamInspector({
       setInspectionMeta(prev => ({
         ...prev,
         droneName: "Demo Drone",
-        hangarName: hangarToUse
+        hangarName: hangarToUse,
+        startTime: new Date().toISOString()
       }));
       
       // Set loading state
@@ -962,7 +963,8 @@ export default function MultiCamInspector({
     setInspectionMeta(prev => ({
       ...prev,
       droneName: droneToUse,
-      hangarName: hangarToUse
+      hangarName: hangarToUse,
+      startTime: new Date().toISOString()
     }));
     
     // Reset delayed display state
@@ -1098,11 +1100,12 @@ export default function MultiCamInspector({
                   
                   console.log(`Storing image for ${cameraName}:`, imageUrl);
                   
-                  // Capture session name from the first image processed
+                  // Capture session name from the first image processed (includes hangar folder)
                   if (!currentSessionName) {
-                    setCurrentSessionName(imageInfo.session);
+                    const fullSessionPath = `${hangarToUse}/${imageInfo.session}`;
+                    setCurrentSessionName(fullSessionPath);
                     sessionRef.current = imageInfo.session;
-                    console.log(`Captured session name: ${imageInfo.session}`);
+                    console.log(`Captured session name: ${fullSessionPath}`);
                     console.log(`📝 Stored session in ref: ${sessionRef.current}`);
                   }
                   
@@ -1547,7 +1550,7 @@ export default function MultiCamInspector({
   };
 
   // TI status change with auto-advance
-  const selectStatus = (s: "pass" | "fail" | "na") => {
+  const selectStatus = async (s: "pass" | "fail" | "na") => {
     // Check if images are loaded for pass/fail actions
     if ((s === "pass" || s === "fail") && !areImagesLoaded()) {
       setShowNoImagesModal(true);
@@ -1568,12 +1571,51 @@ export default function MultiCamInspector({
     
     if (idx >= items.length) return;
     const i = idx;
-    addLog(`📋 Task ${i + 1}: ${s.toUpperCase()} - ${items[i].title.substring(0, 40)}...`);
+    const currentTask = items[i];
+    addLog(`📋 Task ${i + 1}: ${s.toUpperCase()} - ${currentTask.title.substring(0, 40)}...`);
+    
+    // Update local state
     setItems((prev) => prev.map((x, k) => (k === i ? { 
       ...x, 
       status: s, 
       completedAt: new Date().toISOString() 
     } : x)));
+    
+    // Update backend if we have session info
+    if (currentSessionName && currentTask.id) {
+      try {
+        const response = await fetch(`http://172.20.1.93:3001/api/inspection/${currentSessionName}/task/${currentTask.id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: s,
+            completedBy: inspectionMeta.inspectorName || 'Inspector',
+            comment: currentTask.comment || ''
+          })
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          addLog(`✅ Task status saved to backend (${result.progress.completed}/${result.progress.total} complete)`);
+          
+          // Update inspection metadata if completed
+          if (result.completionStatus.status === 'completed') {
+            setInspectionMeta(prev => ({
+              ...prev,
+              completedTime: result.completionStatus.completedAt
+            }));
+            addLog("🎉 Inspection completed and saved!");
+          }
+        } else {
+          addLog(`⚠️ Failed to save task status to backend`);
+        }
+      } catch (error) {
+        console.error('Error updating task status:', error);
+        addLog(`⚠️ Error saving task status: ${error.message}`);
+      }
+    }
     
     if (s === "pass" || s === "fail") {
       setLeaving(true);
@@ -1585,11 +1627,13 @@ export default function MultiCamInspector({
             addLog(`➡️ Advanced to task ${next + 1}: ${items[next]?.title.substring(0, 40)}...`);
           } else {
             addLog("🎉 All TI tasks completed!");
-            // Mark inspection as completed
-            setInspectionMeta(prevMeta => ({
-              ...prevMeta,
-              completedTime: new Date().toISOString()
-            }));
+            // Mark inspection as completed if not already done
+            if (!inspectionMeta.completedTime) {
+              setInspectionMeta(prevMeta => ({
+                ...prevMeta,
+                completedTime: new Date().toISOString()
+              }));
+            }
           }
           return next;
         });
@@ -1667,9 +1711,31 @@ export default function MultiCamInspector({
   }, [hoverId, fsId, resetView, resetAll, addLog, showLogs, selectStatus]);
   
   // Update task comment
-  const updateTaskComment = (comment: string) => {
+  const updateTaskComment = async (comment: string) => {
     if (idx >= items.length) return;
+    const currentTask = items[idx];
+    
+    // Update local state
     setItems((prev) => prev.map((x, k) => (k === idx ? { ...x, comment } : x)));
+    
+    // If task has been completed, update backend with new comment
+    if (currentSessionName && currentTask.id && currentTask.status) {
+      try {
+        await fetch(`http://172.20.1.93:3001/api/inspection/${currentSessionName}/task/${currentTask.id}/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: currentTask.status,
+            completedBy: inspectionMeta.inspectorName || 'Inspector',
+            comment: comment
+          })
+        });
+      } catch (error) {
+        console.error('Error updating task comment:', error);
+      }
+    }
   };
 
   // Generate PDF report with enhanced styling and images
