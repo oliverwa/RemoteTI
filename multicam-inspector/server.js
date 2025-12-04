@@ -603,10 +603,25 @@ app.get('/api/image/:hangar/:session/:filename', (req, res) => {
 app.get('/api/folders', (req, res) => {
   try {
     if (!fs.existsSync(SNAPSHOTS_DIR)) {
-      return res.json({ hangars: [] });
+      return res.json({ 
+        hangars: [],
+        categorized: {
+          remote: [],
+          onsite: [],
+          extended: [],
+          service: []
+        }
+      });
     }
     
     const hangars = [];
+    const categorized = {
+      remote: [],
+      onsite: [],
+      extended: [],
+      service: []
+    };
+    
     const hangarDirs = fs.readdirSync(SNAPSHOTS_DIR).filter(item => {
       const itemPath = path.join(SNAPSHOTS_DIR, item);
       return fs.statSync(itemPath).isDirectory();
@@ -625,20 +640,88 @@ app.get('/api/folders', (req, res) => {
         const sessionPath = path.join(hangarPath, sessionName);
         const stats = fs.statSync(sessionPath);
         
-        const images = fs.readdirSync(sessionPath).filter(file => 
+        const files = fs.readdirSync(sessionPath);
+        const images = files.filter(file => 
           config.validation.imageFormats.some(ext => file.toLowerCase().endsWith(ext))
         );
         
-        if (images.length > 0) {
-          sessions.push({
+        // Include ALL sessions, even without images
+        if (true) {
+          // Check for inspection JSON and get status
+          const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
+          let inspectionStatus = null;
+          let completedTasks = 0;
+          let totalTasks = 0;
+          let inspectionType = null;
+          let detectedCategory = 'unknown';
+          
+          // ALWAYS check session name FIRST for most reliable detection
+          const nameLower = sessionName.toLowerCase();
+          const firstPart = sessionName.split('_')[0].toLowerCase();
+          
+          if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
+            detectedCategory = 'remote';
+          } else if (firstPart === 'onsite' || nameLower.startsWith('onsite_')) {
+            detectedCategory = 'onsite';
+          } else if (firstPart === 'extended' || nameLower.startsWith('extended_')) {
+            detectedCategory = 'extended';
+          } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
+            detectedCategory = 'service';
+          } else {
+            // Default to remote for legacy sessions without type prefix
+            detectedCategory = 'remote';
+          }
+          
+          // Read inspection file for additional metadata (but don't override category)
+          if (inspectionFile) {
+            try {
+              const inspectionPath = path.join(sessionPath, inspectionFile);
+              const inspectionData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
+              
+              inspectionType = inspectionData.type || 'Unknown';
+              
+              if (inspectionData.tasks) {
+                totalTasks = inspectionData.tasks.length;
+                completedTasks = inspectionData.tasks.filter(t => 
+                  t.status === 'pass' || t.status === 'fail' || t.status === 'na'
+                ).length;
+              }
+              
+              inspectionStatus = inspectionData.completionStatus?.status || 
+                (completedTasks === 0 ? 'not_started' : 
+                 completedTasks === totalTasks ? 'completed' : 'in_progress');
+            } catch (err) {
+              console.error('Error reading inspection file:', err);
+            }
+          }
+          
+          const sessionData = {
             id: sessionName,
             name: sessionName,
             path: sessionPath,
             created: stats.mtime,
             imageCount: images.length,
-            images: images
-          });
-        }
+            images: images,
+            hasInspection: !!inspectionFile,
+            inspectionType: inspectionType,
+            inspectionStatus: inspectionStatus,
+            inspectionCategory: detectedCategory,
+            hangarId: hangarName,
+            hangarName: hangarName,
+            inspectionProgress: inspectionFile ? {
+              completed: completedTasks,
+              total: totalTasks,
+              percentage: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+            } : null
+          };
+          
+          sessions.push(sessionData);
+          
+          // Add to categorized structure
+          if (detectedCategory !== 'unknown' && categorized[detectedCategory]) {
+            categorized[detectedCategory].push(sessionData);
+          }
+        } // End of if (true) - processing all sessions
       });
       
       sessions.sort((a, b) => new Date(b.created) - new Date(a.created));
@@ -652,8 +735,20 @@ app.get('/api/folders', (req, res) => {
       }
     });
     
+    // Sort categorized sessions by date
+    Object.keys(categorized).forEach(category => {
+      categorized[category].sort((a, b) => new Date(b.created) - new Date(a.created));
+    });
+    
     log('info', `Found ${hangars.length} hangars with ${hangars.reduce((total, h) => total + h.sessions.length, 0)} sessions`);
-    res.json({ hangars });
+    log('info', 'Sessions by category:', {
+      remote: categorized.remote.length,
+      onsite: categorized.onsite.length,
+      extended: categorized.extended.length,
+      service: categorized.service.length
+    });
+    
+    res.json({ hangars, categorized });
     
   } catch (error) {
     log('error', 'Error listing folders:', error.message);
@@ -997,6 +1092,36 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
     
   } catch (err) {
     log('error', 'Error updating inspection task:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API endpoint to get inspection data from a session
+app.get(/^\/api\/inspection\/(.+)\/data$/, async (req, res) => {
+  try {
+    const sessionFolder = req.params[0];  // First capture group
+    
+    // Build the full path to the inspection JSON
+    const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    
+    if (!fs.existsSync(sessionPath)) {
+      return res.status(404).json({ error: 'Session folder not found' });
+    }
+    
+    const files = fs.readdirSync(sessionPath);
+    const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
+    
+    if (!inspectionFile) {
+      return res.status(404).json({ error: 'Inspection file not found' });
+    }
+    
+    const filePath = path.join(sessionPath, inspectionFile);
+    const inspectionData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    
+    res.json(inspectionData);
+    
+  } catch (err) {
+    log('error', 'Error getting inspection data:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

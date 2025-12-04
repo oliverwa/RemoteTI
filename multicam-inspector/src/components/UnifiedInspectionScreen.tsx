@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { HANGARS, DRONE_OPTIONS } from '../constants';
+import FolderBrowserModal from './modals/FolderBrowserModal';
 
 interface InspectionType {
   file: string;
@@ -13,7 +14,7 @@ interface InspectionType {
 
 interface UnifiedInspectionScreenProps {
   currentUser: string;
-  onStartInspection: (action: 'capture' | 'load' | 'browse', inspectionType: string, hangar: string, drone: string) => void;
+  onStartInspection: (action: 'capture' | 'load' | 'browse' | 'load-session', inspectionType: string, hangar: string, drone: string) => void;
   onLogout: () => void;
 }
 
@@ -28,6 +29,9 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   const [selectedDrone, setSelectedDrone] = useState<string>('');
   const [isEditingDrone, setIsEditingDrone] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showFolderModal, setShowFolderModal] = useState(false);
+  const [loadingFolders, setLoadingFolders] = useState(false);
+  const [availableFolders, setAvailableFolders] = useState<any[]>([]);
 
   // Fetch available inspection types
   useEffect(() => {
@@ -80,15 +84,55 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   };
 
   const handleLoadLatest = () => {
-    if (selectedInspection && selectedHangar && selectedDrone) {
-      onStartInspection('load', selectedInspection, selectedHangar, selectedDrone);
-    }
+    // Load Latest should work without requiring all fields
+    onStartInspection('load', selectedInspection, selectedHangar, selectedDrone);
   };
 
-  const handleBrowseHistory = () => {
-    if (selectedInspection && selectedHangar && selectedDrone) {
-      onStartInspection('browse', selectedInspection, selectedHangar, selectedDrone);
+  const handleBrowseHistory = async () => {
+    // Open the folder browser directly here
+    setLoadingFolders(true);
+    try {
+      const response = await fetch(`http://172.20.1.93:3001/api/folders`);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Loaded folders data:', data);
+        // Pass the entire response object which includes both hangars and categorized
+        setAvailableFolders(data);
+      } else {
+        console.error('Failed to fetch folders, status:', response.status);
+        setAvailableFolders([]);
+      }
+    } catch (error) {
+      console.error('Failed to load folders:', error);
+      setAvailableFolders([]);
+    } finally {
+      setLoadingFolders(false);
     }
+    setShowFolderModal(true);
+  };
+
+  const handleLoadSession = (hangarId: string, sessionName: string, images: any[]) => {
+    // When a session is selected from browser, determine inspection type from session name
+    setShowFolderModal(false);
+    
+    // Detect inspection type from session name
+    const nameLower = sessionName.toLowerCase();
+    const firstPart = sessionName.split('_')[0].toLowerCase();
+    let inspectionType = 'remote-ti-inspection'; // default
+    
+    if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
+      inspectionType = 'remote-ti-inspection';
+    } else if (firstPart === 'onsite' || nameLower.startsWith('onsite_')) {
+      inspectionType = 'onsite-ti-inspection';
+    } else if (firstPart === 'extended' || nameLower.startsWith('extended_')) {
+      inspectionType = 'extended-ti-inspection';
+    } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
+      inspectionType = 'service-ti-inspection';
+    }
+    
+    // Pass session data as part of the hangar parameter (will be parsed in the inspector components)
+    const sessionData = `${hangarId}|${sessionName}`;
+    onStartInspection('load-session', inspectionType, sessionData, 'session');
   };
 
   const selectedHangarObj = HANGARS.find(h => h.id === selectedHangar);
@@ -262,19 +306,17 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
                 : 'Start Inspection'}
             </Button>
 
-            {/* Secondary Actions */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Secondary Actions - Always Accessible */}
+            <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleLoadLatest}
-                disabled={!selectedInspection || !selectedHangar || !selectedDrone}
-                className="py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all text-base font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
               >
                 Load Latest
               </button>
               <button
                 onClick={handleBrowseHistory}
-                disabled={!selectedInspection || !selectedHangar || !selectedDrone}
-                className="py-2.5 px-4 rounded-lg border-2 border-gray-300 hover:bg-gray-50 transition-all text-base font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
               >
                 Browse History
               </button>
@@ -282,6 +324,15 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Folder Browser Modal */}
+      <FolderBrowserModal
+        isOpen={showFolderModal}
+        onClose={() => setShowFolderModal(false)}
+        loadingFolders={loadingFolders}
+        availableFolders={availableFolders}
+        onLoadSession={handleLoadSession}
+      />
     </div>
   );
 };

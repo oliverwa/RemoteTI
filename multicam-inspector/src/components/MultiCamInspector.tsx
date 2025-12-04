@@ -17,7 +17,6 @@ import { HANGARS, CAMERA_LAYOUT, clamp } from '../constants';
 
 // Import extracted modals
 import { 
-  SnapshotConfigModal, 
   CameraTransformModal, 
   CameraCalibrationSelectionModal, 
   FolderBrowserModal 
@@ -82,12 +81,14 @@ interface MultiCamInspectorProps {
   selectedInspection?: string | null;
   selectedHangar?: string;
   selectedDrone?: string;
+  action?: 'capture' | 'load' | 'browse' | 'load-session';
 }
 
 export default function MultiCamInspector({ 
   selectedInspection,
   selectedHangar,
-  selectedDrone 
+  selectedDrone,
+  action = 'capture' 
 }: MultiCamInspectorProps = {}) {
   // --- State for inspection data ---
   const [inspectionData, setInspectionData] = useState<any>(null);
@@ -109,8 +110,7 @@ export default function MultiCamInspector({
   const [hoverId, setHoverId] = useState<number | null>(null);
   const [fsId, setFsId] = useState<number | null>(null);
   
-  // Snapshot modal state
-  const [showSnapshotModal, setShowSnapshotModal] = useState(false);
+  // Snapshot state (no modal needed anymore)
   const [snapshotHangar, setSnapshotHangar] = useState<string>("");
   const [snapshotDrone, setSnapshotDrone] = useState("");
   
@@ -884,10 +884,9 @@ export default function MultiCamInspector({
 
   const snapshotAll = () => {
     addLog("Snapshot button clicked - opening configuration modal");
-    // Reset modal fields and show modal
-    setSnapshotHangar(HANGARS[0].id);
-    setSnapshotDrone("");
-    setShowSnapshotModal(true);
+    // This function is no longer needed since we don't have a modal
+    // Action is handled through UnifiedInspectionScreen
+    addLog("📝 Please use the inspection configuration screen to select actions");
   };
 
   const executeSnapshot = async () => {
@@ -923,7 +922,6 @@ export default function MultiCamInspector({
     if (droneToUse === 'demo') {
       addLog("🎭 Demo mode selected - loading local demo images");
       setIsCapturing(true);
-      setShowSnapshotModal(false);
       
       // Update inspection metadata
       setInspectionMeta(prev => ({
@@ -975,7 +973,6 @@ export default function MultiCamInspector({
     console.log(`📝 Using session path: ${fullSessionPath}`);
     
     setIsCapturing(true);
-    setShowSnapshotModal(false);
     
     // Update inspection metadata with capture info
     setInspectionMeta(prev => ({
@@ -1372,6 +1369,25 @@ export default function MultiCamInspector({
       setSnapshotDrone(latestSession.name.split('_')[0]); // Extract drone name from session
       setCurrentSession({ name: latestSession.name, hangar: latestHangar });
       
+      // IMPORTANT: Set the current session name for API calls
+      const fullSessionPath = `${latestHangar}/${latestSession.name}`;
+      setCurrentSessionName(fullSessionPath);
+      console.log(`📝 Set current session path: ${fullSessionPath}`);
+      
+      // Load the inspection JSON from this session if it exists
+      try {
+        const inspectionResponse = await fetch(`http://172.20.1.93:3001/api/inspection/${fullSessionPath}/data`);
+        if (inspectionResponse.ok) {
+          const inspectionData = await inspectionResponse.json();
+          if (inspectionData.tasks) {
+            setItems(inspectionData.tasks);
+            addLog(`📋 Loaded ${inspectionData.tasks.length} inspection tasks from session`);
+          }
+        }
+      } catch (error) {
+        console.log('No inspection data found for this session (might be non-inspection capture)');
+      }
+      
       addLog(`✅ Loaded ${latestSession.imageCount} images from latest session`);
       
     } catch (error) {
@@ -1468,12 +1484,41 @@ export default function MultiCamInspector({
       setCams(newCams);
       setCurrentSession({ name: sessionName, hangar: hangar });
       setShowFolderModal(false);
-      addLog(`✅ Loaded ${images.length} images from ${sessionName}`);
+      
+      // IMPORTANT: Set the current session name for API calls
+      const fullSessionPath = `${hangar}/${sessionName}`;
+      setCurrentSessionName(fullSessionPath);
+      console.log(`📝 Set current session path: ${fullSessionPath}`);
+      
+      // Load the inspection JSON from this session if it exists
+      try {
+        const inspectionResponse = await fetch(`http://172.20.1.93:3001/api/inspection/${fullSessionPath}/data`);
+        if (inspectionResponse.ok) {
+          const inspectionData = await inspectionResponse.json();
+          if (inspectionData.tasks) {
+            setItems(inspectionData.tasks);
+            addLog(`📋 Loaded ${inspectionData.tasks.length} inspection tasks from session`);
+            
+            // Reset task index to start from beginning
+            setIdx(0);
+            
+            // Show logs if there's inspection data
+            setShowLogs(true);
+          }
+        } else {
+          addLog(`📷 Loaded images only (no inspection data)`);
+        }
+      } catch (error) {
+        console.log('No inspection data found for this session');
+        addLog(`📷 Loaded ${images.length} images (viewing only)`);
+      }
+      
+      addLog(`✅ Session loaded successfully`);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      addLog(`❌ Failed to load session images: ${errorMessage}`);
-      alert(`Failed to load session images: ${errorMessage}`);
+      addLog(`❌ Failed to load session: ${errorMessage}`);
+      alert(`Failed to load session: ${errorMessage}`);
     }
   };
 
@@ -2173,9 +2218,9 @@ export default function MultiCamInspector({
     }
   }, [idx, items, addLog]);
 
-  // --- Auto-start capture when component mounts with props ---
+  // --- Handle action when component mounts with props ---
   useEffect(() => {
-    // Auto-start capture when component mounts with hangar and drone from props
+    // Handle the action based on what the user selected in UnifiedInspectionScreen
     const hasImages = cams.some(cam => cam.src && cam.src !== "");
     if (!hasImages && !isCapturing && !isWaitingToDisplay && selectedHangar && selectedDrone) {
       // Set the snapshot values from props
@@ -2184,14 +2229,26 @@ export default function MultiCamInspector({
       
       // Small delay to ensure component is fully mounted and state is set
       const timer = setTimeout(() => {
-        addLog("🎬 Starting remote inspection capture...");
-        // Directly start capture without showing modal
-        executeSnapshot();
+        if (action === 'capture') {
+          addLog("Starting camera capture...");
+          executeSnapshot();
+        } else if (action === 'load') {
+          addLog("Loading latest inspection...");
+          loadLatestFolderGlobally();
+        } else if (action === 'load-session') {
+          // Parse session data from hangar parameter
+          const [hangarId, sessionName] = selectedHangar.split('|');
+          if (hangarId && sessionName) {
+            addLog(`Loading session: ${sessionName}`);
+            // Load the specific session
+            loadSessionImages(hangarId, sessionName, []);
+          }
+        }
       }, 500);
       
       return () => clearTimeout(timer);
     }
-  }, [selectedHangar, selectedDrone]);
+  }, [selectedHangar, selectedDrone, action]);
 
   // --- Render ---
   if (isLoadingInspection) {
@@ -2737,26 +2794,6 @@ export default function MultiCamInspector({
         />
       )}
 
-      {/* Snapshot Modal */}
-      <SnapshotConfigModal
-        isOpen={showSnapshotModal}
-        onClose={() => setShowSnapshotModal(false)}
-        snapshotHangar={snapshotHangar}
-        setSnapshotHangar={setSnapshotHangar}
-        snapshotDrone={snapshotDrone}
-        setSnapshotDrone={setSnapshotDrone}
-        onExecuteSnapshot={executeSnapshot}
-        onLoadLatest={() => {
-          setShowSnapshotModal(false);
-          loadLatestFolderGlobally();
-        }}
-        onBrowseFolders={() => {
-          setShowSnapshotModal(false);
-          loadAvailableFolders();
-          setShowFolderModal(true);
-        }}
-      />
-
       {/* Camera Transform Settings Modal */}
       <CameraTransformModal
         isOpen={showTransformModal}
@@ -3177,7 +3214,8 @@ export default function MultiCamInspector({
                 <Button
                   onClick={() => {
                     setShowNoImagesModal(false);
-                    setShowSnapshotModal(true);
+                    // No modal needed - handled by UnifiedInspectionScreen
+                    addLog("📝 Please go back to inspection configuration screen");
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white"
                 >

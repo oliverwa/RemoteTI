@@ -10,7 +10,7 @@ interface InspectionConfig {
   inspectionType: string;
   hangar: string;
   drone: string;
-  action?: 'capture' | 'load' | 'browse';
+  action?: 'capture' | 'load' | 'browse' | 'load-session';
 }
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
     setInspectionConfig(null);
   };
 
-  const handleStartInspection = (action: 'capture' | 'load' | 'browse', inspectionType: string, hangar: string, drone: string) => {
+  const handleStartInspection = (action: 'capture' | 'load' | 'browse' | 'load-session', inspectionType: string, hangar: string, drone: string) => {
     // Pass the action type along with the config so MultiCamInspector knows what to do
     setInspectionConfig({ 
       inspectionType, 
@@ -81,6 +81,7 @@ function App() {
               selectedInspection={inspectionConfig.inspectionType}
               selectedHangar={inspectionConfig.hangar}
               selectedDrone={inspectionConfig.drone}
+              action={inspectionConfig.action}
             />
           ) : (
             <OnsiteChecklistInspector
@@ -88,6 +89,7 @@ function App() {
               selectedHangar={inspectionConfig.hangar}
               selectedDrone={inspectionConfig.drone}
               currentUser={currentUser}
+              action={inspectionConfig.action}
             />
           )}
         </div>

@@ -36,13 +36,15 @@ interface OnsiteChecklistInspectorProps {
   selectedHangar: string;
   selectedDrone: string;
   currentUser?: string;
+  action?: 'capture' | 'load' | 'browse' | 'load-session';
 }
 
 const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   selectedInspection,
   selectedHangar,
   selectedDrone,
-  currentUser = 'User'
+  currentUser = 'User',
+  action
 }) => {
   const [inspectionData, setInspectionData] = useState<InspectionData | null>(null);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -55,39 +57,51 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   useEffect(() => {
     const loadInspectionData = async () => {
       try {
-        // First, create an inspection session folder on the backend
-        const now = new Date();
-        const year = now.getFullYear().toString().slice(-2);
-        const month = (now.getMonth() + 1).toString().padStart(2, '0');
-        const day = now.getDate().toString().padStart(2, '0');
-        const hour = now.getHours().toString().padStart(2, '0');
-        const minute = now.getMinutes().toString().padStart(2, '0');
-        const second = now.getSeconds().toString().padStart(2, '0');
-        const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
+        let sessionFolderPath = '';
         
-        const cleanType = selectedInspection.replace('-ti-inspection', '').replace(/-/g, '_');
-        const sessionName = `${cleanType}_${selectedDrone}_${timestamp}`;
-        const sessionFolderPath = `${selectedHangar}/${sessionName}`;
-        setSessionFolder(sessionFolderPath);
-        
-        console.log('Creating inspection session:', sessionFolderPath);
-        
-        // Create session and get inspection data
-        const createSessionResponse = await fetch('http://172.20.1.93:3001/api/create-inspection-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inspectionType: selectedInspection,
-            hangar: selectedHangar,
-            drone: selectedDrone,
-            sessionFolder: sessionFolderPath
-          })
-        });
-        
-        if (!createSessionResponse.ok) {
-          console.error('Failed to create inspection session');
+        if (action === 'load-session') {
+          // Loading existing session - parse hangar|sessionName format
+          const [hangarId, sessionName] = selectedHangar.split('|');
+          if (hangarId && sessionName) {
+            sessionFolderPath = `${hangarId}/${sessionName}`;
+            setSessionFolder(sessionFolderPath);
+            console.log('Loading existing session:', sessionFolderPath);
+          }
+        } else {
+          // Create new session
+          const now = new Date();
+          const year = now.getFullYear().toString().slice(-2);
+          const month = (now.getMonth() + 1).toString().padStart(2, '0');
+          const day = now.getDate().toString().padStart(2, '0');
+          const hour = now.getHours().toString().padStart(2, '0');
+          const minute = now.getMinutes().toString().padStart(2, '0');
+          const second = now.getSeconds().toString().padStart(2, '0');
+          const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
+          
+          const cleanType = selectedInspection.replace('-ti-inspection', '').replace(/-/g, '_');
+          const sessionName = `${cleanType}_${selectedDrone}_${timestamp}`;
+          sessionFolderPath = `${selectedHangar}/${sessionName}`;
+          setSessionFolder(sessionFolderPath);
+          
+          console.log('Creating inspection session:', sessionFolderPath);
+          
+          // Create session and get inspection data
+          const createSessionResponse = await fetch('http://172.20.1.93:3001/api/create-inspection-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inspectionType: selectedInspection,
+              hangar: selectedHangar,
+              drone: selectedDrone,
+              sessionFolder: sessionFolderPath
+            })
+          });
+          
+          if (!createSessionResponse.ok) {
+            console.error('Failed to create inspection session');
+          }
         }
         
         // Always use Pi backend for consistency

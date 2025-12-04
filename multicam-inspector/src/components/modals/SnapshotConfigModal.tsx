@@ -152,23 +152,23 @@ export const SnapshotConfigModal: React.FC<SnapshotConfigModalProps> = ({
               Capture New Snapshot
             </Button>
 
-            {/* Secondary Actions */}
+            {/* Secondary Actions - Always Available */}
             <div className="flex gap-3">
               <button
                 onClick={handleLoadLatest}
-                className="flex-1 py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
+                className="flex-1 py-3 px-4 rounded-lg border-2 border-green-500 bg-green-50 hover:bg-green-100 transition-all text-base font-semibold text-green-700"
               >
-                Load Latest
+                📂 Load Latest
               </button>
               <button
                 onClick={handleBrowseFolders}
-                className="flex-1 py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
+                className="flex-1 py-3 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 hover:bg-purple-100 transition-all text-base font-semibold text-purple-700"
               >
-                Browse Snapshots
+                🔍 Browse History
               </button>
               <button
                 onClick={onClose}
-                className="flex-1 py-2 px-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
+                className="flex-1 py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-50 transition-all text-base font-medium text-gray-700"
               >
                 Cancel
               </button>
