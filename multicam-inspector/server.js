@@ -680,7 +680,8 @@ app.get('/api/folders', (req, res) => {
       remote: [],
       onsite: [],
       extended: [],
-      service: []
+      service: [],
+      basic: []
     };
     
     const hangarDirs = fs.readdirSync(SNAPSHOTS_DIR).filter(item => {
@@ -728,6 +729,8 @@ app.get('/api/folders', (req, res) => {
             detectedCategory = 'extended';
           } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
             detectedCategory = 'service';
+          } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
+            detectedCategory = 'basic';
           } else {
             // Default to remote for legacy sessions without type prefix
             detectedCategory = 'remote';
@@ -806,7 +809,8 @@ app.get('/api/folders', (req, res) => {
       remote: categorized.remote.length,
       onsite: categorized.onsite.length,
       extended: categorized.extended.length,
-      service: categorized.service.length
+      service: categorized.service.length,
+      basic: categorized.basic.length
     });
     
     res.json({ hangars, categorized });

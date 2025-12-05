@@ -1,0 +1,221 @@
+{
+  "inspectionType": "drone_basic_physical_inspection",
+  "name": "Basic Technical Inspection",
+  "version": "1.0",
+  "description": "Basic technical inspection checklist for non-Everdrone personnel to perform simple onsite inspection and maintenance tasks",
+  "metadata": {
+    "author": "RemoteTI",
+    "created": "2024-12-05",
+    "inspectionMode": "onsite"
+  },
+  "tasks": [
+    {
+      "id": "battery_removal",
+      "title": "BATTERY: Remove old batteries",
+      "description": "Safely remove and dispose of old batteries from the drone.\n\nPower down the drone completely.\nCarefully disconnect battery connectors.\nRemove batteries from mounting points.\nStore old batteries safely for disposal.",
+      "instructions": [
+        "Ensure drone is powered off",
+        "Disconnect battery cables carefully",
+        "Remove battery retention straps",
+        "Extract batteries from compartment"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "battery_installation",
+      "title": "BATTERY: Install new batteries",
+      "description": "Mount fresh batteries and ensure proper connection.\n\nVerify new batteries are correct type.\nSecurely mount batteries in compartment.\nConnect battery cables properly.\nSecure with retention straps.",
+      "instructions": [
+        "Verify battery specifications match requirements",
+        "Place batteries in correct orientation",
+        "Connect power cables securely",
+        "Fasten retention straps"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "battery_verification",
+      "title": "BATTERY: Verify battery charge",
+      "description": "Confirm new batteries are fully charged and properly seated.\n\nCheck battery charge indicators.\nVerify secure mounting.\nConfirm proper cable connections.\nTest power delivery.",
+      "instructions": [
+        "Check charge level indicators",
+        "Verify physical mounting is secure",
+        "Confirm all connections are tight",
+        "Power on briefly to test"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "medkit_removal",
+      "title": "MEDICAL: Remove old medical kit",
+      "description": "Safely remove the expired medical kit from the drone.\n\nLocate medical kit compartment.\nRelease mounting mechanisms.\nCarefully remove old kit.\nDocument removal for records.",
+      "instructions": [
+        "Open medical kit compartment",
+        "Release retention clips",
+        "Remove expired medical kit",
+        "Note removal date and time"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "medkit_installation",
+      "title": "MEDICAL: Mount new medical kit",
+      "description": "Install new medical kit and verify secure attachment.\n\nCheck new kit expiration date.\nPlace kit in mounting position.\nSecure all retention mechanisms.\nVerify kit cannot move during flight.",
+      "instructions": [
+        "Verify medical kit is within date",
+        "Position kit in compartment",
+        "Engage all retention clips",
+        "Test security with gentle pulling"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "medkit_verification",
+      "title": "MEDICAL: Verify kit expiration date",
+      "description": "Confirm new medical kit is within valid date range.\n\nCheck expiration date on kit.\nRecord installation date.\nVerify contents list is present.\nConfirm kit seal is intact.",
+      "instructions": [
+        "Read and record expiration date",
+        "Document installation in log",
+        "Verify contents checklist attached",
+        "Confirm tamper seal intact"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "structural_cracks",
+      "title": "STRUCTURE: Check for cracks or gaps",
+      "description": "Are there any cracks in the fuselage or gaps in the joints around the foldable arms?\n\nInspect main body for cracks.\nCheck all arm joints thoroughly.\nExamine folding mechanisms.\nLook for separation in seams.",
+      "instructions": [
+        "Visually inspect entire fuselage",
+        "Check each foldable arm joint",
+        "Look for hairline cracks",
+        "Verify no gaps in connections"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "propeller_rotation",
+      "title": "PROPELLER: Test propeller rotation",
+      "description": "Do unusual sounds occur when spinning propellers with fingers? Crackling sounds may indicate dirt in motor bearings and should not be ignored.\n\nSpin each propeller by hand.\nListen for unusual sounds.\nFeel for resistance or grinding.\nNote any irregularities.",
+      "instructions": [
+        "Rotate each propeller slowly by hand",
+        "Listen carefully for crackling or grinding",
+        "Feel for smooth rotation",
+        "Document any abnormal sounds"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "fasteners_check",
+      "title": "HARDWARE: Check screws and fasteners",
+      "description": "Are any screws, fasteners, joints or attachments loose or damaged? Replace if necessary.\n\nCheck all visible screws.\nTest joint tightness.\nInspect fastener condition.\nTighten or replace as needed.",
+      "instructions": [
+        "Inspect all accessible screws",
+        "Check for loose fasteners",
+        "Verify joint integrity",
+        "Tighten or replace damaged hardware"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "propeller_damage",
+      "title": "PROPELLER: Inspect propellers",
+      "description": "Are there any damages or cracks on the propellers? Never fly with damaged propellers.\n\nVisually inspect each blade.\nCheck for chips or cracks.\nVerify blade straightness.\nReplace if any damage found.",
+      "instructions": [
+        "Examine each propeller blade carefully",
+        "Look for chips, cracks, or deformation",
+        "Check blade edges for damage",
+        "Replace any damaged propellers immediately"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "cable_inspection",
+      "title": "ELECTRICAL: Check cables",
+      "description": "Are there any loose or damaged cables?\n\nInspect all visible wiring.\nCheck cable connections.\nLook for fraying or cuts.\nEnsure proper cable routing.",
+      "instructions": [
+        "Trace all visible cables",
+        "Check for secure connections",
+        "Look for insulation damage",
+        "Verify cables are properly secured"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "connection_check",
+      "title": "ELECTRICAL: Check connections",
+      "description": "Are there any loose or damaged connections?\n\nInspect all connectors.\nVerify secure attachment.\nCheck for corrosion.\nEnsure proper seating.",
+      "instructions": [
+        "Check all electrical connectors",
+        "Verify connections are fully seated",
+        "Look for signs of corrosion",
+        "Reseat any loose connections"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "propeller_attachments",
+      "title": "PROPELLER: Verify propeller attachments",
+      "description": "Are propeller mounts, screws and propeller locks secure? (Check that they are tightened)\n\nTest propeller mounting security.\nVerify locking mechanisms engaged.\nCheck mounting screws tightness.\nConfirm no play in attachments.",
+      "instructions": [
+        "Check each propeller mount",
+        "Verify locking mechanisms are engaged",
+        "Test tightness of mounting screws",
+        "Ensure no movement when pulled gently"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    }
+  ]
+}

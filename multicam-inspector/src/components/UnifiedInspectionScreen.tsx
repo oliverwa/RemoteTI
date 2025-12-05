@@ -50,7 +50,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
       .then(data => {
         console.log('Fetched inspection types:', data);
         // Sort inspection types in desired order
-        const sortOrder = ['remote', 'onsite', 'extended', 'service'];
+        const sortOrder = ['remote', 'onsite', 'extended', 'service', 'basic'];
         const sortedData = data.sort((a: InspectionType, b: InspectionType) => {
           const aIndex = sortOrder.indexOf(a.type);
           const bIndex = sortOrder.indexOf(b.type);
@@ -182,6 +182,8 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
       inspectionType = 'extended-ti-inspection';
     } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
       inspectionType = 'service-ti-inspection';
+    } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
+      inspectionType = 'basic-ti-inspection';
     }
     
     // Pass session data as part of the hangar parameter (will be parsed in the inspector components)

@@ -40,7 +40,7 @@ interface FolderBrowserModalProps {
 const formatSessionName = (name: string): string => {
   // Remove inspection type prefix and underscore for cleaner display
   const cleanedName = name
-    .replace(/^(remote|onsite|extended|service)_/, '')
+    .replace(/^(remote|onsite|extended|service|basic)_/, '')
     .replace(/_inspection/, '');
   
   // Extract drone/location name from format like "bender_241201_090045"
@@ -64,6 +64,8 @@ const getInspectionTypeFromName = (name: string): string => {
     return 'extended';
   } else if (firstPart === 'service' || nameLower.includes('service_inspection')) {
     return 'service';
+  } else if (firstPart === 'basic' || nameLower.includes('basic')) {
+    return 'basic';
   }
   return 'unknown';
 };
@@ -106,6 +108,13 @@ const getInspectionTypeInfo = (sessionName: string, inspectionType?: string | nu
         color: 'text-orange-600', 
         bgColor: 'bg-orange-50',
         borderColor: 'border-orange-200'
+      };
+    case 'basic':
+      return { 
+        label: 'Basic', 
+        color: 'text-cyan-600', 
+        bgColor: 'bg-cyan-50',
+        borderColor: 'border-cyan-200'
       };
     default:
       return { 
