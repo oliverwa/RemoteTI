@@ -126,6 +126,8 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
             inspectionType = 'extended-ti-inspection';
           } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
             inspectionType = 'service-ti-inspection';
+          } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
+            inspectionType = 'basic-ti-inspection';
           }
           
           // Load the session using the same mechanism as browse
