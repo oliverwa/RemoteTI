@@ -31,14 +31,14 @@ export const HANGARS: HangarConfig[] = [
     label: "Forges-les-Eaux",
     assignedDrone: "marvin",
     cameraTransforms: {
-      0: { x: 73, y: -3, scale: 1.02, rotation: 1.0 },      // FDR (actually RUR in display order)
-      1: { x: -30, y: -17, scale: 1.05, rotation: 2.3 },    // FUR
-      2: { x: -29, y: 17, scale: 0.99, rotation: -3.9 },    // RUR (actually FUL in display order)
-      3: { x: -94, y: -7, scale: 0.92, rotation: -1.8 },    // RDR (actually RUL in display order)
-      4: { x: 0, y: -27, scale: 1.07, rotation: -1.3 },     // FDL (actually RDR in display order)
-      5: { x: 7, y: -9, scale: 1.0, rotation: -5.8 },       // FUL (actually FDR in display order)
-      6: { x: 1, y: -4, scale: 1.0, rotation: -5.1 },       // RUL (actually FDL in display order)
-      7: { x: 66, y: -72, scale: 1.05, rotation: -9.1 },    // RDL
+      0: { x: -77, y: 11, scale: 1.0, rotation: -3.3 },     // RUR
+      1: { x: -50, y: -75, scale: 1.0, rotation: 1.4 },     // FUR
+      2: { x: 27, y: -11, scale: 0.99, rotation: -6.3 },    // FUL
+      3: { x: 22, y: -13, scale: 0.98, rotation: -5.3 },    // RUL
+      4: { x: -202, y: -29, scale: 0.97, rotation: -1.8 },  // RDR
+      5: { x: 139, y: -7, scale: 0.98, rotation: 1.7 },     // FDR
+      6: { x: 5, y: -30, scale: 0.99, rotation: -1.8 },     // FDL
+      7: { x: 130, y: -132, scale: 1.0, rotation: -9.3 },   // RDL
     }
   }
 ];

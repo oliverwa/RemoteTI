@@ -1563,7 +1563,7 @@ export default function MultiCamInspector({
       console.log('🔧 Mapped hangar ID to folder name:', { hangarId, folderName });
       
       // Load Mölndal baseline image from actual available session
-      const baselineUrl = `http://172.20.1.93:3001/api/image/hangar_sisjon_vpn/bender_251201_125858/${cameraName}_251201_125858.jpg?t=${Date.now()}`;
+      const baselineUrl = `http://172.20.1.93:3001/api/image/hangar_sisjon_vpn/remote_bender_251205_084655/${cameraName}_251205_084655.jpg?t=${Date.now()}`;
       console.log('🔧 Baseline URL:', baselineUrl);
       setMolndalImage(baselineUrl);
       addLog(`📍 Loading baseline: ${cameraName} from Mölndal`);
