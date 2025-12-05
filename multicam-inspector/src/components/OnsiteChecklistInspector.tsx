@@ -48,6 +48,22 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 }) => {
   const [inspectionData, setInspectionData] = useState<InspectionData | null>(null);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  
+  // Format inspection type for display
+  const getInspectionDisplayName = () => {
+    switch(selectedInspection) {
+      case 'onsite-ti-inspection':
+        return 'Onsite Inspection';
+      case 'extended-ti-inspection':
+        return 'Extended Inspection';
+      case 'service-ti-inspection':
+        return 'Service Inspection';
+      case 'remote-ti-inspection':
+        return 'Remote Inspection';
+      default:
+        return 'Inspection';
+    }
+  };
   const [taskStatuses, setTaskStatuses] = useState<{ [key: string]: 'pass' | 'fail' | 'pending' }>({});
   const [notes, setNotes] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
@@ -350,7 +366,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
       <div className="bg-white border-b px-6 py-3">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Onsite Inspection</h1>
+            <h1 className="text-xl font-bold text-gray-900">{getInspectionDisplayName()}</h1>
             <p className="text-sm text-gray-600">
               {selectedHangar} • {selectedDrone} • {currentUser}
             </p>
