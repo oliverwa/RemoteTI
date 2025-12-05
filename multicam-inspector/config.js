@@ -69,6 +69,13 @@ const baseConfig = {
         ip: "10.0.10.113"
       },
       folderName: "Molndal", // What the server API returns
+      lights: {
+        enabled: true,
+        endpoint: "https://10.0.10.113:7548/hangar/lightson",
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3 // seconds to wait after turning on lights
+      },
       cameraTransforms: {
         // Baseline - no transforms needed
         0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -90,16 +97,23 @@ const baseConfig = {
         ip: "10.0.10.172"
       },
       folderName: "Rouen", // What the server API returns
+      lights: {
+        enabled: true,
+        endpoint: "https://10.0.10.172:7548/hangar/lightson",
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3 // seconds to wait after turning on lights
+      },
       cameraTransforms: {
         // Forges-les-Eaux calibrated alignment corrections
-        0: { x: 73, y: -3, scale: 1.02, rotation: 1.0 },      // FDR
-        1: { x: -30, y: -17, scale: 1.05, rotation: 2.3 },    // FUR  
-        2: { x: -29, y: 17, scale: 0.99, rotation: -3.9 },    // RUR
-        3: { x: -94, y: -7, scale: 0.92, rotation: -1.8 },    // RDR
-        4: { x: 0, y: -27, scale: 1.07, rotation: -1.3 },     // FDL
-        5: { x: 7, y: -9, scale: 1.0, rotation: -5.8 },      // FUL
-        6: { x: 1, y: -4, scale: 1.0, rotation: -5.1 },      // RUL
-        7: { x: 66, y: -72, scale: 1.05, rotation: -9.1 },   // RDL
+        0: { x: -77, y: 11, scale: 1.0, rotation: -3.3 },     // RUR
+        1: { x: -50, y: -75, scale: 1.0, rotation: 1.4 },     // FUR
+        2: { x: 27, y: -11, scale: 0.99, rotation: -6.3 },    // FUL
+        3: { x: 22, y: -13, scale: 0.98, rotation: -5.3 },    // RUL
+        4: { x: -202, y: -29, scale: 0.97, rotation: -1.8 },  // RDR
+        5: { x: 139, y: -7, scale: 0.98, rotation: 1.7 },     // FDR
+        6: { x: 5, y: -30, scale: 0.99, rotation: -1.8 },     // FDL
+        7: { x: 130, y: -132, scale: 1.0, rotation: -9.3 },   // RDL
       }
     }
   },

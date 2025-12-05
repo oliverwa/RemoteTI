@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
+const https = require('https');
 
 const app = express();
 
@@ -213,6 +214,63 @@ app.post('/api/capture', async (req, res) => {
   }
 });
 
+// Function to turn on hangar lights
+async function turnOnHangarLights(hangar) {
+  const hangarConfig = config.getHangar(hangar);
+  
+  if (!hangarConfig || !hangarConfig.lights || !hangarConfig.lights.enabled) {
+    log('info', `Lights not configured or disabled for hangar: ${hangar}`);
+    return false;
+  }
+  
+  const { endpoint, username, password, waitTime } = hangarConfig.lights;
+  
+  return new Promise((resolve) => {
+    log('info', `Turning on lights for hangar: ${hangar}`);
+    
+    const url = new URL(endpoint);
+    const auth = Buffer.from(`${username}:${password}`).toString('base64');
+    
+    const options = {
+      hostname: url.hostname,
+      port: url.port || 443,
+      path: url.pathname,
+      method: 'GET',
+      headers: {
+        'Authorization': `Basic ${auth}`
+      },
+      rejectUnauthorized: false // Allow self-signed certificates
+    };
+    
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          log('info', `Lights turned on successfully for ${hangar}, waiting ${waitTime}s`);
+          setTimeout(() => resolve(true), waitTime * 1000);
+        } else {
+          log('warn', `Failed to turn on lights for ${hangar}: HTTP ${res.statusCode}`);
+          resolve(false);
+        }
+      });
+    });
+    
+    req.on('error', (error) => {
+      log('error', `Error turning on lights for ${hangar}: ${error.message}`);
+      resolve(false);
+    });
+    
+    req.setTimeout(5000, () => {
+      req.destroy();
+      log('error', `Timeout turning on lights for ${hangar}`);
+      resolve(false);
+    });
+    
+    req.end();
+  });
+}
+
 // Optimized parallel capture function
 async function captureInParallel(requestId, hangar, drone, sessionFolder) {
   // Set a global timeout for the entire capture process (5 minutes)
@@ -227,6 +285,9 @@ async function captureInParallel(requestId, hangar, drone, sessionFolder) {
   }, 300000); // 5 minutes
   
   try {
+    // Turn on hangar lights before starting capture
+    await turnOnHangarLights(hangar);
+    
     const cameras = config.cameras.ids;
   const batchSize = config.capture.batchSize;
   const batches = [];
