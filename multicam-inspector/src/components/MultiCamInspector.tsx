@@ -1499,8 +1499,19 @@ export default function MultiCamInspector({
             setItems(inspectionData.tasks);
             addLog(`📋 Loaded ${inspectionData.tasks.length} inspection tasks from session`);
             
-            // Reset task index to start from beginning
-            setIdx(0);
+            // Find first incomplete camera/task
+            let firstIncompleteIdx = 0;
+            for (let i = 0; i < inspectionData.tasks.length; i++) {
+              const task = inspectionData.tasks[i];
+              if (!task.status || task.status === 'pending') {
+                firstIncompleteIdx = i;
+                break;
+              }
+            }
+            setIdx(firstIncompleteIdx);
+            if (firstIncompleteIdx > 0) {
+              addLog(`📍 Starting at camera ${firstIncompleteIdx + 1} (first incomplete)`);
+            }
             
             // Show logs if there's inspection data
             setShowLogs(true);

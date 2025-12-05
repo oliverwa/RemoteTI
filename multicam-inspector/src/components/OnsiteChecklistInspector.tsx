@@ -222,6 +222,18 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         setTaskStatuses(initialStatuses);
         setNotes(initialNotes);
         
+        // Find the first incomplete task and set it as current
+        let firstIncompleteIndex = 0;
+        for (let i = 0; i < mappedTasks.length; i++) {
+          const task = mappedTasks[i];
+          const status = initialStatuses[task.taskNumber];
+          if (status === 'pending' || !task.completion?.completedAt) {
+            firstIncompleteIndex = i;
+            break;
+          }
+        }
+        setCurrentTaskIndex(firstIncompleteIndex);
+        
         // Mark inspection as started if not already
         if (formattedData.completionStatus.status === 'not_started') {
           formattedData.completionStatus.status = 'in_progress';
