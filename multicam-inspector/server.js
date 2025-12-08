@@ -1588,6 +1588,59 @@ app.get(/^\/api\/inspection\/(.+)\/status$/, async (req, res) => {
   }
 });
 
+// Update inspection progress and completion status
+app.post('/api/inspection/update-progress', async (req, res) => {
+  try {
+    const { sessionPath, progress, completed, tasksCompleted, totalTasks } = req.body;
+    
+    if (!sessionPath) {
+      return res.status(400).json({ error: 'Session path is required' });
+    }
+    
+    // Parse hangar ID from session path (format: "hangarId/sessionName")
+    const [hangarId] = sessionPath.split('/');
+    
+    // Find and update the alarm session
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    const files = fs.readdirSync(alarmsDir)
+      .filter(f => f.startsWith(`alarm_${hangarId}_`) && f.endsWith('.json'))
+      .sort((a, b) => b.localeCompare(a));
+    
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'No alarm session found' });
+    }
+    
+    const latestFile = files[0];
+    const alarmSessionPath = path.join(alarmsDir, latestFile);
+    const alarmSession = JSON.parse(fs.readFileSync(alarmSessionPath, 'utf8'));
+    
+    // Update inspection progress
+    if (alarmSession.inspections?.initialRTI) {
+      alarmSession.inspections.initialRTI.progress = progress || 0;
+      alarmSession.inspections.initialRTI.tasksCompleted = tasksCompleted || 0;
+      alarmSession.inspections.initialRTI.totalTasks = totalTasks || 0;
+      
+      // If inspection is completed, update the phase status
+      if (completed) {
+        alarmSession.workflow.phases.initialRTI.status = 'completed';
+        alarmSession.workflow.phases.initialRTI.endTime = new Date().toISOString();
+        alarmSession.inspections.initialRTI.completedAt = new Date().toISOString();
+      }
+      
+      // Save updated alarm session
+      fs.writeFileSync(alarmSessionPath, JSON.stringify(alarmSession, null, 2));
+      
+      log('info', `Updated inspection progress for ${sessionPath}: ${progress}% (${tasksCompleted}/${totalTasks})`);
+      res.json({ success: true, message: 'Progress updated' });
+    } else {
+      res.status(404).json({ error: 'Inspection not found in alarm session' });
+    }
+  } catch (error) {
+    log('error', 'Failed to update inspection progress:', error.message);
+    res.status(500).json({ error: 'Failed to update progress' });
+  }
+});
+
 // Note: Frontend serving removed to avoid conflicts with API endpoints
 // The React app should be served from a separate process or different port
 
