@@ -250,6 +250,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           <HangarWorkflowView
             hangarId={selectedHangar}
             hangarName={hangarStatuses.find(h => h.id === selectedHangar)?.name || ''}
+            hangarState={hangarStatuses.find(h => h.id === selectedHangar)?.state || 'standby'}
+            currentPhase={hangarStatuses.find(h => h.id === selectedHangar)?.currentPhase}
             onClose={() => setShowWorkflow(false)}
           />
         )}

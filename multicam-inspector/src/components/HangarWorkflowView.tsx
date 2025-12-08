@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import { 
   AlertCircle, 
@@ -21,16 +21,61 @@ import {
 interface HangarWorkflowViewProps {
   hangarId: string;
   hangarName: string;
+  hangarState?: string;
+  currentPhase?: string;
   onClose: () => void;
 }
 
 const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
   hangarId,
   hangarName,
+  hangarState = 'post_flight',
+  currentPhase,
   onClose
 }) => {
-  const [selectedDecision, setSelectedDecision] = useState<string | null>('basic');
+  // Initialize decision based on hangar state
+  const initDecision = () => {
+    if (hangarState === 'inspection' && currentPhase?.toLowerCase().includes('remote crew')) {
+      return 'basic';  // Forges has already chosen Basic TI route
+    }
+    return null;
+  };
+
+  const [selectedDecision, setSelectedDecision] = useState<string | null>(initDecision());
+  const [decisionLocked, setDecisionLocked] = useState(initDecision() !== null);
   const [showTelemetry, setShowTelemetry] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const activeElementRef = useRef<HTMLDivElement>(null);
+
+  // Determine which phase is active based on hangar state
+  const getActivePhase = (): 'telemetry' | 'initial-rti' | 'basic-ti' | 'pending' => {
+    if (hangarState === 'post_flight') {
+      return 'initial-rti';  // Mölndal is at Initial RTI
+    } else if (hangarState === 'inspection') {
+      if (currentPhase?.toLowerCase().includes('remote crew')) {
+        return 'basic-ti';  // Forges is at Basic TI
+      }
+      return 'initial-rti';
+    }
+    return 'initial-rti';
+  };
+
+  // Scroll to center the active element on mount
+  useEffect(() => {
+    if (scrollContainerRef.current && activeElementRef.current) {
+      const container = scrollContainerRef.current;
+      const activeElement = activeElementRef.current;
+      
+      // Calculate scroll position to center the active element
+      const containerWidth = container.offsetWidth;
+      const activeElementOffset = activeElement.offsetLeft;
+      const activeElementWidth = activeElement.offsetWidth;
+      
+      const scrollPosition = activeElementOffset - (containerWidth / 2) + (activeElementWidth / 2);
+      
+      container.scrollLeft = scrollPosition;
+    }
+  }, []);
   
   const getPhaseStyle = (status: string) => {
     switch(status) {
@@ -50,12 +95,15 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
   };
 
   const handleDecision = (route: string) => {
-    setSelectedDecision(route);
+    if (!decisionLocked) {
+      setSelectedDecision(route);
+      setDecisionLocked(true);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[85vh] overflow-hidden">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-7xl max-h-[85vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gray-900 text-white px-6 py-3 flex justify-between items-center">
           <div>
@@ -68,8 +116,8 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
         </div>
 
         {/* Main Timeline - Horizontal */}
-        <div className="bg-gray-50 p-6 overflow-x-auto">
-          <div className="flex items-start gap-3 min-w-max pb-4">
+        <div ref={scrollContainerRef} className="bg-gray-50 p-6 overflow-x-auto">
+          <div className="flex items-start gap-3 justify-center min-w-fit pb-4">
             
             {/* Flight in Progress */}
             <div className="flex flex-col items-center">
@@ -100,7 +148,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
               </div>
             </div>
 
-            <ChevronRight className="w-4 h-4 text-green-500 mt-10" />
+            <ChevronRight className="w-4 h-4 mt-10 text-green-500" />
 
             {/* Telemetry Analysis */}
             <div className="flex flex-col items-center">
@@ -121,16 +169,33 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
             <ChevronRight className="w-4 h-4 text-green-500 mt-10" />
 
             {/* Initial Remote TI */}
-            <div className="flex flex-col items-center">
+            <div ref={getActivePhase() === 'initial-rti' ? activeElementRef : undefined} className="flex flex-col items-center">
               <div className="text-xs text-gray-500 mb-1">14:30</div>
-              <div className={`w-36 p-3 rounded-lg border-2 ${getPhaseStyle('active')}`}>
+              <div className={`w-36 p-3 rounded-lg border-2 ${
+                getPhaseStyle(
+                  getActivePhase() === 'initial-rti' ? 'active' : 
+                  getActivePhase() === 'basic-ti' ? 'completed' : 'pending'
+                )
+              }`}>
                 <div className="flex justify-center mb-1">
-                  <Loader className="w-5 h-5 text-blue-600 animate-spin" />
+                  {getActivePhase() === 'initial-rti' ? (
+                    <Loader className="w-5 h-5 text-blue-600 animate-spin" />
+                  ) : (
+                    <Camera className={`w-5 h-5 ${
+                      getIconColor(getActivePhase() === 'basic-ti' ? 'completed' : 'pending')
+                    }`} />
+                  )}
                 </div>
                 <div className="text-xs font-semibold text-center">Initial Remote TI</div>
                 <div className="text-xs text-center mt-1 text-blue-600">Everdrone</div>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
-                  <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '65%' }} />
+                  <div className={`${
+                    getActivePhase() === 'initial-rti' ? 'bg-blue-500 animate-pulse' : 
+                    getActivePhase() === 'basic-ti' ? 'bg-green-500' : 'bg-gray-300'
+                  } h-1 rounded-full`} style={{ 
+                    width: getActivePhase() === 'initial-rti' ? '65%' : 
+                           getActivePhase() === 'basic-ti' ? '100%' : '0%' 
+                  }} />
                 </div>
               </div>
             </div>
@@ -140,16 +205,34 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
             {/* Decision Point */}
             <div className="flex flex-col items-center">
               <div className="text-xs text-gray-500 mb-1">14:45</div>
-              <div className="w-48 p-4 rounded-lg border-3 bg-yellow-50 border-yellow-500 shadow-md">
-                <AlertTriangle className="w-6 h-6 mx-auto mb-2 text-yellow-600" />
-                <div className="text-sm font-bold text-center text-yellow-900 mb-3">Route Decision</div>
+              <div className={`w-48 p-4 rounded-lg border-3 ${
+                decisionLocked 
+                  ? 'bg-gray-50 border-gray-400' 
+                  : 'bg-yellow-50 border-yellow-500 shadow-md'
+              }`}>
+                <AlertTriangle className={`w-6 h-6 mx-auto mb-2 ${
+                  decisionLocked ? 'text-gray-500' : 'text-yellow-600'
+                }`} />
+                <div className={`text-sm font-bold text-center mb-3 ${
+                  decisionLocked ? 'text-gray-700' : 'text-yellow-900'
+                }`}>
+                  {decisionLocked ? 'Route Selected' : 'Route Decision'}
+                </div>
+                {!selectedDecision && (
+                  <div className="text-xs text-center text-gray-600 mb-2">
+                    Choose inspection route:
+                  </div>
+                )}
                 <div className="space-y-2">
                   <button 
                     onClick={() => handleDecision('basic')}
+                    disabled={decisionLocked}
                     className={`w-full text-sm px-3 py-2 rounded-lg font-medium transition-all ${
                       selectedDecision === 'basic' 
-                        ? 'bg-green-500 text-white shadow-md' 
-                        : 'bg-white border-2 border-green-400 text-green-700 hover:bg-green-50'
+                        ? 'bg-green-500 text-white shadow-md cursor-default' 
+                        : decisionLocked
+                        ? 'bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed'
+                        : 'bg-white border-2 border-green-400 text-green-700 hover:bg-green-50 cursor-pointer'
                     }`}
                   >
                     Basic TI
@@ -157,32 +240,60 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                   </button>
                   <button 
                     onClick={() => handleDecision('onsite')}
+                    disabled={decisionLocked}
                     className={`w-full text-sm px-3 py-2 rounded-lg font-medium transition-all ${
                       selectedDecision === 'onsite' 
-                        ? 'bg-orange-500 text-white shadow-md' 
-                        : 'bg-white border-2 border-orange-400 text-orange-700 hover:bg-orange-50'
+                        ? 'bg-orange-500 text-white shadow-md cursor-default' 
+                        : decisionLocked
+                        ? 'bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed'
+                        : 'bg-white border-2 border-orange-400 text-orange-700 hover:bg-orange-50 cursor-pointer'
                     }`}
                   >
                     Onsite TI
                     <div className="text-xs opacity-75 mt-0.5">Everdrone required</div>
                   </button>
                 </div>
+                {decisionLocked && (
+                  <div className="mt-3 text-xs text-center text-gray-500">
+                    <CheckCircle className="w-4 h-4 inline mr-1 text-green-500" />
+                    Decision confirmed
+                  </div>
+                )}
               </div>
             </div>
 
             <ChevronRight className="w-4 h-4 text-gray-300 mt-10" />
 
             {/* Route-dependent workflow */}
-            {selectedDecision === 'basic' ? (
+            {!selectedDecision ? (
+              // Show placeholder when no decision made
+              <div className="flex flex-col items-center justify-center">
+                <div className="text-xs text-gray-400 text-center">
+                  <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                  <div>Select a route to continue</div>
+                </div>
+              </div>
+            ) : selectedDecision === 'basic' ? (
               <>
                 {/* Basic TI Path */}
-                <div className="flex flex-col items-center">
+                <div ref={getActivePhase() === 'basic-ti' ? activeElementRef : undefined} className="flex flex-col items-center">
                   <div className="text-xs text-gray-500 mb-1">15:15</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 ${getPhaseStyle('pending')}`}>
-                    <Wrench className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
+                  <div className={`w-36 p-3 rounded-lg border-2 ${
+                    getPhaseStyle(getActivePhase() === 'basic-ti' ? 'active' : 'pending')
+                  }`}>
+                    {getActivePhase() === 'basic-ti' ? (
+                      <Loader className="w-5 h-5 mx-auto mb-1 text-blue-600 animate-spin" />
+                    ) : (
+                      <Wrench className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
+                    )}
                     <div className="text-xs font-semibold text-center">Basic TI</div>
                     <div className="text-xs text-center mt-1 text-green-600">Remote Crew</div>
                     <div className="text-xs text-center text-blue-600">Everdrone monitors</div>
+                    {getActivePhase() === 'basic-ti' && (
+                      <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
+                        <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '65%' }} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
