@@ -1,0 +1,103 @@
+{
+  "inspectionType": "initial_remote_ti",
+  "name": "Initial Remote Technical Inspection",
+  "version": "1.0",
+  "description": "Initial remote assessment following alarm trigger to determine inspection route",
+  "metadata": {
+    "author": "RemoteTI",
+    "created": "2024-12-08",
+    "inspectionMode": "remote"
+  },
+  "tasks": [
+    {
+      "id": "initial_safety_check",
+      "title": "SAFETY CHECK: Initial visual assessment",
+      "description": "Perform rapid safety assessment to identify any immediate threats or damage.\n\nCheck for obvious structural damage, fire, smoke, or environmental hazards.\nVerify drone is secured in hangar.\nAssess if area is safe for crew dispatch.",
+      "instructions": [
+        "Verify all camera feeds are operational",
+        "Check for visible threats or hazards",
+        "Assess overall drone condition"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "alarm_sector_inspection",
+      "title": "ALARM SECTOR: Inspect area that triggered alarm",
+      "description": "Focus inspection on the specific sector or area that triggered the alarm.\n\nIdentify any visible intrusion signs, damage, or anomalies in the alarm area.",
+      "instructions": [
+        "Navigate cameras to alarm sector",
+        "Document any visible anomalies",
+        "Assess severity of findings"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "drone_general_condition",
+      "title": "DRONE STATUS: Quick visual assessment",
+      "description": "Rapid assessment of drone's general condition after landing.\n\nCheck for obvious damage to body, propellers, or critical components.\nVerify landing gear status and positioning.",
+      "instructions": [
+        "Visual check of drone body",
+        "Inspect visible propellers",
+        "Verify landing position"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "parachute_quick_check",
+      "title": "PARACHUTE: Verify deployment status",
+      "description": "Quick check to ensure parachute system has not deployed and is secure.",
+      "instructions": [
+        "Verify yellow lid is intact",
+        "Check for any parachute fabric visible",
+        "Confirm system appears armed"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "battery_status",
+      "title": "BATTERY: Visual status check",
+      "description": "Check battery indicators and connections visible through cameras.",
+      "instructions": [
+        "Check visible battery indicators",
+        "Verify secure mounting",
+        "Note any warning lights"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    },
+    {
+      "id": "route_recommendation",
+      "title": "ROUTE DECISION: Recommend inspection path",
+      "description": "Based on initial findings, recommend whether Basic TI or Onsite TI is required.\n\nBasic TI: No critical issues found, standard remote inspection sufficient.\nOnsite TI: Physical inspection required due to findings or limitations.",
+      "instructions": [
+        "Review all initial findings",
+        "Assess need for physical inspection",
+        "Document recommendation rationale"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      }
+    }
+  ]
+}

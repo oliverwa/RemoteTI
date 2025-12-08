@@ -1,0 +1,99 @@
+{
+  "sessionId": null,
+  "createdAt": null,
+  "triggerType": "alarm",
+  "alarmId": null,
+  
+  "hangarId": null,
+  "droneId": null,
+  
+  "workflow": {
+    "currentPhase": "initialized",
+    "routeDecision": null,
+    "routeDecisionMadeAt": null,
+    
+    "phases": {
+      "flight": {
+        "status": "pending",
+        "startTime": null,
+        "endTime": null
+      },
+      
+      "landing": {
+        "status": "pending",
+        "timestamp": null
+      },
+      
+      "telemetryAnalysis": {
+        "status": "pending",
+        "startTime": null,
+        "endTime": null,
+        "data": {
+          "batteryRemaining": null,
+          "flightDuration": null,
+          "errors": []
+        }
+      },
+      
+      "initialRTI": {
+        "status": "pending",
+        "inspectionId": null,
+        "startTime": null,
+        "endTime": null,
+        "progress": 0
+      },
+      
+      "routeDecision": {
+        "status": "pending",
+        "timestamp": null,
+        "decision": null
+      },
+      
+      "basicTI": {
+        "status": "not-applicable",
+        "inspectionId": null,
+        "startTime": null,
+        "endTime": null,
+        "progress": 0
+      },
+      
+      "onsiteTI": {
+        "status": "not-applicable",
+        "inspectionId": null,
+        "startTime": null,
+        "endTime": null,
+        "progress": 0
+      },
+      
+      "fullRTI": {
+        "status": "pending",
+        "inspectionId": null,
+        "startTime": null,
+        "endTime": null,
+        "progress": 0
+      },
+      
+      "areaReady": {
+        "status": "pending",
+        "timestamp": null,
+        "approvedBy": null
+      }
+    }
+  },
+  
+  "inspections": {
+    "initialRTI": null,
+    "basicTI": null,
+    "onsiteTI": null,
+    "fullRTI": null
+  },
+  
+  "crewDispatch": {
+    "dispatched": false,
+    "dispatchTime": null,
+    "crewId": null
+  },
+  
+  "status": "active",
+  "completedAt": null
+}

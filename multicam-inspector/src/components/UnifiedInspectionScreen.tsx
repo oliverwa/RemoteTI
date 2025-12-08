@@ -118,7 +118,12 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           const firstPart = latestSession.name.split('_')[0].toLowerCase();
           let inspectionType = 'remote-ti-inspection';
           
-          if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
+          // Check for new remote inspection types first
+          if (nameLower.startsWith('initial_remote_')) {
+            inspectionType = 'initial-remote-ti-inspection';
+          } else if (nameLower.startsWith('full_remote_')) {
+            inspectionType = 'full-remote-ti-inspection';
+          } else if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
             inspectionType = 'remote-ti-inspection';
           } else if (firstPart === 'onsite' || nameLower.startsWith('onsite_')) {
             inspectionType = 'onsite-ti-inspection';
@@ -176,7 +181,12 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
     const firstPart = sessionName.split('_')[0].toLowerCase();
     let inspectionType = 'remote-ti-inspection'; // default
     
-    if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
+    // Check for new remote inspection types first
+    if (nameLower.startsWith('initial_remote_')) {
+      inspectionType = 'initial-remote-ti-inspection';
+    } else if (nameLower.startsWith('full_remote_')) {
+      inspectionType = 'full-remote-ti-inspection';
+    } else if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
       inspectionType = 'remote-ti-inspection';
     } else if (firstPart === 'onsite' || nameLower.startsWith('onsite_')) {
       inspectionType = 'onsite-ti-inspection';

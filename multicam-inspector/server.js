@@ -721,7 +721,12 @@ app.get('/api/folders', (req, res) => {
           const nameLower = sessionName.toLowerCase();
           const firstPart = sessionName.split('_')[0].toLowerCase();
           
-          if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
+          // Check for new remote inspection types first (they contain 'remote' but have prefixes)
+          if (nameLower.startsWith('initial_remote_')) {
+            detectedCategory = 'remote';
+          } else if (nameLower.startsWith('full_remote_')) {
+            detectedCategory = 'remote';
+          } else if (firstPart === 'remote' || nameLower.startsWith('remote_')) {
             detectedCategory = 'remote';
           } else if (firstPart === 'onsite' || nameLower.startsWith('onsite_')) {
             detectedCategory = 'onsite';
@@ -830,21 +835,53 @@ app.get('/api/inspection-types', (req, res) => {
       return res.json([]);
     }
     
-    const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(templatesDir).filter(f => 
+      f.endsWith('.json') && 
+      !f.includes('alarm_reset') // Exclude the alarm_reset template
+    );
+    
     const inspectionTypes = files.map(file => {
       const filePath = path.join(templatesDir, file);
       const content = JSON.parse(fs.readFileSync(filePath, 'utf8'));
       const taskCount = content.tasks ? content.tasks.length : 0;
       
-      // Extract type from filename (e.g., "remote-ti-inspection.json" -> "remote")
-      const type = file.replace('-ti-inspection.json', '').replace('-inspection.json', '');
+      // Handle different naming patterns
+      let type, name, mode;
+      
+      if (file === 'initial-remote-ti-inspection.json') {
+        type = 'initial-remote';
+        name = 'Initial Remote TI';
+        mode = 'remote';
+      } else if (file === 'full-remote-ti-inspection.json') {
+        type = 'full-remote';
+        name = 'Full Remote TI';
+        mode = 'remote';
+      } else if (file.includes('-ti-inspection')) {
+        type = file.replace('-ti-inspection.json', '');
+        name = type.split('-').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ') + ' TI Inspection';
+        mode = ['onsite', 'basic'].includes(type) ? 'onsite' : 'remote';
+      } else if (file.includes('-inspection')) {
+        type = file.replace('-inspection.json', '');
+        name = type.split('-').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ') + ' Inspection';
+        mode = 'onsite';
+      } else {
+        type = file.replace('.json', '');
+        name = type.split('-').map(word => 
+          word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+        mode = 'remote';
+      }
       
       return {
         file: file.replace('.json', ''),
         type: type,
-        name: type.charAt(0).toUpperCase() + type.slice(1) + ' TI Inspection',
-        description: content.description || `${type.charAt(0).toUpperCase() + type.slice(1)} technical inspection`,
-        mode: type === 'remote' ? 'remote' : 'onsite',
+        name: name,
+        description: content.description || `${name} technical inspection`,
+        mode: mode,
         taskCount: taskCount
       };
     });

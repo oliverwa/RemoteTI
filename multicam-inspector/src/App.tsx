@@ -94,7 +94,9 @@ function App() {
           >
             ← Back
           </button>
-          {inspectionConfig.inspectionType === 'remote-ti-inspection' ? (
+          {(inspectionConfig.inspectionType === 'remote-ti-inspection' || 
+            inspectionConfig.inspectionType === 'initial-remote-ti-inspection' ||
+            inspectionConfig.inspectionType === 'full-remote-ti-inspection') ? (
             <MultiCamInspector 
               selectedInspection={inspectionConfig.inspectionType}
               selectedHangar={inspectionConfig.hangar}

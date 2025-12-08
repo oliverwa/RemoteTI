@@ -901,7 +901,15 @@ export default function MultiCamInspector({
     }
     
     // Create the inspection session name to match what will be created by the server
-    // Server creates: remote_drone_YYMMDD_HHMMSS using LOCAL time (not UTC)
+    // Determine the prefix based on inspection type
+    let prefix = 'remote';
+    if (selectedInspection === 'initial-remote-ti-inspection') {
+      prefix = 'initial_remote';
+    } else if (selectedInspection === 'full-remote-ti-inspection') {
+      prefix = 'full_remote';
+    }
+    
+    // Server creates: prefix_drone_YYMMDD_HHMMSS using LOCAL time (not UTC)
     const now = new Date();
     const year = now.getFullYear().toString().slice(-2);
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -911,7 +919,7 @@ export default function MultiCamInspector({
     const second = now.getSeconds().toString().padStart(2, '0');
     const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
     const cleanDrone = droneToUse.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const expectedSessionName = `remote_${cleanDrone}_${timestamp}`;
+    const expectedSessionName = `${prefix}_${cleanDrone}_${timestamp}`;
     const fullSessionPath = `${hangarToUse}/${expectedSessionName}`;
     
     // Store this immediately so it's available for API calls
@@ -1002,7 +1010,7 @@ export default function MultiCamInspector({
         body: JSON.stringify({
           hangar: hangarToUse,
           drone: droneToUse,
-          inspectionType: 'remote-ti-inspection'  // Always use this for remote TI
+          inspectionType: selectedInspection  // Use the actual inspection type
         })
       });
       
