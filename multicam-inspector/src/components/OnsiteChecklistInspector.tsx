@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from './ui/button';
-import { Check, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Clock, ListTodo, Check, X } from 'lucide-react';
 
 interface Task {
   id: string;  // Backend ID for the task
@@ -48,6 +48,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 }) => {
   const [inspectionData, setInspectionData] = useState<InspectionData | null>(null);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [showSidebar, setShowSidebar] = useState(false);
   
   // Format inspection type for display
   const getInspectionDisplayName = () => {
@@ -249,7 +250,48 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
     };
 
     loadInspectionData();
-  }, [selectedInspection, currentUser]);
+  }, [selectedInspection, currentUser, action, selectedDrone, selectedHangar]);
+
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if (!inspectionData) return;
+    
+    switch(event.key) {
+      case 'ArrowRight':
+        if (currentTaskIndex < inspectionData.tasks.length - 1) {
+          setCurrentTaskIndex(prev => prev + 1);
+        }
+        break;
+      case 'ArrowLeft':
+        if (currentTaskIndex > 0) {
+          setCurrentTaskIndex(prev => prev - 1);
+        }
+        break;
+      case 's':
+      case 'S':
+        setShowSidebar(prev => !prev);
+        break;
+    }
+  }, [currentTaskIndex, inspectionData]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!inspectionData) return;
+      
+      // Handle P and F keys separately to avoid circular dependency
+      if (event.key === 'p' || event.key === 'P') {
+        handleTaskStatus(inspectionData.tasks[currentTaskIndex].taskNumber, 'pass');
+      } else if (event.key === 'f' || event.key === 'F') {
+        handleTaskStatus(inspectionData.tasks[currentTaskIndex].taskNumber, 'fail');
+      } else {
+        handleKeyPress(event);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyPress, currentTaskIndex, inspectionData]);
 
   const handleTaskStatus = async (taskNumber: string, status: 'pass' | 'fail') => {
     setTaskStatuses(prev => ({
@@ -376,28 +418,31 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b px-6 py-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">{getInspectionDisplayName()}</h1>
-            <p className="text-sm text-gray-600">
-              {selectedHangar} • {selectedDrone} • {currentUser}
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-sm font-medium text-gray-700">
-              Task {currentTaskIndex + 1} of {inspectionData.tasks.length}
+      {/* Simplified Header */}
+      <div className="bg-white border-b">
+        <div className="px-6 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-gray-900">{getInspectionDisplayName()}</h1>
+              <button
+                onClick={() => setShowSidebar(!showSidebar)}
+                className="p-1 rounded hover:bg-gray-100"
+                title="Toggle task list"
+              >
+                <ListTodo className="w-4 h-4 text-gray-500" />
+              </button>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{completedTasksCount} / {inspectionData.tasks.length} completed</span>
+              <span className="mx-2">•</span>
+              <span>{selectedHangar} • {selectedDrone}</span>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Sidebar - Task List */}
-        <div className="w-64 bg-white border-r overflow-y-auto">
-          <div className="p-4">
-            <div className="space-y-0.5">
+          
+          {/* Simplified Progress Dots */}
+          <div className="mt-4">
+            <div className="flex items-center justify-center gap-1">
               {inspectionData.tasks.map((task, idx) => {
                 const status = taskStatuses[task.taskNumber];
                 const isCurrent = idx === currentTaskIndex;
@@ -405,85 +450,139 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                   <button
                     key={task.taskNumber}
                     onClick={() => setCurrentTaskIndex(idx)}
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2 ${
-                      isCurrent
-                        ? 'bg-blue-50 text-blue-900 font-medium'
-                        : status !== 'pending'
-                        ? 'text-gray-600'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className="p-0.5"
+                    title={task.taskName}
                   >
-                    <div className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      status === 'pass'
-                        ? 'border-green-500 bg-green-500'
-                        : status === 'fail'
-                        ? 'border-red-500 bg-red-500'
-                        : isCurrent
-                        ? 'border-blue-500'
-                        : 'border-gray-300'
-                    }`}>
-                      {status === 'pass' && <Check className="w-3 h-3 text-white" />}
-                      {status === 'fail' && <X className="w-3 h-3 text-white" />}
-                      {status === 'pending' && isCurrent && <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />}
-                    </div>
-                    <span className={`truncate ${
-                      status !== 'pending' && !isCurrent ? 'line-through opacity-60' : ''
-                    }`}>
-                      {task.taskName}
-                    </span>
+                    <div className={`rounded-full transition-all ${
+                      isCurrent ? 'w-3 h-3 ring-2 ring-offset-1' : 'w-2 h-2'
+                    } ${
+                      status === 'pass' 
+                        ? 'bg-green-500' + (isCurrent ? ' ring-green-400' : '')
+                        : status === 'fail' 
+                        ? 'bg-red-500' + (isCurrent ? ' ring-red-400' : '')
+                        : isCurrent 
+                        ? 'bg-blue-500 ring-blue-400' 
+                        : 'bg-gray-300'
+                    }`} />
                   </button>
                 );
               })}
             </div>
+            
+            {/* Thin Progress Bar */}
+            <div className="mt-3 mx-auto max-w-xl">
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-blue-500 transition-all duration-300"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div className="flex h-[calc(100vh-120px)] relative">
+        {/* Collapsible Sidebar - Task List */}
+        <div className={`absolute left-0 top-0 h-full bg-white border-r shadow-lg overflow-y-auto transition-all duration-300 z-10 ${
+          showSidebar ? 'w-80' : 'w-0'
+        }`}>
+          {showSidebar && (
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-semibold text-gray-800">All Tasks</h3>
+                <button
+                  onClick={() => setShowSidebar(false)}
+                  className="p-1 rounded hover:bg-gray-100"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="space-y-1">
+                {inspectionData.tasks.map((task, idx) => {
+                  const status = taskStatuses[task.taskNumber];
+                  const isCurrent = idx === currentTaskIndex;
+                  return (
+                    <button
+                      key={task.taskNumber}
+                      onClick={() => {
+                        setCurrentTaskIndex(idx);
+                        setShowSidebar(false);
+                      }}
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2 ${
+                        isCurrent
+                          ? 'bg-blue-50 text-blue-900 font-medium'
+                          : status !== 'pending'
+                          ? 'text-gray-600'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="text-xs text-gray-500 font-mono">{idx + 1}.</span>
+                        <span className={`truncate ${
+                          status !== 'pending' && !isCurrent ? 'line-through opacity-60' : ''
+                        }`}>
+                          {task.taskName}
+                        </span>
+                      </div>
+                      <div className="flex-shrink-0">
+                        {status === 'pass' && <div className="w-4 h-4 bg-green-500 rounded-full" />}
+                        {status === 'fail' && <div className="w-4 h-4 bg-red-500 rounded-full" />}
+                        {status === 'pending' && <div className="w-4 h-4 bg-gray-300 rounded-full" />}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Main Content - Current Task */}
-        <div className="flex-1 p-8 overflow-y-auto">
-          <div className="max-w-3xl mx-auto">
-            {/* Task Header */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <div className="text-sm text-gray-500 mb-1">
-                    Task #{currentTask.taskNumber} • {currentTask.category}
+        <div className="flex-1 overflow-y-auto">
+          <div className="w-full max-w-3xl mx-auto px-8 py-8">
+            {/* Simplified Task Card */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-700">{currentTaskIndex + 1}</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900">{currentTask.taskName}</h2>
+                  <div>
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">{currentTask.category}</div>
+                    <h2 className="text-lg font-semibold text-gray-900">{currentTask.taskName}</h2>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {taskStatuses[currentTask.taskNumber] === 'pass' && (
-                    <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                      Passed
-                    </div>
-                  )}
-                  {taskStatuses[currentTask.taskNumber] === 'fail' && (
-                    <div className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">
-                      Failed
-                    </div>
-                  )}
-                  {taskStatuses[currentTask.taskNumber] === 'pending' && (
-                    <div className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium">
-                      Pending
-                    </div>
-                  )}
-                </div>
+                {taskStatuses[currentTask.taskNumber] === 'pass' && (
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                {taskStatuses[currentTask.taskNumber] === 'fail' && (
+                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                    <X className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                {taskStatuses[currentTask.taskNumber] === 'pending' && (
+                  <div className="w-6 h-6 border border-gray-300 rounded-full" />
+                )}
               </div>
-
-              <div className="prose max-w-none">
-                <p className="text-gray-700">{currentTask.description}</p>
+              
+              {/* Task Description */}
+              <div className="mb-6">
+                <p className="text-gray-600 leading-relaxed">{currentTask.description}</p>
               </div>
             </div>
 
-            {/* Task Actions */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Task Status</h3>
-              <div className="flex gap-4 mb-6">
+            {/* Simplified Task Actions */}
+            <div className="mb-6">
+              <div className="flex gap-3">
                 <Button
                   onClick={() => handleTaskStatus(currentTask.taskNumber, 'pass')}
-                  className={`flex-1 py-4 text-lg ${
+                  className={`flex-1 py-4 text-lg font-medium transition-all ${
                     taskStatuses[currentTask.taskNumber] === 'pass'
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-white hover:bg-green-50 text-green-600 border border-green-500'
                   }`}
                 >
                   <Check className="w-5 h-5 mr-2" />
@@ -491,10 +590,10 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                 </Button>
                 <Button
                   onClick={() => handleTaskStatus(currentTask.taskNumber, 'fail')}
-                  className={`flex-1 py-4 text-lg ${
+                  className={`flex-1 py-4 text-lg font-medium transition-all ${
                     taskStatuses[currentTask.taskNumber] === 'fail'
-                      ? 'bg-red-600 hover:bg-red-700'
-                      : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                      ? 'bg-red-500 hover:bg-red-600 text-white'
+                      : 'bg-white hover:bg-red-50 text-red-600 border border-red-500'
                   }`}
                 >
                   <X className="w-5 h-5 mr-2" />
@@ -503,8 +602,8 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               </div>
 
               {/* Notes Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="mt-4">
+                <label className="block text-sm text-gray-600 mb-2">
                   Notes (Optional)
                 </label>
                 <textarea
@@ -535,37 +634,41 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                       }
                     }
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={4}
+                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 resize-none"
+                  rows={3}
                   placeholder="Add any observations or notes about this task..."
                 />
               </div>
             </div>
 
-            {/* Navigation */}
+            {/* Simplified Navigation */}
             <div className="flex justify-between items-center">
               <Button
                 onClick={handlePrevious}
                 disabled={currentTaskIndex === 0}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1 px-4 py-2"
                 variant="outline"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
               </Button>
 
+              <div className="text-center">
+                <div className="text-xs text-gray-400">← → Navigate | P Pass | F Fail | S Sidebar</div>
+              </div>
+
               {currentTaskIndex === inspectionData.tasks.length - 1 ? (
                 <Button
                   onClick={handleCompleteInspection}
                   disabled={completedTasksCount !== inspectionData.tasks.length}
-                  className="bg-green-600 hover:bg-green-700 px-6"
+                  className="bg-green-600 hover:bg-green-700 px-6 py-2 font-medium"
                 >
                   Complete Inspection
                 </Button>
               ) : (
                 <Button
                   onClick={handleNext}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-1 px-6 py-2 bg-blue-600 hover:bg-blue-700"
                 >
                   Next
                   <ChevronRight className="w-4 h-4" />
