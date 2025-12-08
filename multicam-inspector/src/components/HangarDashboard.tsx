@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer } from 'lucide-react';
 import HangarWorkflowView from './HangarWorkflowView';
 
 interface HangarDashboardProps {
@@ -17,6 +17,7 @@ interface HangarStatusData {
   currentPhase?: string;
   lastActivity?: string;
   assignedDrone?: string;
+  estimatedCompletion?: string;
   activeInspection?: {
     type: string;
     progress: number;
@@ -37,6 +38,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   // Initialize with mock data for now
   useEffect(() => {
     // In the future, this will fetch from backend
+    const currentTime = new Date();
     const mockStatuses: HangarStatusData[] = HANGARS.map(hangar => ({
       id: hangar.id,
       name: hangar.label,
@@ -47,20 +49,29 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     // Add some variety to demonstrate different states
     if (mockStatuses[0]) {
+      // Mölndal - in Initial RTI phase
       mockStatuses[0].state = 'post_flight';
-      mockStatuses[0].currentPhase = 'Post-flight analysis';
-      mockStatuses[0].lastActivity = '5 minutes ago';
+      mockStatuses[0].currentPhase = 'Initial Remote TI';
+      mockStatuses[0].lastActivity = 'Started 10 min ago';
+      mockStatuses[0].estimatedCompletion = '~2h remaining';
+      mockStatuses[0].activeInspection = {
+        type: 'Initial RTI',
+        progress: 65,
+        assignedTo: 'Everdrone'
+      };
     }
     
     if (mockStatuses[1]) {
+      // Forges - in Basic TI phase
       mockStatuses[1].state = 'inspection';
-      mockStatuses[1].currentPhase = 'Remote crew on-site';
+      mockStatuses[1].currentPhase = 'Basic TI - Remote Crew';
       mockStatuses[1].activeInspection = {
         type: 'Basic TI',
-        progress: 65,
+        progress: 40,
         assignedTo: 'Remote Crew'
       };
-      mockStatuses[1].lastActivity = '12 minutes ago';
+      mockStatuses[1].lastActivity = 'Started 25 min ago';
+      mockStatuses[1].estimatedCompletion = '~1.5h remaining';
     }
     
     setHangarStatuses(mockStatuses);
@@ -104,7 +115,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const getStatusLabel = (state: string, currentPhase?: string) => {
     // More accurate status based on current phase
     if (currentPhase) {
-      if (currentPhase.toLowerCase().includes('post-flight')) return 'Post-Flight';
+      if (currentPhase.toLowerCase().includes('initial remote ti')) return 'Initial RTI';
+      if (currentPhase.toLowerCase().includes('basic ti')) return 'Basic TI Active';
       if (currentPhase.toLowerCase().includes('remote crew')) return 'Field Team Active';
       if (currentPhase.toLowerCase().includes('initial')) return 'Initial Assessment';
     }
@@ -228,17 +240,38 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
                 
                 {hangar.activeInspection && (
-                  <div>
-                    <div className="w-full bg-gray-200 rounded-full h-1">
-                      <div 
-                        className="bg-blue-500 h-1 rounded-full transition-all"
-                        style={{ width: `${hangar.activeInspection.progress}%` }}
-                      />
+                  <>
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs font-medium text-gray-700">
+                          {hangar.activeInspection.type}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {hangar.activeInspection.progress}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className="bg-blue-500 h-1.5 rounded-full transition-all"
+                          style={{ width: `${hangar.activeInspection.progress}%` }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                    <div className="flex justify-between items-center pt-1">
+                      <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
+                      {hangar.estimatedCompletion && (
+                        <div className="flex items-center gap-1 text-xs font-medium text-orange-600">
+                          <Timer className="w-3 h-3" />
+                          {hangar.estimatedCompletion}
+                        </div>
+                      )}
+                    </div>
+                  </>
                 )}
                 
-                <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
+                {!hangar.activeInspection && (
+                  <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
+                )}
               </div>
             </div>
           ))}
