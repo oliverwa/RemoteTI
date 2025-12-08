@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle } from 'lucide-react';
 import HangarWorkflowView from './HangarWorkflowView';
 
 interface HangarDashboardProps {
@@ -23,6 +23,7 @@ interface HangarStatusData {
     progress: number;
     assignedTo: string;
   };
+  alarmSession?: any;
 }
 
 const HangarDashboard: React.FC<HangarDashboardProps> = ({
@@ -35,47 +36,140 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
   const [showWorkflow, setShowWorkflow] = useState(false);
 
-  // Initialize with mock data for now
+  // Load actual alarm session states for each hangar
   useEffect(() => {
-    // In the future, this will fetch from backend
-    const currentTime = new Date();
-    const mockStatuses: HangarStatusData[] = HANGARS.map(hangar => ({
-      id: hangar.id,
-      name: hangar.label,
-      state: 'standby',
-      assignedDrone: hangar.assignedDrone,
-      lastActivity: '2 hours ago'
-    }));
+    const fetchHangarStatuses = async () => {
+      try {
+        // Start with default statuses
+        const statuses: HangarStatusData[] = HANGARS.map(hangar => ({
+          id: hangar.id,
+          name: hangar.label,
+          state: 'standby' as const,
+          assignedDrone: hangar.assignedDrone,
+          lastActivity: 'No recent activity'
+        }));
+        
+        // Fetch alarm session for each hangar
+        for (const hangar of HANGARS) {
+          try {
+            const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangar.id}`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.session) {
+                const session = data.session;
+                const hangarIndex = statuses.findIndex(h => h.id === hangar.id);
+                
+                if (hangarIndex !== -1) {
+                  // Determine state based on workflow phases
+                  let state: 'standby' | 'alarm' | 'post_flight' | 'inspection' | 'verification' = 'standby';
+                  let currentPhase = '';
+                  let activeInspection = undefined;
+                  
+                  if (session.workflow?.phases) {
+                    const phases = session.workflow.phases;
+                    
+                    if (phases.flight?.status === 'in-progress') {
+                      state = 'alarm';
+                      currentPhase = 'Flight in progress';
+                    } else if (phases.landing?.status === 'in-progress') {
+                      state = 'post_flight';
+                      currentPhase = 'Landing';
+                    } else if (phases.telemetryAnalysis?.status === 'in-progress') {
+                      state = 'post_flight';
+                      currentPhase = 'Analyzing telemetry';
+                    } else if (phases.initialRTI?.status === 'in-progress') {
+                      state = 'inspection';
+                      currentPhase = session.inspections?.initialRTI ? 'Initial Remote TI Ready' : 'Generating Initial RTI';
+                      activeInspection = {
+                        type: 'Initial Remote TI',
+                        progress: 10,
+                        assignedTo: 'Everdrone'
+                      };
+                    } else if (phases.basicTI?.status === 'in-progress' || phases.onsiteTI?.status === 'in-progress') {
+                      state = 'inspection';
+                      currentPhase = phases.basicTI?.status === 'in-progress' ? 'Basic TI' : 'Onsite TI';
+                      activeInspection = {
+                        type: currentPhase,
+                        progress: 50,
+                        assignedTo: phases.basicTI?.status === 'in-progress' ? 'Remote Crew' : 'Everdrone'
+                      };
+                    } else if (phases.fullRTI?.status === 'in-progress') {
+                      state = 'inspection';
+                      currentPhase = 'Full Remote TI';
+                      activeInspection = {
+                        type: 'Full Remote TI',
+                        progress: 30,
+                        assignedTo: 'Everdrone'
+                      };
+                    } else if (phases.clearArea?.status === 'in-progress') {
+                      state = 'verification';
+                      currentPhase = 'Clearing area';
+                    } else if (phases.initialRTI?.status === 'completed' && !session.workflow?.routeDecision) {
+                      // Initial RTI completed but no route decision yet
+                      state = 'inspection';
+                      currentPhase = 'Awaiting route decision';
+                    } else if (phases.initialRTI?.status === 'completed' && phases.basicTI?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
+                      // Route selected but Basic TI not started
+                      state = 'inspection';
+                      currentPhase = 'Ready for Basic TI';
+                    } else if (phases.initialRTI?.status === 'completed' && phases.onsiteTI?.status === 'pending' && session.workflow?.routeDecision === 'onsite') {
+                      // Route selected but Onsite TI not started
+                      state = 'inspection';
+                      currentPhase = 'Ready for Onsite TI';
+                    } else if (phases.clearArea?.status === 'completed') {
+                      // Everything completed
+                      state = 'standby';
+                      currentPhase = 'Alarm resolved';
+                    }
+                    
+                    // Calculate relative time
+                    let lastActivity = 'Recently';
+                    if (session.createdAt) {
+                      const created = new Date(session.createdAt);
+                      const now = new Date();
+                      const diffMinutes = Math.floor((now.getTime() - created.getTime()) / 60000);
+                      
+                      if (diffMinutes < 1) {
+                        lastActivity = 'Just now';
+                      } else if (diffMinutes < 60) {
+                        lastActivity = `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
+                      } else {
+                        const diffHours = Math.floor(diffMinutes / 60);
+                        lastActivity = `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+                      }
+                    }
+                    
+                    // Update the hangar status
+                    statuses[hangarIndex] = {
+                      ...statuses[hangarIndex],
+                      state,
+                      currentPhase: currentPhase || statuses[hangarIndex].currentPhase,
+                      lastActivity,
+                      activeInspection,
+                      alarmSession: session
+                    };
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.warn(`Failed to fetch alarm session for ${hangar.id}:`, error);
+          }
+        }
+        
+        setHangarStatuses(statuses);
+      } catch (error) {
+        console.error('Failed to fetch hangar statuses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // Add some variety to demonstrate different states
-    if (mockStatuses[0]) {
-      // Mölndal - in Initial RTI phase
-      mockStatuses[0].state = 'post_flight';
-      mockStatuses[0].currentPhase = 'Initial Remote TI';
-      mockStatuses[0].lastActivity = 'Started 10 min ago';
-      mockStatuses[0].estimatedCompletion = '~2h remaining';
-      mockStatuses[0].activeInspection = {
-        type: 'Initial RTI',
-        progress: 65,
-        assignedTo: 'Everdrone'
-      };
-    }
+    fetchHangarStatuses();
     
-    if (mockStatuses[1]) {
-      // Forges - in Basic TI phase
-      mockStatuses[1].state = 'inspection';
-      mockStatuses[1].currentPhase = 'Basic TI - Remote Crew';
-      mockStatuses[1].activeInspection = {
-        type: 'Basic TI',
-        progress: 40,
-        assignedTo: 'Remote Crew'
-      };
-      mockStatuses[1].lastActivity = 'Started 25 min ago';
-      mockStatuses[1].estimatedCompletion = '~1.5h remaining';
-    }
-    
-    setHangarStatuses(mockStatuses);
-    setLoading(false);
+    // Poll for updates every 5 seconds
+    const interval = setInterval(fetchHangarStatuses, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const getStatusIcon = (state: string) => {
@@ -143,6 +237,219 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     setTimeout(() => {
       setLoading(false);
     }, 500);
+  };
+
+  const handleTriggerAlarm = async (hangarId: string, droneId?: string) => {
+    try {
+      const response = await fetch('http://172.20.1.93:3001/api/trigger-alarm', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hangarId,
+          droneId: droneId || null,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Alarm triggered:', data);
+        // Update the hangar status to show alarm state
+        setHangarStatuses(prev => prev.map(h => {
+          if (h.id === hangarId) {
+            return {
+              ...h,
+              state: 'alarm',
+              currentPhase: 'Flight in progress',
+              lastActivity: 'Just now',
+              activeInspection: {
+                type: 'Alarm Response',
+                progress: 0,
+                assignedTo: 'System'
+              }
+            };
+          }
+          return h;
+        }));
+        
+        // Start workflow progression
+        startWorkflowProgression(hangarId);
+      } else {
+        console.error('Failed to trigger alarm');
+      }
+    } catch (error) {
+      console.error('Error triggering alarm:', error);
+    }
+  };
+
+  const startWorkflowProgression = (hangarId: string) => {
+    // 5 seconds: Land drone
+    setTimeout(async () => {
+      await updatePhase(hangarId, 'landing', {
+        status: 'completed',
+        timestamp: new Date().toISOString()
+      });
+      await updatePhase(hangarId, 'flight', {
+        status: 'completed',
+        endTime: new Date().toISOString()
+      });
+      
+      setHangarStatuses(prev => prev.map(h => {
+        if (h.id === hangarId) {
+          return {
+            ...h,
+            state: 'post_flight',
+            currentPhase: 'Drone landed',
+            lastActivity: 'Just landed'
+          };
+        }
+        return h;
+      }));
+    }, 5000);
+
+    // 10 seconds: Start telemetry analysis
+    setTimeout(async () => {
+      await updatePhase(hangarId, 'telemetryAnalysis', {
+        status: 'in-progress',
+        startTime: new Date().toISOString()
+      });
+      
+      setHangarStatuses(prev => prev.map(h => {
+        if (h.id === hangarId) {
+          return {
+            ...h,
+            currentPhase: 'Analyzing telemetry',
+            activeInspection: {
+              type: 'Telemetry Analysis',
+              progress: 50,
+              assignedTo: 'System'
+            }
+          };
+        }
+        return h;
+      }));
+    }, 10000);
+
+    // 15 seconds: Complete telemetry and trigger Initial Remote TI
+    setTimeout(async () => {
+      await updatePhase(hangarId, 'telemetryAnalysis', {
+        status: 'completed',
+        endTime: new Date().toISOString(),
+        data: {
+          batteryRemaining: 65,
+          flightDuration: 12,
+          errors: []
+        }
+      });
+      
+      // Start Initial Remote TI phase
+      await updatePhase(hangarId, 'initialRTI', {
+        status: 'in-progress',
+        startTime: new Date().toISOString()
+      });
+      
+      setHangarStatuses(prev => prev.map(h => {
+        if (h.id === hangarId) {
+          return {
+            ...h,
+            state: 'inspection',
+            currentPhase: 'Generating Initial RTI',
+            activeInspection: {
+              type: 'Initial Remote TI',
+              progress: 0,
+              assignedTo: 'System'
+            }
+          };
+        }
+        return h;
+      }));
+      
+      // Generate the actual Initial RTI inspection after 2 seconds
+      setTimeout(async () => {
+        try {
+          // Update status to show we're capturing images
+          setHangarStatuses(prev => prev.map(h => {
+            if (h.id === hangarId) {
+              return {
+                ...h,
+                currentPhase: 'Capturing images...',
+                activeInspection: {
+                  type: 'Initial Remote TI',
+                  progress: 5,
+                  assignedTo: 'System'
+                }
+              };
+            }
+            return h;
+          }));
+          
+          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-initial-rti`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Initial RTI generation started:', data);
+            
+            // Show capturing status without progress bar
+            setHangarStatuses(prev => prev.map(h => {
+              if (h.id === hangarId) {
+                return {
+                  ...h,
+                  currentPhase: 'Capturing camera images...',
+                  activeInspection: {
+                    type: 'Initial Remote TI',
+                    progress: 0,
+                    assignedTo: 'System'
+                  }
+                };
+              }
+              return h;
+            }));
+            
+            // After 40 seconds, show as ready
+            setTimeout(() => {
+              
+              // Update status to show inspection is ready
+              setHangarStatuses(prev => prev.map(h => {
+                if (h.id === hangarId) {
+                  return {
+                    ...h,
+                    currentPhase: 'Initial Remote TI Ready',
+                    activeInspection: {
+                      type: 'Initial Remote TI',
+                      progress: 10,
+                      assignedTo: 'Everdrone'
+                    }
+                  };
+                }
+                return h;
+              }));
+            }, 40000);
+          }
+        } catch (error) {
+          console.error('Error generating Initial RTI:', error);
+        }
+      }, 2000);
+    }, 15000);
+  };
+
+  const updatePhase = async (hangarId: string, phase: string, updates: any) => {
+    try {
+      await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/update-phase`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ phase, updates }),
+      });
+    } catch (error) {
+      console.error('Error updating phase:', error);
+    }
   };
 
   if (loading) {
@@ -247,7 +554,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           {hangar.activeInspection.type}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {hangar.activeInspection.progress}%
+                          {Math.floor(hangar.activeInspection.progress)}%
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -270,7 +577,21 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 )}
                 
                 {!hangar.activeInspection && (
-                  <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
+                  <>
+                    <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
+                    {hangar.state === 'standby' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTriggerAlarm(hangar.id, hangar.assignedDrone);
+                        }}
+                        className="mt-2 w-full flex items-center justify-center gap-1 px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200 transition-colors"
+                      >
+                        <AlertTriangle className="w-3 h-3" />
+                        Trigger Alarm
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </div>

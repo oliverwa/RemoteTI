@@ -38,10 +38,20 @@ interface FolderBrowserModalProps {
 }
 
 const formatSessionName = (name: string): string => {
-  // Remove inspection type prefix and underscore for cleaner display
-  const cleanedName = name
-    .replace(/^(remote|onsite|extended|service|basic)_/, '')
-    .replace(/_inspection/, '');
+  // Handle new remote inspection types (initial_remote, full_remote)
+  let cleanedName = name;
+  
+  // Remove inspection type prefixes
+  if (name.startsWith('initial_remote_')) {
+    cleanedName = name.replace('initial_remote_', '');
+  } else if (name.startsWith('full_remote_')) {
+    cleanedName = name.replace('full_remote_', '');
+  } else {
+    // Remove standard inspection type prefix for other types
+    cleanedName = name
+      .replace(/^(remote|onsite|extended|service|basic)_/, '')
+      .replace(/_inspection/, '');
+  }
   
   // Extract drone/location name from format like "bender_241201_090045"
   const parts = cleanedName.split('_');
@@ -56,7 +66,12 @@ const getInspectionTypeFromName = (name: string): string => {
   const nameLower = name.toLowerCase();
   const firstPart = name.split('_')[0].toLowerCase();
   
-  if (firstPart === 'remote' || nameLower.includes('remote')) {
+  // Check for new remote inspection types first
+  if (nameLower.startsWith('initial_remote_')) {
+    return 'initial-remote';
+  } else if (nameLower.startsWith('full_remote_')) {
+    return 'full-remote';
+  } else if (firstPart === 'remote' || nameLower.includes('remote')) {
     return 'remote';
   } else if (firstPart === 'onsite' || nameLower.includes('onsite')) {
     return 'onsite';
@@ -81,6 +96,20 @@ const getInspectionTypeInfo = (sessionName: string, inspectionType?: string | nu
   const type = detectedType !== 'unknown' ? detectedType : (inspectionType?.toLowerCase() || 'unknown');
   
   switch (type) {
+    case 'initial-remote':
+      return { 
+        label: 'Initial Remote', 
+        color: 'text-blue-600', 
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-200'
+      };
+    case 'full-remote':
+      return { 
+        label: 'Full Remote', 
+        color: 'text-blue-600', 
+        bgColor: 'bg-blue-50',
+        borderColor: 'border-blue-200'
+      };
     case 'remote':
       return { 
         label: 'Remote', 

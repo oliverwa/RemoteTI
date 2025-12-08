@@ -893,6 +893,314 @@ app.get('/api/inspection-types', (req, res) => {
   }
 });
 
+// Get latest alarm session for a hangar
+app.get('/api/alarm-session/:hangarId', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    if (!fs.existsSync(alarmsDir)) {
+      return res.json({ session: null });
+    }
+    
+    // Find all alarm files for this hangar
+    const files = fs.readdirSync(alarmsDir)
+      .filter(f => f.startsWith(`alarm_${hangarId}_`) && f.endsWith('.json'))
+      .sort((a, b) => b.localeCompare(a)); // Sort newest first
+    
+    if (files.length === 0) {
+      return res.json({ session: null });
+    }
+    
+    // Get the most recent alarm
+    const latestFile = files[0];
+    const sessionPath = path.join(alarmsDir, latestFile);
+    const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    
+    res.json({ 
+      session: sessionData,
+      filename: latestFile 
+    });
+    
+  } catch (error) {
+    log('error', 'Error getting alarm session:', error.message);
+    res.status(500).json({ error: 'Failed to get alarm session' });
+  }
+});
+
+// Generate Initial RTI inspection for alarm workflow
+app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    // Find latest alarm session for this hangar
+    const files = fs.readdirSync(alarmsDir)
+      .filter(f => f.startsWith(`alarm_${hangarId}_`) && f.endsWith('.json'))
+      .sort((a, b) => b.localeCompare(a));
+    
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'No alarm session found' });
+    }
+    
+    const latestFile = files[0];
+    const sessionPath = path.join(alarmsDir, latestFile);
+    const alarmSession = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    
+    // Generate Initial RTI session
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+    const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
+    
+    const droneId = alarmSession.droneId || 'unknown';
+    const sessionName = `initial_remote_${droneId}_${timestamp}`;
+    const inspectionFolder = `${hangarId}/${sessionName}`;
+    const inspectionPath = path.join(SNAPSHOTS_DIR, inspectionFolder);
+    
+    // Create inspection directory
+    if (!fs.existsSync(inspectionPath)) {
+      fs.mkdirSync(inspectionPath, { recursive: true });
+    }
+    
+    // Copy Initial RTI template
+    const templateFile = path.join(BASE_DIR, 'data', 'templates', 'initial-remote-ti-inspection.json');
+    const destinationFile = path.join(inspectionPath, `${sessionName}_inspection.json`);
+    
+    if (fs.existsSync(templateFile)) {
+      const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      
+      // Add session metadata
+      templateData.sessionInfo = {
+        inspectionType: 'initial-remote-ti-inspection',
+        hangar: hangarId,
+        drone: droneId,
+        sessionFolder: inspectionFolder,
+        sessionName: sessionName,
+        createdAt: now.toISOString(),
+        linkedAlarmSession: alarmSession.sessionId
+      };
+      
+      fs.writeFileSync(destinationFile, JSON.stringify(templateData, null, 2));
+      log('info', `Created Initial RTI inspection: ${sessionName}`);
+    }
+    
+    // Trigger camera capture for the Initial RTI by calling the existing capture endpoint
+    log('info', `Triggering camera capture for Initial RTI: ${sessionName}`);
+    
+    // Make an internal call to the existing capture endpoint
+    // This is a bit ugly but reuses all the existing capture logic
+    const http = require('http');
+    
+    const captureData = JSON.stringify({
+      hangar: hangarId,
+      drone: droneId,
+      inspectionType: 'initial-remote-ti-inspection'
+    });
+    
+    const captureOptions = {
+      hostname: 'localhost',
+      port: 3001,
+      path: '/api/capture',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': captureData.length
+      }
+    };
+    
+    const capturePromise = new Promise((resolve, reject) => {
+      const captureReq = http.request(captureOptions, (captureRes) => {
+        let responseData = '';
+        
+        captureRes.on('data', (chunk) => {
+          responseData += chunk;
+        });
+        
+        captureRes.on('end', () => {
+          try {
+            const result = JSON.parse(responseData);
+            if (result.success) {
+              log('info', `Camera capture initiated for Initial RTI with requestId: ${result.requestId}`);
+              
+              // Wait a bit for the capture to complete (ugly but temporary)
+              // The capture process usually takes 10-15 seconds
+              setTimeout(() => {
+                log('info', `Camera capture should be complete for Initial RTI`);
+                resolve(result);
+              }, 40000); // Wait 40 seconds for captures to complete
+            } else {
+              log('error', `Failed to initiate capture: ${responseData}`);
+              resolve({ success: false, error: 'Failed to initiate capture' });
+            }
+          } catch (error) {
+            log('error', `Error parsing capture response: ${error.message}`);
+            resolve({ success: false, error: error.message });
+          }
+        });
+      });
+      
+      captureReq.on('error', (error) => {
+        log('error', `Error calling capture endpoint: ${error.message}`);
+        resolve({ success: false, error: error.message });
+      });
+      
+      captureReq.write(captureData);
+      captureReq.end();
+    });
+    
+    // Wait for the capture to complete
+    const captureResult = await capturePromise;
+    
+    if (captureResult.success) {
+      log('info', `Camera capture completed for Initial RTI`);
+    } else {
+      log('warn', `Camera capture failed for Initial RTI: ${captureResult.error}`);
+    }
+    
+    // Update alarm session with inspection ID but keep as in-progress (inspection needs to be performed)
+    alarmSession.workflow.phases.initialRTI.inspectionId = sessionName;
+    alarmSession.workflow.phases.initialRTI.sessionPath = inspectionFolder;
+    // Keep status as 'in-progress' since the inspection still needs to be performed
+    // It will be marked as 'completed' when the inspection is actually finished
+    alarmSession.inspections.initialRTI = {
+      sessionId: sessionName,
+      path: inspectionFolder,
+      createdAt: now.toISOString()
+    };
+    
+    // Save updated alarm session
+    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    
+    res.json({ 
+      success: true,
+      inspectionId: sessionName,
+      path: inspectionFolder,
+      session: alarmSession 
+    });
+    
+  } catch (error) {
+    log('error', 'Error generating Initial RTI:', error.message);
+    res.status(500).json({ error: 'Failed to generate Initial RTI' });
+  }
+});
+
+// Update alarm session workflow phase
+app.post('/api/alarm-session/:hangarId/update-phase', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const { phase, updates } = req.body;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    // Find latest session for this hangar
+    const files = fs.readdirSync(alarmsDir)
+      .filter(f => f.startsWith(`alarm_${hangarId}_`) && f.endsWith('.json'))
+      .sort((a, b) => b.localeCompare(a));
+    
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'No alarm session found' });
+    }
+    
+    const latestFile = files[0];
+    const sessionPath = path.join(alarmsDir, latestFile);
+    const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    
+    // Update the specified phase
+    if (sessionData.workflow.phases[phase]) {
+      Object.assign(sessionData.workflow.phases[phase], updates);
+      
+      // Update currentPhase if specified
+      if (updates.currentPhase) {
+        sessionData.workflow.currentPhase = updates.currentPhase;
+      }
+    }
+    
+    // Write back to file
+    fs.writeFileSync(sessionPath, JSON.stringify(sessionData, null, 2));
+    
+    log('info', `Updated alarm session phase ${phase} for ${hangarId}`);
+    
+    res.json({ 
+      success: true,
+      session: sessionData 
+    });
+    
+  } catch (error) {
+    log('error', 'Error updating alarm session:', error.message);
+    res.status(500).json({ error: 'Failed to update alarm session' });
+  }
+});
+
+// Create alarm session when flight is triggered
+app.post('/api/trigger-alarm', async (req, res) => {
+  try {
+    const { hangarId, droneId, alarmId } = req.body;
+    
+    if (!hangarId) {
+      return res.status(400).json({ error: 'Hangar ID is required' });
+    }
+    
+    // Generate timestamp for session
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+    const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
+    
+    // Create session name
+    const sessionName = `alarm_${hangarId}_${timestamp}`;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    const sessionPath = path.join(alarmsDir, `${sessionName}.json`);
+    
+    // Ensure alarms directory exists
+    if (!fs.existsSync(alarmsDir)) {
+      fs.mkdirSync(alarmsDir, { recursive: true });
+    }
+    
+    // Read alarm_reset template
+    const templatePath = path.join(BASE_DIR, 'data', 'templates', 'alarm_reset.json');
+    if (!fs.existsSync(templatePath)) {
+      return res.status(500).json({ error: 'Alarm template not found' });
+    }
+    
+    const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+    
+    // Update template with session data
+    template.sessionId = sessionName;
+    template.createdAt = now.toISOString();
+    template.hangarId = hangarId;
+    template.droneId = droneId || null;
+    template.alarmId = alarmId || `ALM-${timestamp}`;
+    
+    // Initialize workflow phases
+    template.workflow.phases.flight.status = 'in-progress';
+    template.workflow.phases.flight.startTime = now.toISOString();
+    
+    // Write session file
+    fs.writeFileSync(sessionPath, JSON.stringify(template, null, 2));
+    
+    log('info', `Created alarm session: ${sessionName}`);
+    
+    res.json({
+      success: true,
+      sessionId: sessionName,
+      path: sessionPath,
+      message: 'Alarm session created successfully'
+    });
+    
+  } catch (error) {
+    log('error', 'Error creating alarm session:', error.message);
+    res.status(500).json({ error: 'Failed to create alarm session' });
+  }
+});
+
 // Get specific inspection template
 app.get('/api/inspection-data/:type', (req, res) => {
   try {

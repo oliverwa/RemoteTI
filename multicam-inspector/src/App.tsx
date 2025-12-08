@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MultiCamInspector from './components/MultiCamInspector';
 import OnsiteChecklistInspector from './components/OnsiteChecklistInspector';
 import LoginPage from './components/LoginPage';
@@ -19,6 +19,34 @@ function App() {
   const [currentUser, setCurrentUser] = useState<string>('');
   const [inspectionConfig, setInspectionConfig] = useState<InspectionConfig | null>(null);
   const [showDashboard, setShowDashboard] = useState(true);
+  
+  // Check URL parameters on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    const hangar = urlParams.get('hangar');
+    const session = urlParams.get('session');
+    const type = urlParams.get('type');
+    
+    if (action === 'load-session' && hangar && session && type) {
+      // Auto-login for direct session links
+      setIsAuthenticated(true);
+      setCurrentUser('Inspector');
+      setShowDashboard(false);
+      
+      // Set up the inspection config to load the session
+      const sessionData = `${hangar}|${session}`;
+      setInspectionConfig({
+        inspectionType: type,
+        hangar: sessionData,
+        drone: 'session',
+        action: 'load-session'
+      });
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleLogin = (username: string) => {
     setCurrentUser(username);
