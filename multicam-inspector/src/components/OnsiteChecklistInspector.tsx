@@ -339,6 +339,28 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               const result = await response.json();
               console.log(`Task status saved to backend (${result.progress.completed}/${result.progress.total} complete)`);
               
+              // Update alarm session progress if this is part of an alarm workflow
+              if (sessionFolder) {
+                try {
+                  await fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      sessionPath: sessionFolder,
+                      progress: result.progress.completed / result.progress.total * 100,
+                      tasksCompleted: result.progress.completed,
+                      totalTasks: result.progress.total,
+                      completed: result.completionStatus.status === 'completed'
+                    })
+                  });
+                  console.log('Alarm session progress updated');
+                } catch (error) {
+                  console.error('Error updating alarm session progress:', error);
+                }
+              }
+              
               // Update inspection metadata if completed
               if (result.completionStatus.status === 'completed') {
                 console.log('Inspection completed and saved!');

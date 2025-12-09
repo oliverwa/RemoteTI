@@ -48,6 +48,8 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
   const [loading, setLoading] = useState(true);
   const [captureProgress, setCaptureProgress] = useState<number>(0);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [captureProgressFull, setCaptureProgressFull] = useState<number>(0);
+  const [isCapturingFull, setIsCapturingFull] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const activeElementRef = useRef<HTMLDivElement>(null);
   
@@ -85,6 +87,33 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
             } else {
               setIsCapturing(false);
               setCaptureProgress(0);
+            }
+            
+            // Check if we're capturing images for Full RTI
+            if (data.session.workflow?.phases?.fullRTI?.status === 'in-progress' && 
+                data.session.workflow?.phases?.fullRTI?.startTime) {
+              const startTime = new Date(data.session.workflow.phases.fullRTI.startTime).getTime();
+              const now = Date.now();
+              const elapsed = (now - startTime) / 1000; // seconds elapsed
+              
+              if (elapsed < 40) { // 40 seconds for full capture
+                setIsCapturingFull(true);
+                const progress = Math.min(95, (elapsed / 40) * 95); // Progress up to 95% over 40 seconds
+                setCaptureProgressFull(progress);
+              } else {
+                setIsCapturingFull(false);
+                setCaptureProgressFull(0);
+              }
+            } else {
+              setIsCapturingFull(false);
+              setCaptureProgressFull(0);
+            }
+            
+            // Auto-close workflow when clearArea is completed
+            if (data.session.workflow?.phases?.clearArea?.status === 'completed') {
+              setTimeout(() => {
+                onClose();
+              }, 2000); // Close after 2 seconds to show completion
             }
           }
         }
@@ -167,10 +196,29 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
     }
   };
 
-  const handleDecision = (route: string) => {
+  const handleDecision = async (route: string) => {
     if (!decisionLocked) {
       setSelectedDecision(route);
       setDecisionLocked(true);
+      
+      // Send the decision to the backend
+      try {
+        const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/route-decision`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ route })
+        });
+        
+        if (response.ok) {
+          console.log('Route decision saved and inspection created');
+        } else {
+          console.error('Failed to save route decision');
+        }
+      } catch (error) {
+        console.error('Error saving route decision:', error);
+      }
     }
   };
 
@@ -333,21 +381,23 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                 <div className="text-xs text-center mt-1 text-blue-600">
                   {isCapturing
                     ? `Capturing... ${Math.floor(captureProgress)}%`
-                    : alarmSession?.workflow?.phases?.initialRTI?.status === 'in-progress' && alarmSession?.inspections?.initialRTI?.sessionId
-                      ? 'In Progress'  // Inspection is being performed
-                      : alarmSession?.workflow?.phases?.initialRTI?.status === 'completed' && alarmSession?.inspections?.initialRTI?.sessionId
-                        ? 'Click to Open'  // Inspection is completed
-                        : alarmSession?.workflow?.phases?.initialRTI?.status === 'in-progress'
-                          ? 'Generating...'  // Generating but no inspection yet
-                          : 'Everdrone'  // Default
+                    : alarmSession?.workflow?.phases?.initialRTI?.status === 'completed'
+                      ? 'Click to Open'  // Inspection is completed
+                      : alarmSession?.inspections?.initialRTI?.sessionId && alarmSession?.inspections?.initialRTI?.progress && alarmSession?.inspections?.initialRTI?.progress !== '0%'
+                        ? 'In Progress'  // Inspection has started (has progress)
+                        : alarmSession?.inspections?.initialRTI?.sessionId
+                          ? 'Click to Open'  // Inspection exists but not started
+                          : alarmSession?.workflow?.phases?.initialRTI?.status === 'in-progress'
+                            ? 'Generating...'  // Generating but no inspection yet
+                            : 'Everdrone'  // Default
                   }
                 </div>
-                {(isCapturing || (alarmSession?.workflow?.phases?.initialRTI?.status === 'in-progress' && alarmSession?.inspections?.initialRTI)) && (
+                {(isCapturing || (alarmSession?.inspections?.initialRTI?.progress && alarmSession?.inspections?.initialRTI?.progress !== '0%')) && (
                   <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
                     <div className="bg-blue-500 h-1 rounded-full transition-all" style={{ 
                       width: isCapturing 
                         ? `${captureProgress}%` 
-                        : alarmSession?.inspections?.initialRTI?.progress || '30%'
+                        : alarmSession?.inspections?.initialRTI?.progress || '0%'
                     }} />
                   </div>
                 )}
@@ -395,6 +445,20 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                     <div className="text-xs opacity-75 mt-0.5">Standard inspection</div>
                   </button>
                   <button 
+                    onClick={() => handleDecision('basic-extended')}
+                    disabled={decisionLocked || alarmSession?.workflow?.phases?.initialRTI?.status !== 'completed'}
+                    className={`w-full text-sm px-3 py-2 rounded-lg font-medium transition-all ${
+                      selectedDecision === 'basic-extended' 
+                        ? 'bg-blue-500 text-white shadow-md cursor-default' 
+                        : decisionLocked || alarmSession?.workflow?.phases?.initialRTI?.status !== 'completed'
+                        ? 'bg-gray-100 border-2 border-gray-300 text-gray-400 cursor-not-allowed'
+                        : 'bg-white border-2 border-blue-400 text-blue-700 hover:bg-blue-50 cursor-pointer'
+                    }`}
+                  >
+                    Basic TI + Additional
+                    <div className="text-xs opacity-75 mt-0.5">With extra tasks</div>
+                  </button>
+                  <button 
                     onClick={() => handleDecision('onsite')}
                     disabled={decisionLocked || alarmSession?.workflow?.phases?.initialRTI?.status !== 'completed'}
                     className={`w-full text-sm px-3 py-2 rounded-lg font-medium transition-all ${
@@ -429,25 +493,65 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                   <div>Select a route to continue</div>
                 </div>
               </div>
-            ) : selectedDecision === 'basic' ? (
+            ) : selectedDecision === 'basic' || selectedDecision === 'basic-extended' ? (
               <>
                 {/* Basic TI Path */}
                 <div ref={getActivePhase() === 'basic-ti' ? activeElementRef : undefined} className="flex flex-col items-center">
                   <div className="text-xs text-gray-500 mb-1">15:15</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 ${
-                    getPhaseStyle(getActivePhase() === 'basic-ti' ? 'active' : 'pending')
-                  }`}>
-                    {getActivePhase() === 'basic-ti' ? (
-                      <Loader className="w-5 h-5 mx-auto mb-1 text-blue-600 animate-spin" />
-                    ) : (
-                      <Wrench className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
+                  <div 
+                    className={`w-36 p-3 rounded-lg border-2 ${
+                      alarmSession?.inspections?.basicTI?.sessionId ? 'cursor-pointer hover:shadow-lg' : 'cursor-not-allowed'
+                    } ${
+                      getPhaseStyle(
+                        alarmSession?.workflow?.phases?.basicTI?.status === 'completed' ? 'completed' : 
+                        alarmSession?.workflow?.phases?.basicTI?.status === 'in-progress' ? 'active' : 'pending'
+                      )
+                    }`}
+                    onClick={() => {
+                      // Only allow click if inspection exists
+                      if (alarmSession?.inspections?.basicTI?.path) {
+                        const sessionPath = alarmSession.inspections.basicTI.path;
+                        const [hangar, sessionName] = sessionPath.split('/');
+                        // Navigate to the inspection in the same tab
+                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=basic-ti-inspection`;
+                      }
+                    }}
+                  >
+                    <div className="flex justify-center mb-1">
+                      {alarmSession?.workflow?.phases?.basicTI?.status === 'in-progress' && !alarmSession?.inspections?.basicTI ? (
+                        <Loader className="w-5 h-5 text-blue-600 animate-spin" />
+                      ) : (
+                        <Wrench className={`w-5 h-5 ${
+                          getIconColor(
+                            alarmSession?.workflow?.phases?.basicTI?.status === 'completed' ? 'completed' : 
+                            alarmSession?.workflow?.phases?.basicTI?.status === 'in-progress' ? 'active' : 'pending'
+                          )
+                        }`} />
+                      )}
+                    </div>
+                    <div className="text-xs font-semibold text-center">
+                      {selectedDecision === 'basic-extended' ? 'Basic TI + Additional' : 'Basic TI'}
+                    </div>
+                    <div className="text-xs text-center mt-1 text-green-600">
+                      {alarmSession?.workflow?.phases?.basicTI?.status === 'completed'
+                        ? 'Click to Open'
+                        : alarmSession?.inspections?.basicTI?.sessionId && alarmSession?.inspections?.basicTI?.progress && alarmSession?.inspections?.basicTI?.progress !== '0%'
+                          ? 'In Progress'
+                          : alarmSession?.inspections?.basicTI?.sessionId
+                            ? 'Click to Open'
+                            : alarmSession?.workflow?.phases?.basicTI?.status === 'in-progress'
+                              ? 'Generating...'
+                              : 'Remote Crew'
+                      }
+                    </div>
+                    {selectedDecision === 'basic-extended' && (
+                      <div className="text-xs text-center text-blue-600">With added tasks</div>
                     )}
-                    <div className="text-xs font-semibold text-center">Basic TI</div>
-                    <div className="text-xs text-center mt-1 text-green-600">Remote Crew</div>
-                    <div className="text-xs text-center text-blue-600">Everdrone monitors</div>
-                    {getActivePhase() === 'basic-ti' && (
+                    {(alarmSession?.inspections?.basicTI?.progress && alarmSession?.inspections?.basicTI?.progress !== '0%') && (
                       <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
-                        <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '65%' }} />
+                        <div className="bg-blue-500 h-1 rounded-full transition-all" style={{ 
+                          width: alarmSession?.inspections?.basicTI?.progress || '0%'
+                        }} />
                       </div>
                     )}
                   </div>
@@ -457,10 +561,83 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
 
                 <div className="flex flex-col items-center">
                   <div className="text-xs text-gray-500 mb-1">16:00</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 ${getPhaseStyle('pending')}`}>
-                    <Camera className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
+                  <div 
+                    className={`w-36 p-3 rounded-lg border-2 ${
+                      alarmSession?.workflow?.phases?.basicTI?.status === 'completed' && !alarmSession?.inspections?.fullRTI?.sessionId
+                        ? 'cursor-pointer hover:shadow-lg hover:border-blue-400'
+                        : alarmSession?.inspections?.fullRTI?.sessionId 
+                          ? 'cursor-pointer hover:shadow-lg' 
+                          : 'cursor-not-allowed'
+                    } ${
+                      getPhaseStyle(
+                        alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' ? 'completed' : 
+                        alarmSession?.workflow?.phases?.fullRTI?.status === 'in-progress' ? 'active' : 'pending'
+                      )
+                    }`}
+                    onClick={async () => {
+                      // Trigger Full RTI creation if Basic TI is complete and Full RTI hasn't started
+                      if (alarmSession?.workflow?.phases?.basicTI?.status === 'completed' && !alarmSession?.inspections?.fullRTI?.sessionId) {
+                        try {
+                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-full-rti`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            }
+                          });
+                          if (response.ok) {
+                            console.log('Full Remote TI generation started');
+                          }
+                        } catch (error) {
+                          console.error('Error starting Full Remote TI:', error);
+                        }
+                      }
+                      // Navigate to inspection if it exists
+                      else if (alarmSession?.inspections?.fullRTI?.path) {
+                        const sessionPath = alarmSession.inspections.fullRTI.path;
+                        const [hangar, sessionName] = sessionPath.split('/');
+                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=full-remote-ti-inspection`;
+                      }
+                    }}
+                  >
+                    <div className="flex justify-center mb-1">
+                      {alarmSession?.workflow?.phases?.fullRTI?.status === 'in-progress' && !alarmSession?.inspections?.fullRTI ? (
+                        <Loader className="w-5 h-5 text-blue-600 animate-spin" />
+                      ) : (
+                        <Camera className={`w-5 h-5 ${
+                          getIconColor(
+                            alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' ? 'completed' : 
+                            alarmSession?.workflow?.phases?.fullRTI?.status === 'in-progress' ? 'active' : 
+                            alarmSession?.workflow?.phases?.basicTI?.status === 'completed' ? 'active' : 'pending'
+                          )
+                        }`} />
+                      )}
+                    </div>
                     <div className="text-xs font-semibold text-center">Full Remote TI</div>
-                    <div className="text-xs text-center mt-1 text-blue-600">Everdrone</div>
+                    <div className="text-xs text-center mt-1 text-blue-600">
+                      {isCapturingFull
+                        ? `Capturing... ${Math.floor(captureProgressFull)}%`
+                        : alarmSession?.workflow?.phases?.fullRTI?.status === 'completed'
+                          ? 'Click to Open'
+                          : alarmSession?.inspections?.fullRTI?.sessionId && alarmSession?.inspections?.fullRTI?.progress && alarmSession?.inspections?.fullRTI?.progress !== '0%'
+                            ? 'In Progress'
+                            : alarmSession?.inspections?.fullRTI?.sessionId
+                              ? 'Click to Open'
+                              : alarmSession?.workflow?.phases?.fullRTI?.status === 'in-progress'
+                                ? 'Generating...'
+                                : alarmSession?.workflow?.phases?.basicTI?.status === 'completed'
+                                  ? 'Click to Start'
+                                  : 'Everdrone'
+                      }
+                    </div>
+                    {(isCapturingFull || (alarmSession?.inspections?.fullRTI?.progress && alarmSession?.inspections?.fullRTI?.progress !== '0%')) && (
+                      <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
+                        <div className="bg-blue-500 h-1 rounded-full transition-all" style={{ 
+                          width: isCapturingFull 
+                            ? `${captureProgressFull}%` 
+                            : alarmSession?.inspections?.fullRTI?.progress || '0%'
+                        }} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -468,10 +645,52 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
 
                 <div className="flex flex-col items-center">
                   <div className="text-xs text-gray-500 mb-1">16:30</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 ${getPhaseStyle('pending')}`}>
-                    <CheckCircle className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
+                  <div 
+                    className={`w-36 p-3 rounded-lg border-2 ${
+                      getPhaseStyle(
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'completed' ? 'completed' :
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'in-progress' ? 'active' :
+                        alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' ? 'active' : 'pending'
+                      )
+                    } ${
+                      alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' && 
+                      !alarmSession?.workflow?.phases?.clearArea?.status
+                        ? 'cursor-pointer hover:shadow-lg transition-all' : ''
+                    }`}
+                    onClick={async () => {
+                      // Show confirm button if Full RTI is complete and area not cleared
+                      if (alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' && 
+                          !alarmSession?.workflow?.phases?.clearArea?.status) {
+                        try {
+                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          });
+                          if (response.ok) {
+                            console.log('Area cleared');
+                          }
+                        } catch (error) {
+                          console.error('Error clearing area:', error);
+                        }
+                      }
+                    }}
+                  >
+                    <CheckCircle className={`w-5 h-5 mx-auto mb-1 ${
+                      getIconColor(
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'completed' ? 'completed' :
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'in-progress' ? 'active' :
+                        alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' ? 'active' : 'pending'
+                      )
+                    }`} />
                     <div className="text-xs font-semibold text-center">Area Ready</div>
-                    <div className="text-xs text-center mt-1 opacity-75">Operational</div>
+                    <div className="text-xs text-center mt-1 opacity-75">
+                      {alarmSession?.workflow?.phases?.clearArea?.status === 'completed' 
+                        ? 'Operational'
+                        : alarmSession?.workflow?.phases?.fullRTI?.status === 'completed'
+                          ? 'Confirm Open'
+                          : 'Pending'
+                      }
+                    </div>
                   </div>
                 </div>
               </>
@@ -480,33 +699,125 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                 {/* Onsite TI Path */}
                 <div className="flex flex-col items-center">
                   <div className="text-xs text-gray-500 mb-1">15:15</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 bg-orange-50 border-orange-300 text-orange-900`}>
-                    <Wrench className={`w-5 h-5 mx-auto mb-1 text-orange-600`} />
+                  <div 
+                    className={`w-36 p-3 rounded-lg border-2 ${
+                      getPhaseStyle(
+                        alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' ? 'completed' :
+                        alarmSession?.workflow?.phases?.onsiteTI?.status === 'in-progress' ? 'active' :
+                        alarmSession?.workflow?.routeDecision === 'onsite' ? 'active' : 'pending'
+                      )
+                    } ${
+                      alarmSession?.workflow?.routeDecision === 'onsite' && 
+                      !alarmSession?.inspections?.onsiteTI?.sessionId
+                        ? 'cursor-pointer hover:shadow-lg transition-all' : 
+                      alarmSession?.inspections?.onsiteTI?.sessionId
+                        ? 'cursor-pointer hover:shadow-lg transition-all' : ''
+                    }`}
+                    onClick={async () => {
+                      // Trigger Onsite TI creation if route is selected and inspection not created
+                      if (alarmSession?.workflow?.routeDecision === 'onsite' && !alarmSession?.inspections?.onsiteTI?.sessionId) {
+                        try {
+                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-onsite-ti`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          });
+                          if (response.ok) {
+                            console.log('Onsite TI generation started');
+                          }
+                        } catch (error) {
+                          console.error('Error starting Onsite TI:', error);
+                        }
+                      }
+                      // Navigate to inspection if it exists
+                      else if (alarmSession?.inspections?.onsiteTI?.path) {
+                        const sessionPath = alarmSession.inspections.onsiteTI.path;
+                        const [hangar, sessionName] = sessionPath.split('/');
+                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=onsite-ti-inspection`;
+                      }
+                    }}
+                  >
+                    <Wrench className={`w-5 h-5 mx-auto mb-1 ${
+                      getIconColor(
+                        alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' ? 'completed' :
+                        alarmSession?.workflow?.phases?.onsiteTI?.status === 'in-progress' ? 'active' :
+                        alarmSession?.workflow?.routeDecision === 'onsite' ? 'active' : 'pending'
+                      )
+                    }`} />
                     <div className="text-xs font-semibold text-center">Onsite TI</div>
-                    <div className="text-xs text-center mt-1 text-orange-600">Everdrone</div>
-                    <div className="text-xs text-center text-gray-600">Physical inspection</div>
+                    <div className="text-xs text-center mt-1 text-orange-600">
+                      {alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed'
+                        ? 'Click to Open'
+                        : alarmSession?.inspections?.onsiteTI?.sessionId && alarmSession?.inspections?.onsiteTI?.progress && alarmSession?.inspections?.onsiteTI?.progress !== '0%'
+                          ? `In Progress - ${alarmSession?.inspections?.onsiteTI?.progress}`
+                          : alarmSession?.inspections?.onsiteTI?.sessionId
+                            ? 'Click to Open'
+                            : alarmSession?.workflow?.phases?.onsiteTI?.status === 'in-progress'
+                              ? 'Generating...'
+                              : alarmSession?.workflow?.routeDecision === 'onsite'
+                                ? 'Click to Start'
+                                : 'Pending'
+                      }
+                    </div>
+                    {alarmSession?.inspections?.onsiteTI?.progress && alarmSession?.inspections?.onsiteTI?.progress !== '0%' && (
+                      <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
+                        <div className="bg-orange-500 h-1 rounded-full transition-all" style={{ 
+                          width: alarmSession?.inspections?.onsiteTI?.progress || '0%'
+                        }} />
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <ChevronRight className="w-4 h-4 text-gray-300 mt-10" />
 
                 <div className="flex flex-col items-center">
-                  <div className="text-xs text-gray-500 mb-1">17:00</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 ${getPhaseStyle('pending')}`}>
-                    <Camera className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
-                    <div className="text-xs font-semibold text-center">Full Remote TI</div>
-                    <div className="text-xs text-center mt-1 text-blue-600">Everdrone</div>
-                  </div>
-                </div>
-
-                <ChevronRight className="w-4 h-4 text-gray-300 mt-10" />
-
-                <div className="flex flex-col items-center">
-                  <div className="text-xs text-gray-500 mb-1">17:30</div>
-                  <div className={`w-36 p-3 rounded-lg border-2 ${getPhaseStyle('pending')}`}>
-                    <CheckCircle className={`w-5 h-5 mx-auto mb-1 ${getIconColor('pending')}`} />
+                  <div className="text-xs text-gray-500 mb-1">16:30</div>
+                  <div 
+                    className={`w-36 p-3 rounded-lg border-2 ${
+                      getPhaseStyle(
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'completed' ? 'completed' :
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'in-progress' ? 'active' :
+                        alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' ? 'active' : 'pending'
+                      )
+                    } ${
+                      alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' && 
+                      !alarmSession?.workflow?.phases?.clearArea?.status
+                        ? 'cursor-pointer hover:shadow-lg transition-all' : ''
+                    }`}
+                    onClick={async () => {
+                      // Show confirm button if Onsite TI is complete and area not cleared
+                      if (alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' && 
+                          !alarmSession?.workflow?.phases?.clearArea?.status) {
+                        try {
+                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                          });
+                          if (response.ok) {
+                            console.log('Area cleared');
+                          }
+                        } catch (error) {
+                          console.error('Error clearing area:', error);
+                        }
+                      }
+                    }}
+                  >
+                    <CheckCircle className={`w-5 h-5 mx-auto mb-1 ${
+                      getIconColor(
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'completed' ? 'completed' :
+                        alarmSession?.workflow?.phases?.clearArea?.status === 'in-progress' ? 'active' :
+                        alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' ? 'active' : 'pending'
+                      )
+                    }`} />
                     <div className="text-xs font-semibold text-center">Area Ready</div>
-                    <div className="text-xs text-center mt-1 opacity-75">Operational</div>
+                    <div className="text-xs text-center mt-1 opacity-75">
+                      {alarmSession?.workflow?.phases?.clearArea?.status === 'completed' 
+                        ? 'Operational'
+                        : alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed'
+                          ? 'Confirm Open'
+                          : 'Pending'
+                      }
+                    </div>
                   </div>
                 </div>
               </>

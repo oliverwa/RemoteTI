@@ -1710,6 +1710,51 @@ export default function MultiCamInspector({
               completedTime: result.completionStatus.completedAt
             }));
             addLog("🎉 Inspection completed and saved!");
+            
+            // Notify alarm session that inspection is complete
+            try {
+              const progressResponse = await fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  sessionPath: currentSessionName,
+                  progress: result.progress.completed / result.progress.total * 100,
+                  tasksCompleted: result.progress.completed,
+                  totalTasks: result.progress.total,
+                  completed: true
+                })
+              });
+              
+              if (progressResponse.ok) {
+                addLog("✅ Alarm session updated with completion status");
+              } else {
+                addLog("⚠️ Failed to update alarm session");
+              }
+            } catch (error) {
+              console.error('Error updating alarm session:', error);
+              addLog(`⚠️ Error updating alarm session: ${error.message}`);
+            }
+          } else {
+            // Update progress for alarm session
+            try {
+              await fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  sessionPath: currentSessionName,
+                  progress: result.progress.completed / result.progress.total * 100,
+                  tasksCompleted: result.progress.completed,
+                  totalTasks: result.progress.total,
+                  completed: false
+                })
+              });
+            } catch (error) {
+              console.error('Error updating alarm session progress:', error);
+            }
           }
         } else {
           const errorText = await response.text();
@@ -1744,6 +1789,31 @@ export default function MultiCamInspector({
                 ...prevMeta,
                 completedTime: new Date().toISOString()
               }));
+              
+              // Notify alarm session that inspection is complete when all tasks are done
+              if (currentSessionName) {
+                const completedTasks = items.filter(item => item.status).length;
+                const totalTasks = items.length;
+                fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    sessionPath: currentSessionName,
+                    progress: 100,
+                    tasksCompleted: completedTasks,
+                    totalTasks: totalTasks,
+                    completed: true
+                  })
+                }).then(response => {
+                  if (response.ok) {
+                    addLog("✅ Alarm session marked as complete");
+                  }
+                }).catch(error => {
+                  console.error('Error updating alarm session:', error);
+                });
+              }
             }
           }
           return next;

@@ -70,16 +70,20 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     
                     if (phases.flight?.status === 'in-progress') {
                       state = 'alarm';
-                      currentPhase = 'Flight in progress';
+                      currentPhase = 'Drone responding to alarm';
                     } else if (phases.landing?.status === 'in-progress') {
                       state = 'post_flight';
-                      currentPhase = 'Landing';
+                      currentPhase = 'Drone landing';
                     } else if (phases.telemetryAnalysis?.status === 'in-progress') {
                       state = 'post_flight';
-                      currentPhase = 'Analyzing telemetry';
+                      currentPhase = 'Analyzing flight data';
                     } else if (phases.initialRTI?.status === 'in-progress') {
                       state = 'inspection';
-                      currentPhase = session.inspections?.initialRTI ? 'Initial Remote TI Ready' : 'Generating Initial RTI';
+                      currentPhase = session.inspections?.initialRTI 
+                        ? (session.inspections.initialRTI.progress && session.inspections.initialRTI.progress !== '0%' 
+                          ? `Initial inspection ${session.inspections.initialRTI.progress} complete`
+                          : 'Initial inspection ready')
+                        : 'Capturing inspection images';
                       activeInspection = {
                         type: 'Initial Remote TI',
                         progress: 10,
@@ -87,15 +91,27 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       };
                     } else if (phases.basicTI?.status === 'in-progress' || phases.onsiteTI?.status === 'in-progress') {
                       state = 'inspection';
-                      currentPhase = phases.basicTI?.status === 'in-progress' ? 'Basic TI' : 'Onsite TI';
+                      const isBasic = phases.basicTI?.status === 'in-progress';
+                      const inspection = isBasic ? session.inspections?.basicTI : session.inspections?.onsiteTI;
+                      currentPhase = isBasic 
+                        ? (inspection?.progress && inspection.progress !== '0%' 
+                          ? `Basic inspection ${inspection.progress} complete`
+                          : 'Performing basic inspection')
+                        : (inspection?.progress && inspection.progress !== '0%'
+                          ? `Onsite inspection ${inspection.progress} complete`  
+                          : 'Technician performing onsite inspection');
                       activeInspection = {
-                        type: currentPhase,
+                        type: isBasic ? 'Basic TI' : 'Onsite TI',
                         progress: 50,
-                        assignedTo: phases.basicTI?.status === 'in-progress' ? 'Remote Crew' : 'Everdrone'
+                        assignedTo: isBasic ? 'Remote Crew' : 'Everdrone'
                       };
                     } else if (phases.fullRTI?.status === 'in-progress') {
                       state = 'inspection';
-                      currentPhase = 'Full Remote TI';
+                      currentPhase = session.inspections?.fullRTI
+                        ? (session.inspections.fullRTI.progress && session.inspections.fullRTI.progress !== '0%'
+                          ? `Full inspection ${session.inspections.fullRTI.progress} complete`
+                          : 'Full inspection ready')
+                        : 'Capturing full inspection images';
                       activeInspection = {
                         type: 'Full Remote TI',
                         progress: 30,
@@ -103,23 +119,39 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       };
                     } else if (phases.clearArea?.status === 'in-progress') {
                       state = 'verification';
-                      currentPhase = 'Clearing area';
+                      currentPhase = 'Confirming area is safe';
                     } else if (phases.initialRTI?.status === 'completed' && !session.workflow?.routeDecision) {
                       // Initial RTI completed but no route decision yet
                       state = 'inspection';
-                      currentPhase = 'Awaiting route decision';
+                      currentPhase = 'Choose inspection route';
                     } else if (phases.initialRTI?.status === 'completed' && phases.basicTI?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
                       // Route selected but Basic TI not started
                       state = 'inspection';
-                      currentPhase = 'Ready for Basic TI';
+                      currentPhase = 'Basic inspection pending';
                     } else if (phases.initialRTI?.status === 'completed' && phases.onsiteTI?.status === 'pending' && session.workflow?.routeDecision === 'onsite') {
                       // Route selected but Onsite TI not started
                       state = 'inspection';
-                      currentPhase = 'Ready for Onsite TI';
+                      currentPhase = 'Awaiting technician dispatch';
+                    } else if (phases.basicTI?.status === 'completed' && !phases.fullRTI?.status && session.workflow?.routeDecision === 'basic') {
+                      // Basic TI completed but Full RTI not started
+                      state = 'inspection';
+                      currentPhase = 'Full inspection required';
+                    } else if (phases.fullRTI?.status === 'completed' && !phases.clearArea?.status) {
+                      // Full RTI completed but area not cleared yet
+                      state = 'verification';
+                      currentPhase = 'Confirm area is safe';
+                    } else if (phases.onsiteTI?.status === 'completed' && !phases.clearArea?.status) {
+                      // Onsite TI completed but area not cleared yet
+                      state = 'verification';
+                      currentPhase = 'Confirm area is safe';
                     } else if (phases.clearArea?.status === 'completed') {
-                      // Everything completed
+                      // Everything completed - NOW the hangar is operational
                       state = 'standby';
-                      currentPhase = 'Alarm resolved';
+                      currentPhase = 'Area operational';
+                    } else {
+                      // Default state when workflow is active but not in a specific phase
+                      state = 'inspection';
+                      currentPhase = 'Inspection workflow active';
                     }
                     
                     // Calculate relative time
