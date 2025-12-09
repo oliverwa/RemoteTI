@@ -1697,17 +1697,32 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
               });
             }
             
-            // Update alarm session
+            // Update alarm session - initially without path to show progress bar
             alarmSession.inspections.fullRTI = {
               sessionId: sessionName,
-              path: `${hangarId}/${sessionName}`,
               createdAt: new Date().toISOString(),
               type: 'full-remote-ti-inspection',
-              progress: '0%'
+              progress: '0%',
+              capturing: true  // Flag to indicate capture in progress
             };
             
             // Save updated session
             fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+            
+            // Set the path after a delay to allow progress bar to complete
+            setTimeout(() => {
+              try {
+                const updatedSession = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+                if (updatedSession.inspections?.fullRTI) {
+                  updatedSession.inspections.fullRTI.path = `${hangarId}/${sessionName}`;
+                  delete updatedSession.inspections.fullRTI.capturing;
+                  fs.writeFileSync(sessionPath, JSON.stringify(updatedSession, null, 2));
+                  log('info', `Full RTI path set for ${hangarId}: ${hangarId}/${sessionName}`);
+                }
+              } catch (err) {
+                log('error', 'Failed to update Full RTI path:', err.message);
+              }
+            }, 38000); // Set path after 38 seconds (allowing progress bar to nearly complete)
             
             const result = {
               success: true,
@@ -1882,6 +1897,87 @@ app.post('/api/alarm-session/:hangarId/generate-onsite-ti', async (req, res) => 
   } catch (error) {
     log('error', 'Failed to generate Onsite TI:', error.message);
     res.status(500).json({ error: 'Failed to generate Onsite TI' });
+  }
+});
+
+// Update Onsite TI progress
+app.post('/api/alarm-session/:hangarId/update-onsite-progress', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const { progress } = req.body;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    // Find latest alarm session for this hangar
+    const sessionFiles = fs.readdirSync(alarmsDir)
+      .filter(f => f.startsWith(`${hangarId}_`) && f.endsWith('.json'))
+      .sort((a, b) => b.localeCompare(a));
+    
+    if (sessionFiles.length === 0) {
+      return res.status(404).json({ error: 'No alarm session found' });
+    }
+    
+    const latestFile = sessionFiles[0];
+    const sessionPath = path.join(alarmsDir, latestFile);
+    const alarmSession = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    
+    // Update Onsite TI progress
+    if (alarmSession.inspections?.onsiteTI) {
+      alarmSession.inspections.onsiteTI.progress = progress;
+      alarmSession.inspections.onsiteTI.lastUpdated = new Date().toISOString();
+      
+      fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+      
+      log('info', `Updated Onsite TI progress for ${hangarId}: ${progress}`);
+      res.json({ success: true, progress });
+    } else {
+      res.status(404).json({ error: 'Onsite TI not found in session' });
+    }
+  } catch (error) {
+    log('error', 'Failed to update Onsite TI progress:', error.message);
+    res.status(500).json({ error: 'Failed to update progress' });
+  }
+});
+
+// Complete Onsite TI
+app.post('/api/alarm-session/:hangarId/complete-onsite-ti', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const { progress, completedBy, completedAt } = req.body;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    // Find latest alarm session for this hangar
+    const sessionFiles = fs.readdirSync(alarmsDir)
+      .filter(f => f.startsWith(`${hangarId}_`) && f.endsWith('.json'))
+      .sort((a, b) => b.localeCompare(a));
+    
+    if (sessionFiles.length === 0) {
+      return res.status(404).json({ error: 'No alarm session found' });
+    }
+    
+    const latestFile = sessionFiles[0];
+    const sessionPath = path.join(alarmsDir, latestFile);
+    const alarmSession = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    
+    // Mark Onsite TI as completed
+    if (alarmSession.workflow?.phases?.onsiteTI) {
+      alarmSession.workflow.phases.onsiteTI.status = 'completed';
+      alarmSession.workflow.phases.onsiteTI.completedTime = completedAt || new Date().toISOString();
+    }
+    
+    if (alarmSession.inspections?.onsiteTI) {
+      alarmSession.inspections.onsiteTI.progress = progress || '100%';
+      alarmSession.inspections.onsiteTI.completedBy = completedBy;
+      alarmSession.inspections.onsiteTI.completedAt = completedAt || new Date().toISOString();
+    }
+    
+    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    
+    log('info', `Completed Onsite TI for ${hangarId}`);
+    res.json({ success: true, message: 'Onsite TI marked as completed' });
+    
+  } catch (error) {
+    log('error', 'Failed to complete Onsite TI:', error.message);
+    res.status(500).json({ error: 'Failed to complete Onsite TI' });
   }
 });
 

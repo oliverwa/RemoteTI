@@ -19,6 +19,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState<string>('');
   const [inspectionConfig, setInspectionConfig] = useState<InspectionConfig | null>(null);
   const [showDashboard, setShowDashboard] = useState(true);
+  const [startedFromDashboard, setStartedFromDashboard] = useState(false);
   
   // Check URL parameters on mount
   useEffect(() => {
@@ -27,12 +28,21 @@ function App() {
     const hangar = urlParams.get('hangar');
     const session = urlParams.get('session');
     const type = urlParams.get('type');
+    const returnToDashboard = urlParams.get('returnToDashboard');
     
-    if (action === 'load-session' && hangar && session && type) {
+    if (returnToDashboard === 'true') {
+      // Auto-login when returning from inspection completion
+      setIsAuthenticated(true);
+      setCurrentUser('Inspector');
+      setShowDashboard(true);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (action === 'load-session' && hangar && session && type) {
       // Auto-login for direct session links
       setIsAuthenticated(true);
       setCurrentUser('Inspector');
       setShowDashboard(false);
+      setStartedFromDashboard(true); // Mark that this came from dashboard
       
       // Set up the inspection config to load the session
       const sessionData = `${hangar}|${session}`;
@@ -69,6 +79,10 @@ function App() {
       drone,
       action 
     });
+    // Sessions from dashboard always use 'load-session' action
+    if (action === 'load-session') {
+      setStartedFromDashboard(true);
+    }
   };
 
   const handleBackToSelection = () => {
@@ -116,9 +130,9 @@ function App() {
         <div>
           {/* Minimal back button in bottom-left corner */}
           <button
-            onClick={handleBackToSelection}
+            onClick={startedFromDashboard ? handleBackToDashboard : handleBackToSelection}
             className="fixed bottom-4 left-4 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all"
-            title="Back to selection"
+            title={startedFromDashboard ? "Back to dashboard" : "Back to selection"}
           >
             ← Back
           </button>

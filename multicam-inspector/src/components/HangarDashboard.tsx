@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle } from 'lucide-react';
-import HangarWorkflowView from './HangarWorkflowView';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle } from 'lucide-react';
 
 interface HangarDashboardProps {
   currentUser: string;
@@ -34,7 +33,6 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [hangarStatuses, setHangarStatuses] = useState<HangarStatusData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
-  const [showWorkflow, setShowWorkflow] = useState(false);
 
   // Load actual alarm session states for each hangar
   useEffect(() => {
@@ -79,11 +77,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       currentPhase = 'Analyzing flight data';
                     } else if (phases.initialRTI?.status === 'in-progress') {
                       state = 'inspection';
-                      currentPhase = session.inspections?.initialRTI 
-                        ? (session.inspections.initialRTI.progress && session.inspections.initialRTI.progress !== '0%' 
-                          ? `Initial inspection ${session.inspections.initialRTI.progress} complete`
-                          : 'Initial inspection ready')
-                        : 'Capturing inspection images';
+                      currentPhase = session.inspections?.initialRTI?.path
+                        ? 'Initial inspection ready'
+                        : 'Capturing initial RTI images...';
                       activeInspection = {
                         type: 'Initial Remote TI',
                         progress: 10,
@@ -107,11 +103,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       };
                     } else if (phases.fullRTI?.status === 'in-progress') {
                       state = 'inspection';
-                      currentPhase = session.inspections?.fullRTI
-                        ? (session.inspections.fullRTI.progress && session.inspections.fullRTI.progress !== '0%'
-                          ? `Full inspection ${session.inspections.fullRTI.progress} complete`
-                          : 'Full inspection ready')
-                        : 'Capturing full inspection images';
+                      currentPhase = session.inspections?.fullRTI?.path
+                        ? 'Full inspection ready'
+                        : 'Capturing full RTI images...';
                       activeInspection = {
                         type: 'Full Remote TI',
                         progress: 30,
@@ -203,6 +197,519 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     const interval = setInterval(fetchHangarStatuses, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  // Mini workflow timeline component  
+  const WorkflowTimeline = ({ alarmSession, hangarId, onOpenWorkflow }: any) => {
+    const phases = alarmSession?.workflow?.phases || {};
+    const routeDecision = alarmSession?.workflow?.routeDecision;
+    const inspections = alarmSession?.inspections || {};
+    const [captureStartTimes, setCaptureStartTimes] = useState<{ [key: string]: number }>({});
+    const [, forceUpdate] = useState(0);
+    
+    // Calculate progress based on elapsed time
+    const getElapsedProgress = (startTime: number, duration: number): number => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min((elapsed / duration) * 100, 95);
+      return Math.floor(progress);
+    };
+    
+    // Force re-render every 500ms to update progress smoothly
+    React.useEffect(() => {
+      const interval = setInterval(() => {
+        const hasActiveCapture = Object.keys(captureStartTimes).length > 0;
+        if (hasActiveCapture) {
+          forceUpdate(prev => prev + 1);
+        }
+      }, 500);
+      return () => clearInterval(interval);
+    }, [captureStartTimes]);
+    
+    // Handle Initial RTI capture progress
+    React.useEffect(() => {
+      if (phases.initialRTI?.status === 'in-progress' && !inspections.initialRTI?.path) {
+        const key = `${hangarId}-initialRTI`;
+        if (!captureStartTimes[key]) {
+          setCaptureStartTimes(prev => ({ ...prev, [key]: Date.now() }));
+        }
+      } else if (inspections.initialRTI?.path) {
+        // Clear when complete
+        const key = `${hangarId}-initialRTI`;
+        if (captureStartTimes[key]) {
+          setCaptureStartTimes(prev => {
+            const newTimes = { ...prev };
+            delete newTimes[key];
+            return newTimes;
+          });
+        }
+      }
+    }, [phases.initialRTI?.status, inspections.initialRTI?.path, hangarId]);
+    
+    // Handle Full RTI capture progress  
+    React.useEffect(() => {
+      if (phases.fullRTI?.status === 'in-progress' && !inspections.fullRTI?.path) {
+        const key = `${hangarId}-fullRTI`;
+        if (!captureStartTimes[key]) {
+          setCaptureStartTimes(prev => ({ ...prev, [key]: Date.now() }));
+        }
+      } else if (inspections.fullRTI?.path) {
+        // Clear when complete
+        const key = `${hangarId}-fullRTI`;
+        if (captureStartTimes[key]) {
+          setCaptureStartTimes(prev => {
+            const newTimes = { ...prev };
+            delete newTimes[key];
+            return newTimes;
+          });
+        }
+      }
+    }, [phases.fullRTI?.status, inspections.fullRTI?.path, hangarId]);
+    
+    // Determine which workflow path to show
+    const isOnsitePath = routeDecision === 'onsite';
+    const isBasicPath = routeDecision === 'basic';
+    
+    // Helper to get progress percentage from inspection
+    const getProgress = (inspectionData: any) => {
+      if (!inspectionData?.progress) return 0;
+      const match = inspectionData.progress.match(/(\d+)%/);
+      return match ? parseInt(match[1]) : 0;
+    };
+    
+    // Define ALL workflow steps (show full path)
+    const workflowSteps: Array<{
+      id: string;
+      icon: any;
+      label: string;
+      status?: string;
+      progress?: number;
+      inspectionPath?: string;
+      highlight?: boolean;
+      isAlternative?: boolean;
+      routeType?: 'basic' | 'onsite';
+    }> = [
+      { id: 'flight', icon: Plane, label: 'Flight', status: phases.flight?.status },
+      { id: 'landing', icon: Navigation, label: 'Land', status: phases.landing?.status },
+      { id: 'telemetryAnalysis', icon: BarChart, label: 'Data', status: phases.telemetryAnalysis?.status },
+      { 
+        id: 'initialRTI', 
+        icon: Camera, 
+        label: 'Initial RTI', 
+        status: phases.initialRTI?.status,
+        progress: captureStartTimes[`${hangarId}-initialRTI`] && !inspections.initialRTI?.path
+          ? getElapsedProgress(captureStartTimes[`${hangarId}-initialRTI`], 30000)
+          : getProgress(inspections.initialRTI),
+        inspectionPath: inspections.initialRTI?.path
+      },
+    ];
+    
+    // Show route decision point when Initial RTI is ready (has path) or complete
+    const initialRTIReady = phases.initialRTI?.status === 'completed' || 
+                           (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.path) ||
+                           (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.progress === '100%');
+    
+    // Always show decision point and possible paths in timeline
+    if (!routeDecision) {
+      if (initialRTIReady) {
+        // Show route decision needed - highlight it as active
+        workflowSteps.push(
+          { id: 'route', icon: AlertCircle, label: 'Decision', status: 'pending', highlight: true }
+        );
+      } else {
+        // Show decision point as pending/grey (not ready yet)
+        workflowSteps.push(
+          { id: 'route', icon: AlertCircle, label: 'Decision', status: 'pending', highlight: false }
+        );
+      }
+      // Show undecided next step
+      workflowSteps.push(
+        { id: 'undecided', icon: HelpCircle, status: 'pending', label: 'Next Step' }
+      );
+    } else {
+      // Route was decided - show as completed
+      workflowSteps.push(
+        { id: 'route', icon: CheckCircle, label: 'Decided', status: 'completed' }
+      );
+    }
+    
+    if (routeDecision) {
+      // Show the chosen path
+      if (isOnsitePath) {
+        workflowSteps.push(
+          { 
+            id: 'onsiteTI', 
+            icon: Wrench, 
+            label: 'Onsite TI', 
+            status: phases.onsiteTI?.status,
+            progress: getProgress(inspections.onsiteTI),
+            inspectionPath: inspections.onsiteTI?.path
+          }
+        );
+      } else if (isBasicPath) {
+        workflowSteps.push(
+          { 
+            id: 'basicTI', 
+            icon: FileCheck, 
+            label: 'Basic TI', 
+            status: phases.basicTI?.status,
+            progress: getProgress(inspections.basicTI),
+            inspectionPath: inspections.basicTI?.path
+          },
+          { 
+            id: 'fullRTI', 
+            icon: Camera, 
+            label: 'Full RTI', 
+            status: phases.fullRTI?.status,
+            progress: captureStartTimes[`${hangarId}-fullRTI`] && !inspections.fullRTI?.path
+              ? getElapsedProgress(captureStartTimes[`${hangarId}-fullRTI`], 30000)
+              : getProgress(inspections.fullRTI),
+            inspectionPath: inspections.fullRTI?.path
+          }
+        );
+      }
+    }
+    
+    workflowSteps.push(
+      { id: 'clearArea', icon: CheckCircle, label: 'Ready to Open', status: phases.clearArea?.status }
+    );
+    
+    // Find current step
+    let currentStepIndex = workflowSteps.findIndex(step => step.status === 'in-progress');
+    if (currentStepIndex === -1) {
+      const lastCompletedIndex = workflowSteps.map((s, i) => s.status === 'completed' ? i : -1)
+        .filter(i => i !== -1)
+        .pop();
+      if (lastCompletedIndex !== undefined && lastCompletedIndex < workflowSteps.length - 1) {
+        currentStepIndex = lastCompletedIndex + 1;
+      }
+    }
+    
+    // Get action button for current phase
+    const getActionButton = () => {
+      // First check for Full RTI trigger when Basic TI is complete but Full RTI not started
+      if (phases.basicTI?.status === 'completed' && (!phases.fullRTI?.status || (phases.fullRTI?.status === 'pending')) && routeDecision === 'basic') {
+        return (
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-full-rti`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  }
+                });
+                if (response.ok) {
+                  // Full RTI generation started
+                }
+              } catch (error) {
+                console.error('Error generating Full RTI:', error);
+              }
+            }}
+            className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors flex items-center justify-center gap-2 animate-pulse"
+          >
+            <Camera className="w-4 h-4" />
+            Start Full Remote TI
+          </button>
+        );
+      }
+      
+      // Check if Initial RTI is capturing images (in-progress but no inspection path yet)
+      if (phases.initialRTI?.status === 'in-progress' && !inspections.initialRTI?.path) {
+        return (
+          <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
+            <RefreshCw className="w-3 h-3 animate-spin" />
+            <span>Capturing Initial RTI images...</span>
+          </div>
+        );
+      }
+      
+      // Show perform inspection button when Initial RTI has a path
+      if (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.path) {
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const [h, s] = inspections.initialRTI.path.split('/');
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=initial-remote-ti-inspection`;
+            }}
+            className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
+          >
+            Perform Initial RTI
+          </button>
+        );
+      }
+      
+      // Check if Full RTI is capturing images (in-progress but no inspection path yet)
+      if (phases.fullRTI?.status === 'in-progress' && !inspections.fullRTI?.path) {
+        return (
+          <div className="mt-3 flex items-center gap-2 text-xs text-gray-600">
+            <RefreshCw className="w-3 h-3 animate-spin" />
+            <span>Capturing Full RTI images...</span>
+          </div>
+        );
+      }
+      
+      // Show perform inspection button when Full RTI has a path
+      if (phases.fullRTI?.status === 'in-progress' && inspections.fullRTI?.path) {
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const [h, s] = inspections.fullRTI.path.split('/');
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=full-remote-ti-inspection`;
+            }}
+            className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
+          >
+            Perform Full RTI
+          </button>
+        );
+      }
+      
+      const currentStep = workflowSteps[currentStepIndex];
+      if (!currentStep) return null;
+      
+      // Check if this is an inspection that needs to be opened
+      if (currentStep.inspectionPath && currentStep.progress !== undefined && currentStep.progress >= 0) {
+        const actionText = currentStep.progress === 0 ? `Perform ${currentStep.label}` : `Continue ${currentStep.label}`;
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const [h, s] = currentStep.inspectionPath!.split('/');
+              const typeMap: any = {
+                'initialRTI': 'initial-remote-ti-inspection',
+                'basicTI': 'basic-ti-inspection',
+                'onsiteTI': 'onsite-ti-inspection',
+                'fullRTI': 'full-remote-ti-inspection'
+              };
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=${typeMap[currentStep.id]}`;
+            }}
+            className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
+          >
+            {actionText}
+          </button>
+        );
+      }
+      
+      // Handle clear area button - show when Full RTI or Onsite TI is complete
+      if ((phases.fullRTI?.status === 'completed' || phases.onsiteTI?.status === 'completed') && 
+          (!phases.clearArea?.status || phases.clearArea?.status === 'pending')) {
+        return (
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  }
+                });
+                if (response.ok) {
+                  // Area cleared successfully
+                }
+              } catch (error) {
+                console.error('Error clearing area:', error);
+              }
+            }}
+            className="mt-3 w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded transition-colors animate-pulse"
+          >
+            Area Ready to Open
+          </button>
+        );
+      }
+      
+      // Handle clear area in progress
+      if (currentStep.id === 'clearArea' && currentStep.status === 'in-progress') {
+        return (
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  }
+                });
+                if (response.ok) {
+                  // Area cleared successfully
+                }
+              } catch (error) {
+                console.error('Error clearing area:', error);
+              }
+            }}
+            className="mt-3 w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-xs font-medium rounded transition-colors"
+          >
+            Area Ready to Open
+          </button>
+        );
+      }
+      
+      // Handle route decision - show buttons directly when available
+      if (currentStep.id === 'route' && currentStep.highlight) {
+        return (
+          <div className="mt-3 space-y-2">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/route-decision`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ route: 'basic' }),
+                    });
+                    if (response.ok) {
+                      // Route set
+                    }
+                  } catch (error) {
+                    console.error('Error setting route:', error);
+                  }
+                }}
+                className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors flex flex-col items-center gap-1"
+              >
+                <FileCheck className="w-4 h-4" />
+                <span>Basic → Full RTI</span>
+              </button>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/route-decision`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ route: 'onsite' }),
+                    });
+                    if (response.ok) {
+                      // Automatically generate Onsite TI after route decision
+                      setTimeout(async () => {
+                        await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-onsite-ti`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          }
+                        });
+                      }, 500); // Small delay to ensure route is saved
+                    }
+                  } catch (error) {
+                    console.error('Error setting route:', error);
+                  }
+                }}
+                className="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded transition-colors flex flex-col items-center gap-1"
+              >
+                <Wrench className="w-4 h-4" />
+                <span>Onsite TI</span>
+              </button>
+            </div>
+          </div>
+        );
+      }
+      
+      return null;
+    };
+    
+    return (
+      <div>
+        <div className="mt-3">
+          {/* Workflow Timeline */}
+          <div className="relative pb-3">
+            {/* Connection line - positioned at fixed height */}
+            <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-200" />
+            
+            {/* Steps container with fixed height alignment */}
+            <div className="relative flex items-start justify-between">
+              {workflowSteps.map((step, index) => {
+                const Icon = step.icon;
+                const isCompleted = step.status === 'completed';
+                const isInProgress = step.status === 'in-progress';
+                const isPending = !step.status || step.status === 'pending';
+                const isCurrent = index === currentStepIndex;
+                const hasProgress = isInProgress && step.progress !== undefined && step.progress > 0;
+                
+                // For route decision point
+                if (step.id === 'route') {
+                  if (step.status === 'completed') {
+                    // Decision made
+                    return (
+                      <div key={step.id} className="flex flex-col items-center z-10">
+                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-[10px] mt-1 text-green-600 font-medium">Decided</span>
+                      </div>
+                    );
+                  } else if (step.highlight) {
+                    // Active decision point - ready to decide
+                    return (
+                      <div key={step.id} className="flex flex-col items-center z-10">
+                        <div className="w-8 h-8 bg-amber-50 border-2 border-amber-400 rounded-full flex items-center justify-center animate-pulse">
+                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                        </div>
+                        <span className="text-[10px] mt-1 text-amber-600 font-medium">Decision</span>
+                      </div>
+                    );
+                  } else {
+                    // Pending decision - not ready yet (keep grey like other pending items)
+                    return (
+                      <div key={step.id} className="flex flex-col items-center z-10">
+                        <div className="w-8 h-8 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center">
+                          <AlertCircle className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <span className="text-[10px] mt-1 text-gray-400">Decision</span>
+                      </div>
+                    );
+                  }
+                }
+                
+                
+                return (
+                  <div key={`${step.id}-${index}`} className="flex flex-col items-center z-10">
+                    {/* Step circle - always at same height */}
+                    <div className={`
+                      w-8 h-8 rounded-full flex items-center justify-center transition-all
+                      ${isCompleted ? 'bg-green-500' : ''}
+                      ${isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
+                      ${isPending ? 'bg-white border-2 border-gray-300' : ''}
+                    `}>
+                      <Icon className={`
+                        w-4 h-4
+                        ${isCompleted || isInProgress ? 'text-white' : 'text-gray-400'}
+                      `} />
+                    </div>
+                    
+                    {/* Step label */}
+                    <span className={`
+                      text-[10px] mt-1 whitespace-nowrap
+                      ${isCompleted ? 'text-green-600 font-medium' : ''}
+                      ${isInProgress ? 'text-blue-600 font-semibold' : ''}
+                      ${isPending ? 'text-gray-400' : ''}
+                    `}>
+                      {step.label}
+                    </span>
+                    
+                    {/* Compact progress indicator for in-progress inspections (only when inspection path exists) */}
+                    {isInProgress && hasProgress && step.progress && step.progress > 0 && step.inspectionPath && (
+                      <div className="text-[9px] text-blue-600 font-medium">
+                        {step.progress}%
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+          </div>
+          
+        </div>
+        {getActionButton()}
+      </div>
+    );
+  };
 
   const getStatusIcon = (state: string) => {
     switch(state) {
@@ -542,15 +1049,14 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       <div className="p-6">
 
         {/* Hangar Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {hangarStatuses.map(hangar => (
             <div
               key={hangar.id}
-              className={`bg-white rounded-lg border-2 p-3 cursor-pointer transition-all ${getStatusColor(hangar.state)}`}
+              className={`bg-white rounded-lg border-2 p-4 cursor-pointer transition-all ${getStatusColor(hangar.state)}`}
               onClick={() => {
                 if (hangar.state !== 'standby') {
                   setSelectedHangar(hangar.id);
-                  setShowWorkflow(true);
                 }
               }}
             >
@@ -578,24 +1084,21 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   )}
                 </div>
                 
-                {hangar.activeInspection && (
+                {hangar.alarmSession && hangar.state !== 'standby' ? (
                   <>
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-medium text-gray-700">
-                          {hangar.activeInspection.type}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {Math.floor(hangar.activeInspection.progress)}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div 
-                          className="bg-blue-500 h-1.5 rounded-full transition-all"
-                          style={{ width: `${hangar.activeInspection.progress}%` }}
-                        />
-                      </div>
-                    </div>
+                    {/* Current phase description */}
+                    {hangar.currentPhase && (
+                      <div className="text-xs text-gray-600 mb-1">{hangar.currentPhase}</div>
+                    )}
+                    
+                    {/* Mini Workflow Timeline */}
+                    <WorkflowTimeline 
+                      alarmSession={hangar.alarmSession} 
+                      hangarId={hangar.id}
+                      onOpenWorkflow={() => {
+                        setSelectedHangar(hangar.id);
+                      }}
+                    />
                     <div className="flex justify-between items-center pt-1">
                       <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
                       {hangar.estimatedCompletion && (
@@ -606,10 +1109,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       )}
                     </div>
                   </>
-                )}
-                
-                {!hangar.activeInspection && (
+                ) : (
                   <>
+                    {hangar.currentPhase === 'Area operational' && (
+                      <div className="text-xs text-green-600 font-medium mt-1">{hangar.currentPhase}</div>
+                    )}
                     <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
                     {hangar.state === 'standby' && (
                       <button
@@ -630,17 +1134,6 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           ))}
         </div>
 
-        
-        {/* Workflow Modal */}
-        {showWorkflow && selectedHangar && (
-          <HangarWorkflowView
-            hangarId={selectedHangar}
-            hangarName={hangarStatuses.find(h => h.id === selectedHangar)?.name || ''}
-            hangarState={hangarStatuses.find(h => h.id === selectedHangar)?.state || 'standby'}
-            currentPhase={hangarStatuses.find(h => h.id === selectedHangar)?.currentPhase}
-            onClose={() => setShowWorkflow(false)}
-          />
-        )}
       </div>
     </div>
   );

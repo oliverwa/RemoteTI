@@ -294,10 +294,11 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   }, [handleKeyPress, currentTaskIndex, inspectionData]);
 
   const handleTaskStatus = async (taskNumber: string, status: 'pass' | 'fail') => {
-    setTaskStatuses(prev => ({
-      ...prev,
+    const newStatuses = {
+      ...taskStatuses,
       [taskNumber]: status
-    }));
+    };
+    setTaskStatuses(newStatuses);
     
     // Update task completion
     if (inspectionData) {
@@ -313,6 +314,30 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           ...inspectionData,
           tasks: updatedTasks
         });
+        
+        // Calculate progress and update alarm session
+        const completedCount = Object.values(newStatuses).filter(s => s !== 'pending').length;
+        const progressPercentage = Math.round((completedCount / inspectionData.tasks.length) * 100);
+        
+        if (sessionFolder) {
+          const [hangarId] = sessionFolder.split('/');
+          
+          // Update progress in alarm session
+          try {
+            await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/update-onsite-progress`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                progress: `${progressPercentage}%`
+              })
+            });
+            console.log(`Updated Onsite TI progress to ${progressPercentage}%`);
+          } catch (error) {
+            console.error('Error updating progress:', error);
+          }
+        }
         
         // Update backend if we have session info
         if (sessionFolder && task.id) {
@@ -395,8 +420,8 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
     }
   };
 
-  const handleCompleteInspection = () => {
-    if (inspectionData) {
+  const handleCompleteInspection = async () => {
+    if (inspectionData && sessionFolder) {
       const updatedInspection = {
         ...inspectionData,
         completionStatus: {
@@ -408,9 +433,34 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
       };
       setInspectionData(updatedInspection);
       
-      // Here you would save to backend
-      console.log('Inspection completed:', updatedInspection);
-      alert('Inspection completed successfully!');
+      // Update the alarm session to mark Onsite TI as completed
+      try {
+        const [hangarId] = sessionFolder.split('/');
+        const progressPercentage = Math.round((completedTasksCount / inspectionData.tasks.length) * 100);
+        
+        // Update the completion status in the alarm session
+        const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/complete-onsite-ti`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            progress: `${progressPercentage}%`,
+            completedBy: currentUser,
+            completedAt: new Date().toISOString()
+          })
+        });
+        
+        if (response.ok) {
+          console.log('Onsite TI marked as completed');
+          alert('Inspection completed successfully!');
+          // Navigate back to dashboard with auth preserved
+          window.location.href = '/?returnToDashboard=true';
+        }
+      } catch (error) {
+        console.error('Error updating alarm session:', error);
+        alert('Inspection saved locally but failed to update server');
+      }
     }
   };
 

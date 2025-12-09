@@ -593,7 +593,6 @@ export default function MultiCamInspector({
   });
   
   // --- Report generation state ---
-  const [showReportModal, setShowReportModal] = useState(false);
 
   // --- Core camera ops ---
   const resetView = useCallback((id: number) =>
@@ -2649,16 +2648,15 @@ export default function MultiCamInspector({
             <div className="text-lg font-semibold text-green-700 mb-4">🎉 Inspection Complete!</div>
             <div className="text-sm text-green-600 mb-6">All {items.length} tasks have been processed.</div>
             
-            <Button
-              onClick={() => setShowReportModal(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 text-lg font-semibold"
+            <button
+              onClick={() => {
+                // Navigate back to dashboard with auth preserved
+                window.location.href = '/?returnToDashboard=true';
+              }}
+              className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
             >
-              📊 Generate Inspection Report
-            </Button>
-            
-            <div className="mt-4 text-xs text-gray-500">
-              Generate a comprehensive PDF report with all task results, comments, and metadata
-            </div>
+              Complete Inspection
+            </button>
           </div>
         </div>
       )}
@@ -3083,79 +3081,6 @@ export default function MultiCamInspector({
       )}
 
       {/* Report Modal */}
-      {showReportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-96 max-w-full mx-4">
-            <h2 className="text-lg font-semibold mb-4">Generate Inspection Report</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Inspector Name</label>
-                <input
-                  type="text"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="Your name"
-                  value={inspectionMeta.inspectorName}
-                  onChange={(e) => setInspectionMeta(prev => ({ ...prev, inspectorName: e.target.value }))}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Drone Name</label>
-                <input
-                  type="text"
-                  className="w-full border rounded px-3 py-2"
-                  placeholder="e.g., bender"
-                  value={inspectionMeta.droneName}
-                  onChange={(e) => setInspectionMeta(prev => ({ ...prev, droneName: e.target.value }))}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Hangar</label>
-                <select 
-                  className="w-full border rounded px-3 py-2" 
-                  value={inspectionMeta.hangarName} 
-                  onChange={(e) => setInspectionMeta(prev => ({ ...prev, hangarName: e.target.value }))}
-                >
-                  <option value="">Select hangar...</option>
-                  {HANGARS.map((h) => (
-                    <option key={h.id} value={h.id}>
-                      {h.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              
-              <div className="mt-4 p-3 bg-gray-50 rounded text-sm">
-                <div className="font-medium mb-2">Report Summary:</div>
-                <div>Total Tasks: {items.length}</div>
-                <div>Completed: {items.filter(item => !!item.status).length}</div>
-                <div>Session ID: {inspectionMeta.sessionId}</div>
-              </div>
-            </div>
-            
-            <div className="flex gap-2 mt-6">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowReportModal(false)}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => {
-                  generatePDFReport();
-                  setShowReportModal(false);
-                }}
-                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white"
-              >
-                Generate PDF
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Folder Browser Modal */}
       <FolderBrowserModal
