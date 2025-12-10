@@ -451,16 +451,20 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           })
         });
         
+        console.log('Complete response status:', response.status);
+        
         if (response.ok) {
-          console.log('Onsite TI marked as completed');
-          alert('Inspection completed successfully!');
-          // Navigate back to dashboard with auth preserved
-          window.location.href = '/?returnToDashboard=true';
+          console.log('Onsite TI marked as completed - navigating to dashboard');
+        } else {
+          console.error('Server response not OK:', response.status);
         }
       } catch (error) {
         console.error('Error updating alarm session:', error);
-        alert('Inspection saved locally but failed to update server');
       }
+      
+      // Always navigate back to dashboard regardless of server response
+      console.log('Navigating to dashboard...');
+      window.location.href = '/?returnToDashboard=true';
     }
   };
 

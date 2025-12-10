@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { config, apiFetch } from '../utils/config';
 
 interface BackendConnectionCheckProps {
   children: React.ReactNode;
@@ -14,18 +15,9 @@ const BackendConnectionCheck: React.FC<BackendConnectionCheckProps> = ({ childre
     setIsChecking(true);
     
     try {
-      // Always use Pi backend when available, fallback to localhost for development
-      const apiUrl = 'http://172.20.1.93:3001/api/health';
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-      
-      const response = await fetch(apiUrl, {
-        signal: controller.signal,
+      const response = await apiFetch(config.api.endpoints.health, {
         method: 'GET'
       });
-      
-      clearTimeout(timeoutId);
       
       if (response.ok) {
         setIsConnected(true);
@@ -113,7 +105,7 @@ const BackendConnectionCheck: React.FC<BackendConnectionCheckProps> = ({ childre
                 <div>
                   <p className="font-medium">Backend Connection Lost</p>
                   <p className="text-xs opacity-90">
-                    Some features may not work. Check network connection to 172.20.1.93:3001
+                    Some features may not work. Check network connection to {config.api.host}
                   </p>
                 </div>
               </div>

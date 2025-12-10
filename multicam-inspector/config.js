@@ -154,6 +154,10 @@ const baseConfig = {
 // Environment-specific overrides
 const environmentConfigs = {
   pi: {
+    api: {
+      host: process.env.API_HOST || "http://localhost:3001",
+      timeout: 30000
+    },
     paths: {
       base: "/home/pi/RemoteTI",
       snapshots: "data/sessions",
@@ -168,6 +172,10 @@ const environmentConfigs = {
   },
   
   dev: {
+    api: {
+      host: process.env.API_HOST || "http://172.20.1.93:3001",
+      timeout: 30000
+    },
     paths: {
       base: process.cwd(),
       snapshots: path.join(process.env.HOME || os.homedir(), "hangar_snapshots"),
@@ -182,6 +190,10 @@ const environmentConfigs = {
   },
   
   production: {
+    api: {
+      host: process.env.API_HOST || "http://localhost:3001",
+      timeout: 30000
+    },
     paths: {
       base: "/opt/multicam-inspector",
       snapshots: "/opt/multicam-inspector/data/sessions",
@@ -212,6 +224,50 @@ function createConfig() {
       arch: os.arch(),
       hostname: os.hostname()
     }
+  };
+  
+  // Add API endpoints configuration
+  finalConfig.api = finalConfig.api || {};
+  finalConfig.api.endpoints = {
+    // Base endpoints
+    health: `${finalConfig.api.host}/api/health`,
+    
+    // Inspection endpoints
+    inspectionTypes: `${finalConfig.api.host}/api/inspection-types`,
+    inspectionData: (type) => `${finalConfig.api.host}/api/inspection-data/${type}`,
+    createSession: `${finalConfig.api.host}/api/create-inspection-session`,
+    updateProgress: `${finalConfig.api.host}/api/inspection/update-progress`,
+    
+    // Folder endpoints
+    folders: `${finalConfig.api.host}/api/folders`,
+    
+    // Task endpoints
+    taskStatus: (sessionFolder, taskId) => 
+      `${finalConfig.api.host}/api/inspection/${sessionFolder}/task/${taskId}/status`,
+    sessionData: (sessionPath) => 
+      `${finalConfig.api.host}/api/inspection/${sessionPath}/data`,
+    
+    // Alarm session endpoints
+    alarmSession: (hangarId) => `${finalConfig.api.host}/api/alarm-session/${hangarId}`,
+    updateOnsiteProgress: (hangarId) => 
+      `${finalConfig.api.host}/api/alarm-session/${hangarId}/update-onsite-progress`,
+    completeOnsiteTI: (hangarId) => 
+      `${finalConfig.api.host}/api/alarm-session/${hangarId}/complete-onsite-ti`,
+    generateFullRTI: (hangarId) => 
+      `${finalConfig.api.host}/api/alarm-session/${hangarId}/generate-full-rti`,
+    generateOnsiteTI: (hangarId) => 
+      `${finalConfig.api.host}/api/alarm-session/${hangarId}/generate-onsite-ti`,
+    clearArea: (hangarId) => 
+      `${finalConfig.api.host}/api/alarm-session/${hangarId}/clear-area`,
+    routeDecision: (hangarId) => 
+      `${finalConfig.api.host}/api/alarm-session/${hangarId}/route-decision`,
+    
+    // Other endpoints
+    triggerAlarm: `${finalConfig.api.host}/api/trigger-alarm`,
+    captureFrame: `${finalConfig.api.host}/api/capture-frame`,
+    saveImages: `${finalConfig.api.host}/api/save-captured-images`,
+    updateRTIProgress: `${finalConfig.api.host}/api/update-rti-progress`,
+    completeRTI: `${finalConfig.api.host}/api/complete-rti-inspection`
   };
   
   // Add helper functions
