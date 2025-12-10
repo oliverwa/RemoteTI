@@ -2,17 +2,18 @@ import React, { useState } from 'react';
 import backgroundImage from '../background.jpg';
 
 interface LoginPageProps {
-  onLogin: (username: string) => void;
+  onLogin: (username: string, userType: 'everdrone' | 'remote') => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [userType, setUserType] = useState<'everdrone' | 'remote'>('everdrone');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const user = username || 'Operator';
-    onLogin(user);
+    const user = username || (userType === 'everdrone' ? 'Operator' : 'Remote User');
+    onLogin(user, userType);
   };
 
   return (
@@ -60,6 +61,35 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white"
             />
+          </div>
+
+          {/* User Type Selection */}
+          <div className="space-y-2">
+            <label className="text-sm text-gray-600 font-medium">User Type</label>
+            <div className="flex gap-4">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="userType"
+                  value="everdrone"
+                  checked={userType === 'everdrone'}
+                  onChange={(e) => setUserType(e.target.value as 'everdrone' | 'remote')}
+                  className="mr-2 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-gray-700">Everdrone User</span>
+              </label>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="radio"
+                  name="userType"
+                  value="remote"
+                  checked={userType === 'remote'}
+                  onChange={(e) => setUserType(e.target.value as 'everdrone' | 'remote')}
+                  className="mr-2 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-gray-700">Remote User</span>
+              </label>
+            </div>
           </div>
 
           <button

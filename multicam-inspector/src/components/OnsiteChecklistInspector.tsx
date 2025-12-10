@@ -37,6 +37,7 @@ interface OnsiteChecklistInspectorProps {
   selectedDrone: string;
   currentUser?: string;
   action?: 'capture' | 'load' | 'browse' | 'load-session';
+  userType?: 'everdrone' | 'remote';
 }
 
 const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
@@ -44,7 +45,8 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   selectedHangar,
   selectedDrone,
   currentUser = 'User',
-  action
+  action,
+  userType = 'everdrone'
 }) => {
   const [inspectionData, setInspectionData] = useState<InspectionData | null>(null);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -464,7 +466,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
       
       // Always navigate back to dashboard regardless of server response
       console.log('Navigating to dashboard...');
-      window.location.href = '/?returnToDashboard=true';
+      window.location.href = `/?returnToDashboard=true&userType=${userType}`;
     }
   };
 

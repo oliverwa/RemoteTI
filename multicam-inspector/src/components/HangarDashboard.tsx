@@ -1,10 +1,11 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield } from 'lucide-react';
 
 interface HangarDashboardProps {
   currentUser: string;
+  userType: 'everdrone' | 'remote';
   onProceedToInspection: () => void;
   onLogout: () => void;
 }
@@ -27,6 +28,7 @@ interface HangarStatusData {
 
 const HangarDashboard: React.FC<HangarDashboardProps> = ({
   currentUser,
+  userType,
   onProceedToInspection,
   onLogout
 }) => {
@@ -198,8 +200,103 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  // Simplified status component for remote users
+  const RemoteUserStatus = ({ alarmSession, hangarId }: any) => {
+    const phases = alarmSession?.workflow?.phases || {};
+    const routeDecision = alarmSession?.workflow?.routeDecision;
+    const inspections = alarmSession?.inspections || {};
+    
+    // Determine current phase for display
+    let currentPhase = '';
+    if (phases.initialRTI?.status === 'in-progress') {
+      currentPhase = 'Initial assessment';
+    } else if (phases.flight?.status === 'in-progress') {
+      currentPhase = 'Flight in progress';
+    } else if (phases.telemetryAnalysis?.status === 'in-progress') {
+      currentPhase = 'Analyzing data';
+    }
+    
+    // Calculate ETA for decision (simplified estimation)
+    const getDecisionETA = () => {
+      if (phases.initialRTI?.status === 'completed' || inspections.initialRTI?.path) {
+        return 'Ready for decision';
+      } else if (phases.initialRTI?.status === 'in-progress') {
+        return '~2 minutes';
+      } else if (phases.telemetryAnalysis?.status === 'in-progress') {
+        return '~3 minutes';
+      } else if (phases.flight?.status === 'in-progress' || phases.landing?.status === 'in-progress') {
+        return '~5 minutes';
+      }
+      return '';
+    };
+    
+    // Determine remote user state
+    let canPerformBasicTI = false;
+    
+    if (!phases.flight?.status) {
+      // No alarm yet
+      return null;
+    } else if (phases.clearArea?.status === 'completed') {
+      // Area is cleared - don't show anything extra
+      return null;
+    } else if (routeDecision === 'basic' && (phases.basicTI?.status === 'pending' || phases.basicTI?.status === 'in-progress')) {
+      // Basic route selected, can perform inspection
+      canPerformBasicTI = true;
+    }
+    
+    return (
+      <div className="mt-2 space-y-2">
+        {/* Show current phase and ETA only in standby state */}
+        {!routeDecision && (
+          <div className="flex items-center justify-between text-xs text-gray-600">
+            <span>{currentPhase}</span>
+            {getDecisionETA() && (
+              <span className="text-yellow-600 font-medium">ETA: {getDecisionETA()}</span>
+            )}
+          </div>
+        )}
+        
+        {/* Show perform button when ready */}
+        {canPerformBasicTI && inspections.basicTI?.path && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const [h, s] = inspections.basicTI.path.split('/');
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=basic-ti-inspection&userType=remote`;
+            }}
+            className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded transition-colors flex items-center justify-center gap-2"
+          >
+            <FileCheck className="w-4 h-4" />
+            Perform Basic Inspection
+          </button>
+        )}
+        
+        {/* Preparing message */}
+        {canPerformBasicTI && !inspections.basicTI?.path && (
+          <div className="text-xs text-blue-600">
+            Preparing inspection checklist...
+          </div>
+        )}
+        
+        {/* Onsite route message */}
+        {routeDecision === 'onsite' && (
+          <div className="text-xs text-gray-500">
+            Onsite technician assigned
+          </div>
+        )}
+        
+        {/* Show progress if Basic TI is in progress */}
+        {phases.basicTI?.status === 'in-progress' && inspections.basicTI?.progress && (
+          <div className="text-xs text-blue-600">
+            Progress: {inspections.basicTI.progress}
+          </div>
+        )}
+      </div>
+    );
+  };
+  
   // Mini workflow timeline component  
-  const WorkflowTimeline = ({ alarmSession, hangarId, onOpenWorkflow }: any) => {
+  const WorkflowTimeline = ({ alarmSession, hangarId, onOpenWorkflow, isRemoteUser }: any) => {
     const phases = alarmSession?.workflow?.phases || {};
     const routeDecision = alarmSession?.workflow?.routeDecision;
     const inspections = alarmSession?.inspections || {};
@@ -385,6 +482,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     // Get action button for current phase
     const getActionButton = () => {
+      // Remote users can only perform Basic TI
+      const isAllowedForRemoteUser = (stepId: string) => {
+        if (!isRemoteUser) return true; // Everdrone users can do everything
+        return stepId === 'basicTI'; // Remote users can only do Basic TI
+      };
       // First check for Full RTI trigger when Basic TI is complete but Full RTI not started
       if (phases.basicTI?.status === 'completed' && (!phases.fullRTI?.status || (phases.fullRTI?.status === 'pending')) && routeDecision === 'basic') {
         return (
@@ -425,12 +527,19 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       
       // Show perform inspection button when Initial RTI has a path
       if (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.path) {
+        if (!isAllowedForRemoteUser('initialRTI')) {
+          return (
+            <div className="mt-3 px-3 py-2 bg-gray-100 text-gray-500 text-xs rounded border border-gray-200">
+              Initial RTI (Everdrone only)
+            </div>
+          );
+        }
         return (
           <button
             onClick={(e) => {
               e.stopPropagation();
               const [h, s] = inspections.initialRTI.path.split('/');
-              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=initial-remote-ti-inspection`;
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=initial-remote-ti-inspection&userType=${isRemoteUser ? 'remote' : 'everdrone'}`;
             }}
             className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
           >
@@ -456,7 +565,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             onClick={(e) => {
               e.stopPropagation();
               const [h, s] = inspections.fullRTI.path.split('/');
-              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=full-remote-ti-inspection`;
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=full-remote-ti-inspection&userType=${isRemoteUser ? 'remote' : 'everdrone'}`;
             }}
             className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
           >
@@ -471,6 +580,15 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       // Check if this is an inspection that needs to be opened
       if (currentStep.inspectionPath && currentStep.progress !== undefined && currentStep.progress >= 0) {
         const actionText = currentStep.progress === 0 ? `Perform ${currentStep.label}` : `Continue ${currentStep.label}`;
+        
+        if (!isAllowedForRemoteUser(currentStep.id)) {
+          return (
+            <div className="mt-3 px-3 py-2 bg-gray-100 text-gray-500 text-xs rounded border border-gray-200">
+              {currentStep.label} (Everdrone only)
+            </div>
+          );
+        }
+        
         return (
           <button
             onClick={(e) => {
@@ -482,7 +600,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 'onsiteTI': 'onsite-ti-inspection',
                 'fullRTI': 'full-remote-ti-inspection'
               };
-              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=${typeMap[currentStep.id]}`;
+              window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=${typeMap[currentStep.id]}&userType=${isRemoteUser ? 'remote' : 'everdrone'}`;
             }}
             className="mt-3 w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors"
           >
@@ -619,7 +737,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           {/* Workflow Timeline */}
           <div className="relative pb-3">
             {/* Connection line - positioned at fixed height */}
-            <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-200" />
+            <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-400" />
             
             {/* Steps container with fixed height alignment */}
             <div className="relative flex items-start justify-between">
@@ -711,42 +829,90 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     );
   };
 
-  const getStatusIcon = (state: string) => {
+  const getStatusIcon = (state: string, alarmSession?: any, isRemote?: boolean) => {
+    // For remote users, show icons based on their simplified states
+    if (isRemote && alarmSession?.workflow?.phases) {
+      const phases = alarmSession.workflow.phases;
+      const routeDecision = alarmSession.workflow.routeDecision;
+      
+      if (phases.clearArea?.status === 'completed') {
+        return <CheckCircle className="w-6 h-6 text-green-600" />;
+      } else if (phases.basicTI?.status === 'completed') {
+        return <Shield className="w-6 h-6 text-purple-600" />;
+      } else if (routeDecision === 'basic' && (phases.basicTI?.status === 'pending' || phases.basicTI?.status === 'in-progress')) {
+        return <FileCheck className="w-6 h-6 text-blue-600" />;
+      } else if (routeDecision === 'onsite') {
+        return <Wrench className="w-6 h-6 text-gray-500" />;
+      } else if (phases.flight?.status) {
+        return <Clock className="w-6 h-6 text-yellow-600" />;
+      }
+    }
+    
     switch(state) {
       case 'standby':
-        return <CheckCircle className="w-6 h-6 text-green-500" />;
+        return <CheckCircle className="w-6 h-6 text-green-600" />;
       case 'alarm':
-        return <AlertCircle className="w-6 h-6 text-red-500 animate-pulse" />;
+        return <AlertCircle className="w-6 h-6 text-red-600 animate-pulse" />;
       case 'post_flight':
-        return <Clock className="w-6 h-6 text-yellow-500" />;
+        return <Clock className="w-6 h-6 text-yellow-600" />;
       case 'inspection':
-        return <Wrench className="w-6 h-6 text-blue-500" />;
+        return <Wrench className="w-6 h-6 text-blue-600" />;
       case 'verification':
-        return <Radio className="w-6 h-6 text-purple-500" />;
+        return <Radio className="w-6 h-6 text-purple-600" />;
       default:
-        return <CheckCircle className="w-6 h-6 text-gray-400" />;
+        return <CheckCircle className="w-6 h-6 text-gray-500" />;
     }
   };
 
-  const getStatusColor = (state: string) => {
+  const getStatusColor = (state: string, hasWorkflow: boolean = false, isRemote: boolean = false) => {
+    // For remote users, use different colors based on their simplified states
+    if (isRemote && hasWorkflow && state !== 'standby') {
+      // Check the actual workflow state for remote users
+      return 'bg-yellow-50/70 border-yellow-400 hover:bg-yellow-100/70 shadow-md';
+    }
+    
+    // Blue background when workflow is in progress (Everdrone users)
+    if (hasWorkflow && state !== 'standby' && !isRemote) {
+      return 'bg-blue-50/70 border-blue-400 hover:bg-blue-100/70 shadow-md';
+    }
+    
     switch(state) {
       case 'standby':
-        return 'bg-green-50 border-green-200 hover:border-green-300';
+        return 'bg-green-50/70 border-green-400 hover:bg-green-100/70 shadow-sm';
       case 'alarm':
-        return 'bg-red-50 border-red-300 hover:border-red-400 animate-pulse';
+        return 'bg-red-50/70 border-red-400 hover:bg-red-100/70 animate-pulse shadow-lg';
       case 'post_flight':
-        return 'bg-yellow-50 border-yellow-200 hover:border-yellow-300';
+        return 'bg-yellow-50/70 border-yellow-300 hover:bg-yellow-100/70 shadow-md';
       case 'inspection':
-        return 'bg-blue-50 border-blue-200 hover:border-blue-300';
+        return 'bg-blue-50/70 border-blue-400 hover:bg-blue-100/70 shadow-md';
       case 'verification':
-        return 'bg-purple-50 border-purple-200 hover:border-purple-300';
+        return 'bg-purple-50/70 border-purple-300 hover:bg-purple-100/70 shadow-md';
       default:
-        return 'bg-gray-50 border-gray-200 hover:border-gray-300';
+        return 'bg-gray-50/70 border-gray-300 hover:bg-gray-100/70';
     }
   };
 
-  const getStatusLabel = (state: string, currentPhase?: string) => {
-    // More accurate status based on current phase
+  const getStatusLabel = (state: string, currentPhase?: string, alarmSession?: any, isRemote?: boolean) => {
+    // For remote users, show simplified states
+    if (isRemote && alarmSession?.workflow?.phases) {
+      const phases = alarmSession.workflow.phases;
+      const routeDecision = alarmSession.workflow.routeDecision;
+      const inspections = alarmSession.inspections || {};
+      
+      if (phases.clearArea?.status === 'completed') {
+        return 'Open - Ready for alarm!';
+      } else if (phases.basicTI?.status === 'completed') {
+        return 'Final Validation';
+      } else if (routeDecision === 'basic' && (phases.basicTI?.status === 'pending' || phases.basicTI?.status === 'in-progress')) {
+        return 'Ready for Inspection';
+      } else if (routeDecision === 'onsite') {
+        return 'Onsite Route';
+      } else if (phases.flight?.status) {
+        return 'Standby for Inspection';
+      }
+    }
+    
+    // More accurate status based on current phase (Everdrone users)
     if (currentPhase) {
       if (currentPhase.toLowerCase().includes('initial remote ti')) return 'Initial RTI';
       if (currentPhase.toLowerCase().includes('basic ti')) return 'Basic TI Active';
@@ -756,7 +922,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     switch(state) {
       case 'standby':
-        return 'Operational';
+        return 'Open - Ready for alarm!';
       case 'alarm':
         return 'Alarm Active';
       case 'post_flight':
@@ -1015,7 +1181,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User className="w-4 h-4" />
-                <span>{currentUser}</span>
+                <span>{currentUser} ({userType === 'everdrone' ? 'Everdrone' : 'Remote'})</span>
               </div>
               <Button
                 onClick={handleRefresh}
@@ -1026,13 +1192,15 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 <RefreshCw className="w-4 h-4" />
                 Refresh
               </Button>
-              <Button
-                onClick={onProceedToInspection}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Manual Inspection
-              </Button>
+              {userType === 'everdrone' && (
+                <Button
+                  onClick={onProceedToInspection}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Manual Inspection
+                </Button>
+              )}
               <Button
                 onClick={onLogout}
                 variant="outline"
@@ -1053,7 +1221,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           {hangarStatuses.map(hangar => (
             <div
               key={hangar.id}
-              className={`bg-white rounded-lg border-2 p-4 cursor-pointer transition-all ${getStatusColor(hangar.state)}`}
+              className={`relative rounded-lg border-2 p-4 cursor-pointer transition-all ${getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote')}`}
               onClick={() => {
                 if (hangar.state !== 'standby') {
                   setSelectedHangar(hangar.id);
@@ -1065,40 +1233,51 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   <h3 className="font-semibold text-gray-900">{hangar.name}</h3>
                   <p className="text-xs text-gray-500">{hangar.assignedDrone || 'No drone'}</p>
                 </div>
-                {getStatusIcon(hangar.state)}
+                {getStatusIcon(hangar.state, hangar.alarmSession, userType === 'remote')}
               </div>
               
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
                   <span className={`text-sm font-semibold ${
-                    hangar.state === 'standby' ? 'text-green-600' :
-                    hangar.state === 'post_flight' ? 'text-yellow-600' :
-                    hangar.state === 'inspection' ? 'text-blue-600' :
-                    hangar.state === 'alarm' ? 'text-red-600' :
-                    'text-gray-600'
+                    hangar.state === 'standby' ? 'text-green-700' :
+                    hangar.state === 'post_flight' ? 'text-yellow-700' :
+                    hangar.state === 'inspection' ? 'text-blue-700' :
+                    hangar.state === 'alarm' ? 'text-red-700' :
+                    'text-gray-700'
                   }`}>
-                    {getStatusLabel(hangar.state, hangar.currentPhase)}
+                    {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'remote')}
                   </span>
-                  {hangar.state !== 'standby' && (
+                  {hangar.state !== 'standby' && userType !== 'remote' && (
                     <ArrowRight className="w-3 h-3 text-gray-400" />
                   )}
                 </div>
                 
                 {hangar.alarmSession && hangar.state !== 'standby' ? (
                   <>
-                    {/* Current phase description */}
-                    {hangar.currentPhase && (
-                      <div className="text-xs text-gray-600 mb-1">{hangar.currentPhase}</div>
+                    {userType === 'remote' ? (
+                      /* Simplified view for remote users */
+                      <RemoteUserStatus 
+                        alarmSession={hangar.alarmSession} 
+                        hangarId={hangar.id}
+                      />
+                    ) : (
+                      <>
+                        {/* Current phase description for Everdrone users */}
+                        {hangar.currentPhase && (
+                          <div className="text-xs text-gray-600 mb-1">{hangar.currentPhase}</div>
+                        )}
+                        
+                        {/* Full Workflow Timeline for Everdrone users */}
+                        <WorkflowTimeline 
+                          alarmSession={hangar.alarmSession} 
+                          hangarId={hangar.id}
+                          isRemoteUser={false}
+                          onOpenWorkflow={() => {
+                            setSelectedHangar(hangar.id);
+                          }}
+                        />
+                      </>
                     )}
-                    
-                    {/* Mini Workflow Timeline */}
-                    <WorkflowTimeline 
-                      alarmSession={hangar.alarmSession} 
-                      hangarId={hangar.id}
-                      onOpenWorkflow={() => {
-                        setSelectedHangar(hangar.id);
-                      }}
-                    />
                     <div className="flex justify-between items-center pt-1">
                       <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
                       {hangar.estimatedCompletion && (
@@ -1111,22 +1290,22 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   </>
                 ) : (
                   <>
-                    {hangar.currentPhase === 'Area operational' && (
-                      <div className="text-xs text-green-600 font-medium mt-1">{hangar.currentPhase}</div>
-                    )}
-                    <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
-                    {hangar.state === 'standby' && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTriggerAlarm(hangar.id, hangar.assignedDrone);
-                        }}
-                        className="mt-2 w-full flex items-center justify-center gap-1 px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-200 transition-colors"
-                      >
-                        <AlertTriangle className="w-3 h-3" />
-                        Trigger Alarm
-                      </button>
-                    )}
+                    {/* Show only last activity for both user types when operational */}
+                    <div className="flex justify-between items-end">
+                      <div className="text-xs text-gray-500">{hangar.lastActivity}</div>
+                      {hangar.state === 'standby' && userType === 'everdrone' && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleTriggerAlarm(hangar.id, hangar.assignedDrone);
+                          }}
+                          className="inline-flex items-center gap-1 px-2 py-1 text-[10px] bg-red-50 hover:bg-red-100 text-red-600 rounded border border-red-200 transition-colors"
+                        >
+                          <AlertTriangle className="w-3 h-3" />
+                          Alarm
+                        </button>
+                      )}
+                    </div>
                   </>
                 )}
               </div>

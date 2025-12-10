@@ -17,6 +17,7 @@ interface InspectionConfig {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string>('');
+  const [userType, setUserType] = useState<'everdrone' | 'remote'>('everdrone');
   const [inspectionConfig, setInspectionConfig] = useState<InspectionConfig | null>(null);
   const [showDashboard, setShowDashboard] = useState(true);
   const [startedFromDashboard, setStartedFromDashboard] = useState(false);
@@ -29,18 +30,22 @@ function App() {
     const session = urlParams.get('session');
     const type = urlParams.get('type');
     const returnToDashboard = urlParams.get('returnToDashboard');
+    const returnUserType = urlParams.get('userType') as 'everdrone' | 'remote' | null;
     
     if (returnToDashboard === 'true') {
       // Auto-login when returning from inspection completion
       setIsAuthenticated(true);
-      setCurrentUser('Inspector');
+      setCurrentUser(returnUserType === 'remote' ? 'Remote User' : 'Inspector');
+      setUserType(returnUserType || 'everdrone');
       setShowDashboard(true);
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (action === 'load-session' && hangar && session && type) {
       // Auto-login for direct session links
+      const sessionUserType = urlParams.get('userType') as 'everdrone' | 'remote' | null;
       setIsAuthenticated(true);
-      setCurrentUser('Inspector');
+      setCurrentUser(sessionUserType === 'remote' ? 'Remote User' : 'Inspector');
+      setUserType(sessionUserType || 'everdrone');
       setShowDashboard(false);
       setStartedFromDashboard(true); // Mark that this came from dashboard
       
@@ -58,8 +63,9 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (username: string) => {
+  const handleLogin = (username: string, type: 'everdrone' | 'remote') => {
     setCurrentUser(username);
+    setUserType(type);
     setIsAuthenticated(true);
     setShowDashboard(true);
   };
@@ -107,6 +113,7 @@ function App() {
         ) : showDashboard ? (
           <HangarDashboard
             currentUser={currentUser}
+            userType={userType}
             onProceedToInspection={handleProceedToManualInspection}
             onLogout={handleLogout}
           />
@@ -144,6 +151,7 @@ function App() {
               selectedHangar={inspectionConfig.hangar}
               selectedDrone={inspectionConfig.drone}
               action={inspectionConfig.action}
+              userType={userType}
             />
           ) : (
             <OnsiteChecklistInspector
@@ -152,6 +160,7 @@ function App() {
               selectedDrone={inspectionConfig.drone}
               currentUser={currentUser}
               action={inspectionConfig.action}
+              userType={userType}
             />
           )}
         </div>

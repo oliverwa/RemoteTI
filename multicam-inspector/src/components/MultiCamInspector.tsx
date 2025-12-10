@@ -82,13 +82,15 @@ interface MultiCamInspectorProps {
   selectedHangar?: string;
   selectedDrone?: string;
   action?: 'capture' | 'load' | 'browse' | 'load-session';
+  userType?: 'everdrone' | 'remote';
 }
 
 export default function MultiCamInspector({ 
   selectedInspection,
   selectedHangar,
   selectedDrone,
-  action = 'capture' 
+  action = 'capture',
+  userType = 'everdrone' 
 }: MultiCamInspectorProps = {}) {
   // --- State for inspection data ---
   const [inspectionData, setInspectionData] = useState<any>(null);
@@ -2651,7 +2653,7 @@ export default function MultiCamInspector({
             <button
               onClick={() => {
                 // Navigate back to dashboard with auth preserved
-                window.location.href = '/?returnToDashboard=true';
+                window.location.href = `/?returnToDashboard=true&userType=${userType}`;
               }}
               className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
             >
