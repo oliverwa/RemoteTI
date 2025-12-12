@@ -2018,7 +2018,7 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       const dateStr = now.toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
       const timeStr = now.toISOString().slice(11, 19).replace(/:/g, ''); // HHMMSS
       const hangarShortName = hangarId.replace('hangar_', '').replace('_vpn', ''); // Extract short name
-      const sessionName = `basic_ti_${hangarShortName}_${dateStr}_${timeStr}`;
+      const sessionName = `mission_reset_${hangarShortName}_${dateStr}_${timeStr}`;
       const sessionDir = path.join(BASE_DIR, 'data', 'sessions', hangarId, sessionName);
       
       if (!fs.existsSync(sessionDir)) {
@@ -2055,7 +2055,7 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
         sessionId: sessionName,
         path: `${hangarId}/${sessionName}`,
         createdAt: new Date().toISOString(),
-        type: route === 'basic-extended' ? 'extended-ti-inspection' : 'basic-ti-inspection',
+        type: route === 'basic-extended' ? 'extended-ti-inspection' : 'mission-reset-inspection',
         progress: '0%'
       };
       
@@ -2114,7 +2114,7 @@ app.post('/api/inspection/update-progress', async (req, res) => {
     
     if (sessionPath.includes('initial_remote') || sessionPath.includes('initial_ti')) {
       inspectionType = 'initialRTI';
-    } else if (sessionPath.includes('basic_ti')) {
+    } else if (sessionPath.includes('basic_ti') || sessionPath.includes('mission_reset')) {
       inspectionType = 'missionReset';
     } else if (sessionPath.includes('onsite_ti')) {
       inspectionType = 'onsiteTI';

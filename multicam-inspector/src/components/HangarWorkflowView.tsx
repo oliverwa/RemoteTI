@@ -513,7 +513,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                         const sessionPath = alarmSession.inspections.missionReset.path;
                         const [hangar, sessionName] = sessionPath.split('/');
                         // Navigate to the inspection in the same tab
-                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=basic-ti-inspection`;
+                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=mission-reset-inspection`;
                       }
                     }}
                   >

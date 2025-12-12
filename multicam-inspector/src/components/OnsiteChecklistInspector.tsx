@@ -62,7 +62,8 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
       case 'service-ti-inspection':
         return 'Service Inspection';
       case 'basic-ti-inspection':
-        return 'Basic Inspection';
+      case 'mission-reset-inspection':
+        return 'Mission Reset Inspection';
       case 'remote-ti-inspection':
         return 'Remote Inspection';
       default:
