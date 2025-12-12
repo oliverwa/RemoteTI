@@ -87,19 +87,19 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         progress: 10,
                         assignedTo: 'Everdrone'
                       };
-                    } else if (phases.basicTI?.status === 'in-progress' || phases.onsiteTI?.status === 'in-progress') {
+                    } else if (phases.missionReset?.status === 'in-progress' || phases.onsiteTI?.status === 'in-progress') {
                       state = 'inspection';
-                      const isBasic = phases.basicTI?.status === 'in-progress';
+                      const isBasic = phases.missionReset?.status === 'in-progress';
                       const inspection = isBasic ? session.inspections?.basicTI : session.inspections?.onsiteTI;
                       currentPhase = isBasic 
                         ? (inspection?.progress && inspection.progress !== '0%' 
-                          ? `Basic inspection ${inspection.progress} complete`
-                          : 'Performing basic inspection')
+                          ? `Mission Reset ${inspection.progress} complete`
+                          : 'Performing Mission Reset')
                         : (inspection?.progress && inspection.progress !== '0%'
                           ? `Onsite inspection ${inspection.progress} complete`  
                           : 'Technician performing onsite inspection');
                       activeInspection = {
-                        type: isBasic ? 'Basic TI' : 'Onsite TI',
+                        type: isBasic ? 'Mission Reset' : 'Onsite TI',
                         progress: 50,
                         assignedTo: isBasic ? 'Remote Crew' : 'Everdrone'
                       };
@@ -120,16 +120,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       // Initial RTI completed but no route decision yet
                       state = 'inspection';
                       currentPhase = 'Choose inspection route';
-                    } else if (phases.initialRTI?.status === 'completed' && phases.basicTI?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
-                      // Route selected but Basic TI not started
+                    } else if (phases.initialRTI?.status === 'completed' && phases.missionReset?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
+                      // Route selected but Mission Reset not started
                       state = 'inspection';
-                      currentPhase = 'Basic inspection pending';
+                      currentPhase = 'Mission Reset pending';
                     } else if (phases.initialRTI?.status === 'completed' && phases.onsiteTI?.status === 'pending' && session.workflow?.routeDecision === 'onsite') {
                       // Route selected but Onsite TI not started
                       state = 'inspection';
                       currentPhase = 'Awaiting technician dispatch';
-                    } else if (phases.basicTI?.status === 'completed' && !phases.fullRTI?.status && session.workflow?.routeDecision === 'basic') {
-                      // Basic TI completed but Full RTI not started
+                    } else if (phases.missionReset?.status === 'completed' && !phases.fullRTI?.status && session.workflow?.routeDecision === 'basic') {
+                      // Mission Reset completed but Full RTI not started
                       state = 'inspection';
                       currentPhase = 'Full inspection required';
                     } else if (phases.fullRTI?.status === 'completed' && !phases.clearArea?.status) {
@@ -239,8 +239,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     } else if (phases.clearArea?.status === 'completed') {
       // Area is cleared - don't show anything extra
       return null;
-    } else if (routeDecision === 'basic' && (phases.basicTI?.status === 'pending' || phases.basicTI?.status === 'in-progress')) {
-      // Basic route selected, can perform inspection
+    } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
+      // Mission Reset route selected, can perform inspection
       canPerformBasicTI = true;
     }
     
@@ -257,22 +257,22 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         )}
         
         {/* Show perform button when ready */}
-        {canPerformBasicTI && inspections.basicTI?.path && (
+        {canPerformBasicTI && inspections.missionReset?.path && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const [h, s] = inspections.basicTI.path.split('/');
+              const [h, s] = inspections.missionReset.path.split('/');
               window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=basic-ti-inspection&userType=remote`;
             }}
             className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded transition-colors flex items-center justify-center gap-2"
           >
             <FileCheck className="w-4 h-4" />
-            Perform Basic Inspection
+            Perform Mission Reset
           </button>
         )}
         
         {/* Preparing message */}
-        {canPerformBasicTI && !inspections.basicTI?.path && (
+        {canPerformBasicTI && !inspections.missionReset?.path && (
           <div className="text-xs text-blue-600">
             Preparing inspection checklist...
           </div>
@@ -280,15 +280,15 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         
         {/* Onsite route message */}
         {routeDecision === 'onsite' && (
-          <div className="text-xs text-gray-500">
-            Onsite technician assigned
+          <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded p-2 mt-1">
+            Everdrone technician dispatched - <span className="font-medium">no remote inspection needed</span>
           </div>
         )}
         
-        {/* Show progress if Basic TI is in progress */}
-        {phases.basicTI?.status === 'in-progress' && inspections.basicTI?.progress && (
+        {/* Show progress if Mission Reset is in progress */}
+        {phases.missionReset?.status === 'in-progress' && inspections.missionReset?.progress && (
           <div className="text-xs text-blue-600">
-            Progress: {inspections.basicTI.progress}
+            Progress: {inspections.missionReset.progress}
           </div>
         )}
       </div>
@@ -446,10 +446,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           { 
             id: 'basicTI', 
             icon: FileCheck, 
-            label: 'Basic TI', 
-            status: phases.basicTI?.status,
-            progress: getProgress(inspections.basicTI),
-            inspectionPath: inspections.basicTI?.path
+            label: 'Mission Reset', 
+            status: phases.missionReset?.status,
+            progress: getProgress(inspections.missionReset),
+            inspectionPath: inspections.missionReset?.path
           },
           { 
             id: 'fullRTI', 
@@ -482,13 +482,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     // Get action button for current phase
     const getActionButton = () => {
-      // Remote users can only perform Basic TI
+      // Remote users can only perform Mission Reset
       const isAllowedForRemoteUser = (stepId: string) => {
         if (!isRemoteUser) return true; // Everdrone users can do everything
-        return stepId === 'basicTI'; // Remote users can only do Basic TI
+        return stepId === 'basicTI'; // Remote users can only do Mission Reset
       };
-      // First check for Full RTI trigger when Basic TI is complete but Full RTI not started
-      if (phases.basicTI?.status === 'completed' && (!phases.fullRTI?.status || (phases.fullRTI?.status === 'pending')) && routeDecision === 'basic') {
+      // First check for Full RTI trigger when Mission Reset is complete but Full RTI not started
+      if (phases.missionReset?.status === 'completed' && (!phases.fullRTI?.status || (phases.fullRTI?.status === 'pending')) && routeDecision === 'basic') {
         return (
           <button
             onClick={async (e) => {
@@ -690,7 +690,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors flex flex-col items-center gap-1"
               >
                 <FileCheck className="w-4 h-4" />
-                <span>Basic → Full RTI</span>
+                <span>Mission Reset → Full RTI</span>
               </button>
               <button
                 onClick={async (e) => {
@@ -737,7 +737,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           {/* Workflow Timeline */}
           <div className="relative pb-3">
             {/* Connection line - positioned at fixed height */}
-            <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-400" />
+            <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-400" />
             
             {/* Steps container with fixed height alignment */}
             <div className="relative flex items-start justify-between">
@@ -754,7 +754,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   if (step.status === 'completed') {
                     // Decision made
                     return (
-                      <div key={step.id} className="flex flex-col items-center z-10">
+                      <div key={step.id} className="flex flex-col items-center z-10 flex-1">
                         <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                           <CheckCircle className="w-4 h-4 text-white" />
                         </div>
@@ -764,7 +764,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   } else if (step.highlight) {
                     // Active decision point - ready to decide
                     return (
-                      <div key={step.id} className="flex flex-col items-center z-10">
+                      <div key={step.id} className="flex flex-col items-center z-10 flex-1">
                         <div className="w-8 h-8 bg-amber-50 border-2 border-amber-400 rounded-full flex items-center justify-center animate-pulse">
                           <AlertCircle className="w-4 h-4 text-amber-600" />
                         </div>
@@ -774,7 +774,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   } else {
                     // Pending decision - not ready yet (keep grey like other pending items)
                     return (
-                      <div key={step.id} className="flex flex-col items-center z-10">
+                      <div key={step.id} className="flex flex-col items-center z-10 flex-1">
                         <div className="w-8 h-8 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center">
                           <AlertCircle className="w-4 h-4 text-gray-400" />
                         </div>
@@ -786,7 +786,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 
                 
                 return (
-                  <div key={`${step.id}-${index}`} className="flex flex-col items-center z-10">
+                  <div key={`${step.id}-${index}`} className="flex flex-col items-center z-10 flex-1">
                     {/* Step circle - always at same height */}
                     <div className={`
                       w-8 h-8 rounded-full flex items-center justify-center transition-all
@@ -802,7 +802,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     
                     {/* Step label */}
                     <span className={`
-                      text-[10px] mt-1 whitespace-nowrap
+                      text-[10px] mt-1 text-center
                       ${isCompleted ? 'text-green-600 font-medium' : ''}
                       ${isInProgress ? 'text-blue-600 font-semibold' : ''}
                       ${isPending ? 'text-gray-400' : ''}
@@ -837,9 +837,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       
       if (phases.clearArea?.status === 'completed') {
         return <CheckCircle className="w-6 h-6 text-green-600" />;
-      } else if (phases.basicTI?.status === 'completed') {
+      } else if (phases.missionReset?.status === 'completed') {
         return <Shield className="w-6 h-6 text-purple-600" />;
-      } else if (routeDecision === 'basic' && (phases.basicTI?.status === 'pending' || phases.basicTI?.status === 'in-progress')) {
+      } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
         return <FileCheck className="w-6 h-6 text-blue-600" />;
       } else if (routeDecision === 'onsite') {
         return <Wrench className="w-6 h-6 text-gray-500" />;
@@ -901,12 +901,12 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       
       if (phases.clearArea?.status === 'completed') {
         return 'Open - Ready for alarm!';
-      } else if (phases.basicTI?.status === 'completed') {
+      } else if (phases.missionReset?.status === 'completed') {
         return 'Final Validation';
-      } else if (routeDecision === 'basic' && (phases.basicTI?.status === 'pending' || phases.basicTI?.status === 'in-progress')) {
+      } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
         return 'Ready for Inspection';
       } else if (routeDecision === 'onsite') {
-        return 'Onsite Route';
+        return 'No Action Required';
       } else if (phases.flight?.status) {
         return 'Standby for Inspection';
       }
@@ -915,7 +915,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     // More accurate status based on current phase (Everdrone users)
     if (currentPhase) {
       if (currentPhase.toLowerCase().includes('initial remote ti')) return 'Initial RTI';
-      if (currentPhase.toLowerCase().includes('basic ti')) return 'Basic TI Active';
+      if (currentPhase.toLowerCase().includes('basic ti') || currentPhase.toLowerCase().includes('mission reset')) return 'Mission Reset Active';
       if (currentPhase.toLowerCase().includes('remote crew')) return 'Field Team Active';
       if (currentPhase.toLowerCase().includes('initial')) return 'Initial Assessment';
     }
