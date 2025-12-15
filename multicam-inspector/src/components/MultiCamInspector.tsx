@@ -3845,6 +3845,9 @@ function CanvasImage({
 
     // Draw validation boxes if in innovative mode
     if (showValidationBoxes && validationBoxes.length > 0) {
+      // Track bounds for blue box
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      
       validationBoxes.forEach(box => {
         // Get bounding box for validation box
         const boxBounds = { x: box.x, y: box.y, width: box.width, height: box.height };
@@ -3952,7 +3955,95 @@ function CanvasImage({
         
         // Reset line dash
         ctx.setLineDash([]);
+        
+        // Track bounds for blue box
+        minX = Math.min(minX, boxX);
+        minY = Math.min(minY, boxY);
+        maxX = Math.max(maxX, boxX + boxWidth);
+        maxY = Math.max(maxY, boxY + boxHeight);
       });
+      
+      // Draw blue transparent box around all validation boxes
+      if (minX !== Infinity && minY !== Infinity && maxX !== -Infinity && maxY !== -Infinity) {
+        // Convert screen coordinates back to normalized image coordinates (0-1)
+        const minNormX = (minX - finalX) / scaledWidth;
+        const minNormY = (minY - finalY) / scaledHeight;
+        const maxNormX = (maxX - finalX) / scaledWidth;
+        const maxNormY = (maxY - finalY) / scaledHeight;
+        
+        // Add margin in normalized coordinates
+        const marginNorm = 0.05; // 5% margin in image space
+        const boundMinX = Math.max(0, minNormX - marginNorm);
+        const boundMinY = Math.max(0, minNormY - marginNorm);
+        const boundMaxX = Math.min(1, maxNormX + marginNorm);
+        const boundMaxY = Math.min(1, maxNormY + marginNorm);
+        
+        // Calculate center and size in normalized coordinates
+        const centerNormX = (boundMinX + boundMaxX) / 2;
+        const centerNormY = (boundMinY + boundMaxY) / 2;
+        const neededNormWidth = boundMaxX - boundMinX;
+        const neededNormHeight = boundMaxY - boundMinY;
+        
+        // The viewer/canvas aspect ratio
+        const viewerAspectRatio = rect.width / rect.height;
+        
+        // In normalized space, we need to account for image aspect ratio
+        // because normalized coords are 0-1 for both width and height regardless of image shape
+        const imageAspectRatio = img.width / img.height;
+        
+        // Calculate what the needed aspect ratio is when drawn
+        const neededPixelWidth = neededNormWidth * scaledWidth;
+        const neededPixelHeight = neededNormHeight * scaledHeight;
+        const neededAspectRatio = neededPixelWidth / neededPixelHeight;
+        
+        // Calculate blue box size maintaining viewer aspect ratio
+        let blueBoxNormWidth, blueBoxNormHeight;
+        if (neededAspectRatio > viewerAspectRatio) {
+          // Width constrains
+          blueBoxNormWidth = neededNormWidth;
+          // Adjust height to match viewer aspect ratio in normalized space
+          const pixelHeight = (neededNormWidth * scaledWidth) / viewerAspectRatio;
+          blueBoxNormHeight = pixelHeight / scaledHeight;
+        } else {
+          // Height constrains
+          blueBoxNormHeight = neededNormHeight;
+          // Adjust width to match viewer aspect ratio in normalized space
+          const pixelWidth = (neededNormHeight * scaledHeight) * viewerAspectRatio;
+          blueBoxNormWidth = pixelWidth / scaledWidth;
+        }
+        
+        // Calculate initial position in normalized space
+        let blueBoxNormX = centerNormX - blueBoxNormWidth / 2;
+        let blueBoxNormY = centerNormY - blueBoxNormHeight / 2;
+        
+        // Ensure the blue box stays within image bounds (0-1 in normalized space)
+        if (blueBoxNormX < 0) {
+          blueBoxNormX = 0;
+        } else if (blueBoxNormX + blueBoxNormWidth > 1) {
+          blueBoxNormX = 1 - blueBoxNormWidth;
+        }
+        
+        if (blueBoxNormY < 0) {
+          blueBoxNormY = 0;
+        } else if (blueBoxNormY + blueBoxNormHeight > 1) {
+          blueBoxNormY = 1 - blueBoxNormHeight;
+        }
+        
+        // Convert to screen coordinates for drawing
+        const blueBoxX = finalX + (blueBoxNormX * scaledWidth);
+        const blueBoxY = finalY + (blueBoxNormY * scaledHeight);
+        const blueBoxWidth = blueBoxNormWidth * scaledWidth;
+        const blueBoxHeight = blueBoxNormHeight * scaledHeight;
+        
+        // Draw transparent blue box
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.1)'; // 10% opacity blue
+        ctx.fillRect(blueBoxX, blueBoxY, blueBoxWidth, blueBoxHeight);
+        
+        // Draw blue border
+        ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)'; // 40% opacity blue
+        ctx.lineWidth = 2;
+        ctx.strokeRect(blueBoxX, blueBoxY, blueBoxWidth, blueBoxHeight);
+      }
     }
 
     
