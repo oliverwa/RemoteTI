@@ -334,6 +334,9 @@ export default function MultiCamInspector({
         
         console.log('Converted items:', items.length);
         setTiItems(items);
+        if (items.length > 0) {
+          setIsDataLoaded(true);
+        }
         addLog(`✅ Loaded ${items.length} inspection tasks`);
       } catch (error) {
         console.error('Error loading inspection data:', error);
@@ -354,10 +357,14 @@ export default function MultiCamInspector({
 
   // --- TI checklist state ---
   const [items, setItems] = useState<TIItem[]>([]);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   
   // Update items when tiItems changes
   useEffect(() => {
     setItems(tiItems);
+    if (tiItems.length > 0) {
+      setIsDataLoaded(true);
+    }
   }, [tiItems]);
   const [idx, setIdx] = useState(0); // current
   const [leaving, setLeaving] = useState(false);
@@ -537,6 +544,7 @@ export default function MultiCamInspector({
       if (response.ok) {
         const freshData = await response.json();
         setItems(freshData.tasks);
+        setIsDataLoaded(true);
         addLog(`🔄 Inspection data reloaded`);
         return true;
       }
@@ -1390,6 +1398,7 @@ export default function MultiCamInspector({
           const inspectionData = await inspectionResponse.json();
           if (inspectionData.tasks) {
             setItems(inspectionData.tasks);
+            setIsDataLoaded(true);
             addLog(`📋 Loaded ${inspectionData.tasks.length} inspection tasks from session`);
           }
         }
@@ -1506,6 +1515,7 @@ export default function MultiCamInspector({
           const inspectionData = await inspectionResponse.json();
           if (inspectionData.tasks) {
             setItems(inspectionData.tasks);
+            setIsDataLoaded(true);
             addLog(`📋 Loaded ${inspectionData.tasks.length} inspection tasks from session`);
             
             // Find first incomplete camera/task
@@ -2569,7 +2579,7 @@ export default function MultiCamInspector({
             {/* Progress Timeline */}
             <div className="flex justify-center pb-3">
               <div className="flex items-center gap-1.5">
-                {items.map((it, i) => {
+                {isDataLoaded && items.map((it, i) => {
                   const isActive = i === idx;
                   const isDone = it.status === "pass" || it.status === "fail" || it.status === "na";
                   const statusColor = it.status === "pass" ? "bg-green-500" : 
@@ -2644,7 +2654,7 @@ export default function MultiCamInspector({
 
 
       {/* Completion Section */}
-      {!items.some(item => !item.status) && (
+      {isDataLoaded && items.length > 0 && !items.some(item => !item.status) && (
         <div className="bg-white py-3">
           <div className="text-center">
             <div className="text-lg font-semibold text-green-700 mb-4">🎉 Inspection Complete!</div>
