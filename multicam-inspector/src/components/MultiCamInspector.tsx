@@ -666,12 +666,11 @@ export default function MultiCamInspector({
       // Always reset to center when at 1.0 zoom
       newPan = { x: 0, y: 0 };
     } else {
-      // Zoom towards the center of the viewport for consistent behavior
-      const rect = e.currentTarget.getBoundingClientRect();
+      // Simple zoom towards center - just scale the pan proportionally
       const zoomFactor = newZoom / cam.zoom;
+      const rect = e.currentTarget.getBoundingClientRect();
       
-      // Adjust pan to keep the viewport center point in the same position
-      // When zooming in, we want to keep what's currently at viewport center visible
+      // Scale pan values proportionally with zoom
       const newPanX = cam.pan.x * zoomFactor;
       const newPanY = cam.pan.y * zoomFactor;
       
@@ -685,14 +684,42 @@ export default function MultiCamInspector({
     ));
   };
 
-  // Pinch zoom (Safari gesture events)
-  const onPinch = (id: number, rect: DOMRect, factor: number) => {
+  // Pinch zoom with optional center point
+  const onPinch = (id: number, rect: DOMRect, factor: number, centerX?: number, centerY?: number) => {
     setCams((prev) =>
       prev.map((c) => {
         if (c.id !== id) return c;
         const z0 = c.zoom;
         const z1 = clamp(z0 * factor, 1.0, 10); // Min 1.0x (no zoom-out), Max 10x
-        const pan2 = z1 <= 1.0 ? { x: 0, y: 0 } : clampPan(c.pan, z1, rect, true);
+        
+        let pan2: { x: number; y: number };
+        if (z1 <= 1.0) {
+          // Always reset to center when at 1.0 zoom
+          pan2 = { x: 0, y: 0 };
+        } else {
+          // If we have a center point, zoom towards it
+          if (centerX !== undefined && centerY !== undefined) {
+            // Calculate the point we're zooming towards relative to the container center
+            const containerCenterX = rect.width / 2;
+            const containerCenterY = rect.height / 2;
+            const offsetX = centerX - containerCenterX;
+            const offsetY = centerY - containerCenterY;
+            
+            // Adjust pan to keep the pinch center point fixed
+            const zoomFactor = z1 / z0;
+            const newPanX = (c.pan.x - offsetX) * zoomFactor + offsetX;
+            const newPanY = (c.pan.y - offsetY) * zoomFactor + offsetY;
+            
+            pan2 = clampPan({ x: newPanX, y: newPanY }, z1, rect, true);
+          } else {
+            // No center point provided - zoom towards image center
+            const zoomFactor = z1 / z0;
+            const newPanX = c.pan.x * zoomFactor;
+            const newPanY = c.pan.y * zoomFactor;
+            pan2 = clampPan({ x: newPanX, y: newPanY }, z1, rect, true);
+          }
+        }
+        
         return { ...c, zoom: z1, pan: pan2 };
       })
     );
@@ -723,8 +750,10 @@ export default function MultiCamInspector({
         hasMoved = true;
       }
       
-      // Scale pan sensitivity with zoom level for responsive panning at all zoom levels
-      const sensitivity = 1.5 * cam.zoom;
+      // Reduce pan sensitivity when zoomed in for more precise control
+      // At zoom 1.0, sensitivity = 1.0
+      // At zoom 10.0, sensitivity = 0.5 (slower panning for precision)
+      const sensitivity = 1.0;
       
       setCams(prev => prev.map(c => {
         if (c.id !== id) return c;
@@ -2462,13 +2491,13 @@ export default function MultiCamInspector({
                     onDropFile={(f) => onDropFile(cam.id, f)}
                     onDoubleClick={() => resetView(cam.id)}
                     onHover={() => setHoverId(cam.id)}
-                    onPinch={(rect, fac) => onPinch(cam.id, rect, fac)}
+                    onPinch={(rect, fac, centerX, centerY) => onPinch(cam.id, rect, fac, centerX, centerY)}
                     onPanUpdate={(deltaX, deltaY) => {
                       setCams(prev => prev.map(c => {
                         if (c.id !== cam.id) return c;
                         
-                        // Apply sensitivity scaling like the mouse drag system
-                        const sensitivity = 1.5 * c.zoom;
+                        // Use consistent sensitivity for touch panning
+                        const sensitivity = 1.0;
                         const newPan = {
                           x: c.pan.x + deltaX * sensitivity,
                           y: c.pan.y + deltaY * sensitivity
@@ -3263,7 +3292,7 @@ function CamTile({
     onDropFile: (f?: File) => void;
     onDoubleClick: () => void;
     onHover: () => void;
-    onPinch: (rect: DOMRect, fac: number) => void;
+    onPinch: (rect: DOMRect, fac: number, centerX?: number, centerY?: number) => void;
     onPanUpdate?: (deltaX: number, deltaY: number) => void;
     big?: boolean;
     showLogs?: boolean;
@@ -3311,6 +3340,8 @@ function CamTile({
       const rect = el.getBoundingClientRect();
       const fac = e.scale / (lastScale.current || 1);
       lastScale.current = e.scale;
+      // Safari gesture events don't provide center coordinates easily
+      // So we'll zoom towards image center
       onPinch?.(rect, fac);
     };
     el.addEventListener("gesturestart", start as any, { passive: false } as any);
@@ -3390,8 +3421,11 @@ function CamTile({
       // Convert to container coordinates and apply zoom
       const rect = rootRef.current?.getBoundingClientRect();
       if (rect) {
-        // Apply zoom with rect and factor (matching onPinch signature)
-        onPinch(rect, newZoom / cam.zoom);
+        // Calculate center relative to container
+        const relCenterX = centerX - rect.left;
+        const relCenterY = centerY - rect.top;
+        // Apply zoom with rect, factor, and center point
+        onPinch(rect, newZoom / cam.zoom, relCenterX, relCenterY);
       }
     } else if (e.touches.length === 1 && touchState.isPanning && touchState.lastX !== undefined && touchState.lastY !== undefined) {
       // Single finger pan - calculate movement delta
@@ -3605,12 +3639,9 @@ function clampPan(pan: { x: number; y: number }, zoom: number, rect: DOMRect, li
   // At zoom > 1.0, image extends beyond viewport
   
   // How much the scaled image extends beyond the viewport on each side
-  const imageOverhangX = (rect.width * zoom - rect.width) / 2;
-  const imageOverhangY = (rect.height * zoom - rect.height) / 2;
-  
-  // Since canvas uses panX/zoom, the pan bounds are the overhang * zoom
-  const maxPanX = imageOverhangX * zoom;
-  const maxPanY = imageOverhangY * zoom;
+  // This is the maximum distance we can pan in each direction
+  const maxPanX = (rect.width * (zoom - 1)) / 2;
+  const maxPanY = (rect.height * (zoom - 1)) / 2;
   
   return { 
     x: clamp(pan.x, -maxPanX, maxPanX), 
@@ -3738,11 +3769,10 @@ function CanvasImage({
     // Apply zoom and pan
     const scaledWidth = drawWidth * zoom;
     const scaledHeight = drawHeight * zoom;
-    const panOffsetX = panX / zoom;
-    const panOffsetY = panY / zoom;
     
-    const finalX = offsetX + (rect.width - scaledWidth) / 2 + panOffsetX;
-    const finalY = offsetY + (rect.height - scaledHeight) / 2 + panOffsetY;
+    // Pan should not be divided by zoom - it's already in screen pixels
+    const finalX = offsetX + (rect.width - scaledWidth) / 2 + panX;
+    const finalY = offsetY + (rect.height - scaledHeight) / 2 + panY;
 
     // Use high-quality scaling
     ctx.imageSmoothingEnabled = true;
