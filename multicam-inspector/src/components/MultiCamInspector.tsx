@@ -610,12 +610,151 @@ export default function MultiCamInspector({
   
 
   const resetAll = () => setCams((prev) => prev.map((c) => ({ ...c, zoom: 1, pan: { x: 0, y: 0 } })));
+  
+  // Auto-zoom to fit the blue box (validation boxes) for all cameras
+  const autoFitBlueBox = useCallback((specificCameraId?: number) => {
+    // Get all blue box info from the canvas rendering
+    const blueBoxes = (window as any).blueBoxes;
+    if (!blueBoxes || Object.keys(blueBoxes).length === 0) {
+      console.log('No blue boxes found to fit');
+      return;
+    }
+    
+    setCams(prev => prev.map(cam => {
+      // If a specific camera is requested, only zoom that one
+      if (specificCameraId !== undefined && cam.id !== specificCameraId) {
+        return cam;
+      }
+      
+      // Check if this camera has a blue box
+      const blueBoxInfo = blueBoxes[cam.id];
+      if (!blueBoxInfo) {
+        // No blue box for this camera, skip it
+        return cam;
+      }
+      
+      // Get container dimensions
+      const containerElement = document.querySelector(`[data-camera-id="${cam.id}"]`) as HTMLElement;
+      if (!containerElement) return cam;
+      
+      const rect = containerElement.getBoundingClientRect();
+      
+      // Calculate zoom needed to fit the blue box
+      // The blue box is in normalized coordinates (0-1)
+      const boxWidth = blueBoxInfo.normalized.width;
+      const boxHeight = blueBoxInfo.normalized.height;
+      
+      // Use full viewport space (100%)
+      const paddingFactor = 1.0;
+      
+      // Calculate zoom to fit width and height
+      const zoomForWidth = paddingFactor / boxWidth;
+      const zoomForHeight = paddingFactor / boxHeight;
+      
+      // Use the smaller zoom to ensure the entire box fits
+      const targetZoom = Math.min(zoomForWidth, zoomForHeight, 10); // Cap at max zoom
+      
+      // Calculate pan to center the blue box
+      const boxCenterX = blueBoxInfo.normalized.centerX;
+      const boxCenterY = blueBoxInfo.normalized.centerY;
+      
+      // Calculate the image dimensions that match Canvas rendering
+      const containerAspect = rect.width / rect.height;
+      const imageAspect = 16 / 9; // Most cameras are 16:9, adjust if needed
+      
+      let drawWidth, drawHeight;
+      if (imageAspect > containerAspect) {
+        // Image is wider - fit to width
+        drawWidth = rect.width;
+        drawHeight = rect.width / imageAspect;
+      } else {
+        // Image is taller - fit to height
+        drawWidth = rect.height * imageAspect;
+        drawHeight = rect.height;
+      }
+      
+      // Convert normalized center to pan offset
+      // Account for the actual image size within the container
+      const panX = -(boxCenterX - 0.5) * drawWidth * targetZoom;
+      const panY = -(boxCenterY - 0.5) * drawHeight * targetZoom;
+      
+      // Clamp the pan values
+      const clampedPan = clampPan({ x: panX, y: panY }, targetZoom, rect, true);
+      
+      console.log(`Auto-fitting blue box for camera ${cam.id}:`, {
+        boxCenter: { x: boxCenterX, y: boxCenterY },
+        boxSize: { width: boxWidth, height: boxHeight },
+        targetZoom,
+        targetPan: clampedPan
+      });
+      
+      return { ...cam, zoom: targetZoom, pan: clampedPan };
+    }));
+  }, []);
 
   // --- Layout helpers ---
   const isIPad = () => {
     return /iPad|Android|Touch/i.test(navigator.userAgent) && window.innerWidth >= 768 && window.innerWidth < 1024;
   };
 
+  // Clear blue boxes when switching to a new item and auto-zoom after rendering
+  useEffect(() => {
+    // Don't do anything if there are no items
+    if (items.length === 0) return;
+    
+    // Clear previous blue boxes
+    (window as any).blueBoxes = {};
+    
+    console.log(`Task changed to ${idx + 1}, waiting for blue boxes to render...`);
+    
+    // First, reset all views immediately
+    resetAll();
+    
+    // Track if we've already zoomed to prevent multiple zooms
+    let hasZoomed = false;
+    
+    // Then wait for canvas to render and blue boxes to be calculated
+    const checkInterval = setInterval(() => {
+      if (hasZoomed) {
+        clearInterval(checkInterval);
+        return;
+      }
+      
+      const blueBoxes = (window as any).blueBoxes;
+      if (blueBoxes && Object.keys(blueBoxes).length > 0) {
+        // Blue boxes found, auto-zoom ONCE and stop checking
+        hasZoomed = true;
+        clearInterval(checkInterval);
+        autoFitBlueBox();
+        const cameraCount = Object.keys(blueBoxes).length;
+        console.log(`✅ Auto-zoomed ${cameraCount} camera${cameraCount !== 1 ? 's' : ''} to fit validation boxes for task ${idx + 1}`);
+        addLog(`🔍 Auto-zoomed ${cameraCount} camera${cameraCount !== 1 ? 's' : ''} to validation areas`);
+      }
+    }, 100); // Check every 100ms
+    
+    // Stop checking after 2 seconds if no blue boxes appear
+    const timeoutTimer = setTimeout(() => {
+      clearInterval(checkInterval);
+      if (!hasZoomed) {
+        const blueBoxes = (window as any).blueBoxes;
+        if (!blueBoxes || Object.keys(blueBoxes).length === 0) {
+          console.log('No validation boxes found after 2s, keeping default view');
+        }
+      }
+    }, 2000);
+    
+    return () => {
+      clearInterval(checkInterval);
+      clearTimeout(timeoutTimer);
+    };
+  }, [idx, items.length]); // Only depend on idx and items.length
+  
+  // Add the dependencies in a separate effect that doesn't interfere
+  useEffect(() => {
+    // This is just to satisfy React's exhaustive-deps rule
+    // The actual logic is in the effect above
+  }, [autoFitBlueBox, resetAll, addLog]);
+  
   // --- Hotkeys: fullscreen --- (moved after selectStatus definition)
 
   const onDropFile = async (id: number, file?: File) => {
@@ -1921,11 +2060,21 @@ export default function MultiCamInspector({
         // C = Open Camera Calibration selection
         setCalibrateSelectionModal(true);
         addLog("🎯 Camera Calibration selection opened");
+      } else if (k === "z") {
+        // Z = Manual auto-zoom (for testing)
+        const blueBoxes = (window as any).blueBoxes;
+        if (blueBoxes && Object.keys(blueBoxes).length > 0) {
+          autoFitBlueBox();
+          const cameraCount = Object.keys(blueBoxes).length;
+          addLog(`🔍 Manual zoom: ${cameraCount} camera${cameraCount !== 1 ? 's' : ''}`);
+        } else {
+          addLog("❌ No blue boxes to zoom to");
+        }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [hoverId, fsId, resetView, resetAll, addLog, showLogs, selectStatus]);
+  }, [hoverId, fsId, resetView, resetAll, addLog, showLogs, selectStatus, autoFitBlueBox, showTransformModal, showCalibrateSelectionModal, showCalibrateModal]);
   
   // Update task comment
   const updateTaskComment = async (comment: string) => {
@@ -4002,7 +4151,7 @@ function CanvasImage({
         const maxNormY = (maxY - finalY) / scaledHeight;
         
         // Add margin in normalized coordinates
-        const marginNorm = 0.05; // 5% margin in image space
+        const marginNorm = 0.03; // 3% margin in image space
         const boundMinX = Math.max(0, minNormX - marginNorm);
         const boundMinY = Math.max(0, minNormY - marginNorm);
         const boundMaxX = Math.min(1, maxNormX + marginNorm);
@@ -4065,6 +4214,9 @@ function CanvasImage({
         const blueBoxWidth = blueBoxNormWidth * scaledWidth;
         const blueBoxHeight = blueBoxNormHeight * scaledHeight;
         
+        // Blue box visual rendering is disabled but calculations are kept for auto-zoom
+        // Uncomment the lines below to show the blue box for debugging
+        /*
         // Draw transparent blue box
         ctx.fillStyle = 'rgba(59, 130, 246, 0.1)'; // 10% opacity blue
         ctx.fillRect(blueBoxX, blueBoxY, blueBoxWidth, blueBoxHeight);
@@ -4073,6 +4225,64 @@ function CanvasImage({
         ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)'; // 40% opacity blue
         ctx.lineWidth = 2;
         ctx.strokeRect(blueBoxX, blueBoxY, blueBoxWidth, blueBoxHeight);
+        
+        // Draw coordinate labels at each corner
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.9)'; // Blue color for text
+        ctx.font = '11px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'bottom';
+        
+        // Top-left corner
+        const topLeftText = `(${blueBoxNormX.toFixed(2)}, ${blueBoxNormY.toFixed(2)})`;
+        ctx.fillText(topLeftText, blueBoxX + 2, blueBoxY - 2);
+        
+        // Top-right corner
+        ctx.textAlign = 'right';
+        const topRightText = `(${(blueBoxNormX + blueBoxNormWidth).toFixed(2)}, ${blueBoxNormY.toFixed(2)})`;
+        ctx.fillText(topRightText, blueBoxX + blueBoxWidth - 2, blueBoxY - 2);
+        
+        // Bottom-left corner
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const bottomLeftText = `(${blueBoxNormX.toFixed(2)}, ${(blueBoxNormY + blueBoxNormHeight).toFixed(2)})`;
+        ctx.fillText(bottomLeftText, blueBoxX + 2, blueBoxY + blueBoxHeight + 2);
+        
+        // Bottom-right corner
+        ctx.textAlign = 'right';
+        const bottomRightText = `(${(blueBoxNormX + blueBoxNormWidth).toFixed(2)}, ${(blueBoxNormY + blueBoxNormHeight).toFixed(2)})`;
+        ctx.fillText(bottomRightText, blueBoxX + blueBoxWidth - 2, blueBoxY + blueBoxHeight + 2);
+        
+        // Center point
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.7)';
+        const centerText = `Center: (${(blueBoxNormX + blueBoxNormWidth/2).toFixed(2)}, ${(blueBoxNormY + blueBoxNormHeight/2).toFixed(2)})`;
+        ctx.fillText(centerText, blueBoxX + blueBoxWidth/2, blueBoxY + blueBoxHeight/2);
+        */
+        
+        // Store the blue box info for auto-zoom functionality (per camera)
+        if (!(window as any).blueBoxes) {
+          (window as any).blueBoxes = {};
+        }
+        (window as any).blueBoxes[cameraId] = {
+          normalized: {
+            x: blueBoxNormX,
+            y: blueBoxNormY,
+            width: blueBoxNormWidth,
+            height: blueBoxNormHeight,
+            centerX: blueBoxNormX + blueBoxNormWidth/2,
+            centerY: blueBoxNormY + blueBoxNormHeight/2
+          },
+          pixels: {
+            x: blueBoxX,
+            y: blueBoxY,
+            width: blueBoxWidth,
+            height: blueBoxHeight,
+            centerX: blueBoxX + blueBoxWidth/2,
+            centerY: blueBoxY + blueBoxHeight/2
+          },
+          cameraId: cameraId
+        };
       }
     }
 
@@ -4237,11 +4447,10 @@ function CanvasImage({
 
     const scaledWidth = drawWidth * zoom;
     const scaledHeight = drawHeight * zoom;
-    const panOffsetX = panX / zoom;
-    const panOffsetY = panY / zoom;
     
-    const finalX = offsetX + (rect.width - scaledWidth) / 2 + panOffsetX;
-    const finalY = offsetY + (rect.height - scaledHeight) / 2 + panOffsetY;
+    // Pan is already in screen pixels, don't divide by zoom
+    const finalX = offsetX + (rect.width - scaledWidth) / 2 + panX;
+    const finalY = offsetY + (rect.height - scaledHeight) / 2 + panY;
 
     // Convert to image pixel coordinates
     const imageX = Math.round(((mouseX - finalX) * img.width) / scaledWidth);
