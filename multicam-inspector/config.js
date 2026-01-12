@@ -223,6 +223,60 @@ const baseConfig = {
         6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
         7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       }
+    },
+    hangar_trollhattan_vpn: {
+      id: "hangar_trollhattan_vpn",
+      label: "Trollhättan (hangar_trollhattan_vpn)",
+      description: "Trollhättan hangar",
+      connection: {
+        ssh_host: "", // To be configured
+        ip: "" // To be configured
+      },
+      folderName: "Trollhattan",
+      lights: {
+        enabled: true,
+        endpoint: "", // To be configured with IP
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3
+      },
+      cameraTransforms: {
+        0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      }
+    },
+    hangar_vanersborg_vpn: {
+      id: "hangar_vanersborg_vpn",
+      label: "Vänersborg (hangar_vanersborg_vpn)",
+      description: "Vänersborg hangar",
+      connection: {
+        ssh_host: "", // To be configured
+        ip: "" // To be configured
+      },
+      folderName: "Vanersborg",
+      lights: {
+        enabled: true,
+        endpoint: "", // To be configured with IP
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3
+      },
+      cameraTransforms: {
+        0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      }
     }
   },
   
@@ -250,7 +304,7 @@ const baseConfig = {
   },
   
   validation: {
-    validHangars: ["hangar_sisjon_vpn", "molndal", "forges", "hangar_rouen_vpn", "hangar_boras_vpn", "hangar_skovde_vpn", "hangar_uddevalla_vpn", "hangar_farsta_vpn"],
+    validHangars: ["hangar_sisjon_vpn", "molndal", "forges", "hangar_rouen_vpn", "hangar_boras_vpn", "hangar_skovde_vpn", "hangar_uddevalla_vpn", "hangar_farsta_vpn", "hangar_trollhattan_vpn", "hangar_vanersborg_vpn"],
     imageFormats: [".jpg", ".jpeg"],
     defaultImageDimensions: {
       width: 4000,

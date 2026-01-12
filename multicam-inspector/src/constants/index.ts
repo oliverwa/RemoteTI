@@ -15,6 +15,7 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_sisjon_vpn", 
     label: "Mölndal",
     assignedDrone: "bender",
+    operational: true,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -30,6 +31,7 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_rouen_vpn", 
     label: "Forges-les-Eaux",
     assignedDrone: "marvin",
+    operational: true,
     cameraTransforms: {
       0: { x: -77, y: 11, scale: 1.0, rotation: -3.3 },     // RUR
       1: { x: -50, y: -75, scale: 1.0, rotation: 1.4 },     // FUR
@@ -45,6 +47,7 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_boras_vpn", 
     label: "Borås",
     assignedDrone: "E3-001",
+    operational: false,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -60,6 +63,7 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_skovde_vpn", 
     label: "Skövde",
     assignedDrone: "E3-002",
+    operational: false,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -75,6 +79,7 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_uddevalla_vpn", 
     label: "Uddevalla",
     assignedDrone: "E3-003",
+    operational: false,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -90,6 +95,39 @@ export const HANGARS: HangarConfig[] = [
     id: "hangar_farsta_vpn", 
     label: "Farsta",
     assignedDrone: "E3-004",
+    operational: false,
+    cameraTransforms: {
+      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+    }
+  },
+  { 
+    id: "hangar_trollhattan_vpn", 
+    label: "Trollhättan",
+    assignedDrone: "E3-005",
+    operational: false,
+    cameraTransforms: {
+      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+    }
+  },
+  { 
+    id: "hangar_vanersborg_vpn", 
+    label: "Vänersborg",
+    assignedDrone: "E3-006",
+    operational: false,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },

@@ -18,6 +18,7 @@ interface HangarStatusData {
   lastActivity?: string;
   assignedDrone?: string;
   estimatedCompletion?: string;
+  operational?: boolean;
   activeInspection?: {
     type: string;
     progress: number;
@@ -46,7 +47,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           name: hangar.label,
           state: 'standby' as const,
           assignedDrone: hangar.assignedDrone,
-          lastActivity: 'No recent activity'
+          lastActivity: 'No recent activity',
+          operational: hangar.operational !== false // Default to true if not specified
         }));
         
         // Fetch alarm session for each hangar
@@ -857,7 +859,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     }
   };
 
-  const getStatusColor = (state: string, hasWorkflow: boolean = false, isRemote: boolean = false, alarmSession?: any) => {
+  const getStatusColor = (state: string, hasWorkflow: boolean = false, isRemote: boolean = false, alarmSession?: any, operational?: boolean) => {
+    // Non-operational hangars get yellow border
+    if (!operational) {
+      return 'bg-white border-yellow-400 shadow-lg hover:shadow-xl';
+    }
     // For remote users, use different colors based on their simplified states
     if (isRemote && hasWorkflow && state !== 'standby') {
       // Check if in "Standby for inspection" state (initial RTI completed, awaiting decision)
@@ -901,7 +907,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     }
   };
 
-  const getStatusLabel = (state: string, currentPhase?: string, alarmSession?: any, isRemote?: boolean) => {
+  const getStatusLabel = (state: string, currentPhase?: string, alarmSession?: any, isRemote?: boolean, operational?: boolean) => {
+    // Non-operational hangars show "Under Construction"
+    if (!operational) {
+      return 'Under Construction';
+    }
     // For remote users, show simplified states
     if (isRemote && alarmSession?.workflow?.phases) {
       const phases = alarmSession.workflow.phases;
@@ -1227,9 +1237,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           {hangarStatuses.map(hangar => (
             <div
               key={hangar.id}
-              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all min-h-[200px] flex flex-col ${getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession)}`}
+              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all min-h-[200px] flex flex-col ${getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession, hangar.operational)}`}
               onClick={() => {
-                if (hangar.state !== 'standby') {
+                if (hangar.state !== 'standby' && hangar.operational) {
                   setSelectedHangar(hangar.id);
                 }
               }}
@@ -1258,18 +1268,18 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         : 'Perform Mission Reset'}
                     </button>
                   )}
-                  {hangar.state === 'standby' && (
-                    <span className="font-semibold text-green-700 text-base">
-                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'remote')}
+                  {(hangar.state === 'standby' || !hangar.operational) && (
+                    <span className={`font-semibold ${hangar.operational ? 'text-green-700' : 'text-yellow-700'} text-base`}>
+                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'remote', hangar.operational)}
                     </span>
                   )}
-                  {getStatusIcon(hangar.state, hangar.alarmSession, userType === 'remote')}
+                  {hangar.operational && getStatusIcon(hangar.state, hangar.alarmSession, userType === 'remote')}
                 </div>
               </div>
               
               <div className="flex-1 flex flex-col justify-end">
                 
-                {hangar.alarmSession && hangar.state !== 'standby' ? (
+                {hangar.alarmSession && hangar.state !== 'standby' && hangar.operational ? (
                   <>
                     {userType === 'remote' ? (
                       /* Simplified view for remote users */
@@ -1292,7 +1302,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 ) : (
                   <>
                     {/* Show alarm button for Everdrone users when operational */}
-                    {hangar.state === 'standby' && userType === 'everdrone' && (
+                    {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && (
                       <div className="flex justify-end -mt-8">
                         <button
                           onClick={(e) => {

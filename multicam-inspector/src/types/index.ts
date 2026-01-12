@@ -57,6 +57,7 @@ export interface HangarConfig {
   id: string;
   label: string;
   assignedDrone?: string;
+  operational?: boolean;
   cameraTransforms: { [cameraId: number]: CameraTransform };
 }
 
