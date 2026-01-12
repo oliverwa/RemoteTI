@@ -115,6 +115,114 @@ const baseConfig = {
         6: { x: 5, y: -30, scale: 0.99, rotation: -1.8 },     // FDL
         7: { x: 130, y: -132, scale: 1.0, rotation: -9.3 },   // RDL
       }
+    },
+    hangar_boras_vpn: {
+      id: "hangar_boras_vpn",
+      label: "Borås (hangar_boras_vpn)",
+      description: "Borås hangar",
+      connection: {
+        ssh_host: "", // To be configured
+        ip: "" // To be configured
+      },
+      folderName: "Boras",
+      lights: {
+        enabled: true,
+        endpoint: "", // To be configured with IP
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3
+      },
+      cameraTransforms: {
+        0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      }
+    },
+    hangar_skovde_vpn: {
+      id: "hangar_skovde_vpn",
+      label: "Skövde (hangar_skovde_vpn)",
+      description: "Skövde hangar",
+      connection: {
+        ssh_host: "", // To be configured
+        ip: "" // To be configured
+      },
+      folderName: "Skovde",
+      lights: {
+        enabled: true,
+        endpoint: "", // To be configured with IP
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3
+      },
+      cameraTransforms: {
+        0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      }
+    },
+    hangar_uddevalla_vpn: {
+      id: "hangar_uddevalla_vpn",
+      label: "Uddevalla (hangar_uddevalla_vpn)",
+      description: "Uddevalla hangar",
+      connection: {
+        ssh_host: "", // To be configured
+        ip: "" // To be configured
+      },
+      folderName: "Uddevalla",
+      lights: {
+        enabled: true,
+        endpoint: "", // To be configured with IP
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3
+      },
+      cameraTransforms: {
+        0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      }
+    },
+    hangar_farsta_vpn: {
+      id: "hangar_farsta_vpn",
+      label: "Farsta (hangar_farsta_vpn)",
+      description: "Farsta hangar",
+      connection: {
+        ssh_host: "", // To be configured
+        ip: "" // To be configured
+      },
+      folderName: "Farsta",
+      lights: {
+        enabled: true,
+        endpoint: "", // To be configured with IP
+        username: "system",
+        password: "FJjf93/#",
+        waitTime: 3
+      },
+      cameraTransforms: {
+        0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+        7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      }
     }
   },
   
@@ -142,7 +250,7 @@ const baseConfig = {
   },
   
   validation: {
-    validHangars: ["hangar_sisjon_vpn", "molndal", "forges", "hangar_rouen_vpn"],
+    validHangars: ["hangar_sisjon_vpn", "molndal", "forges", "hangar_rouen_vpn", "hangar_boras_vpn", "hangar_skovde_vpn", "hangar_uddevalla_vpn", "hangar_farsta_vpn"],
     imageFormats: [".jpg", ".jpeg"],
     defaultImageDimensions: {
       width: 4000,

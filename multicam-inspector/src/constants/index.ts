@@ -40,12 +40,79 @@ export const HANGARS: HangarConfig[] = [
       6: { x: 5, y: -30, scale: 0.99, rotation: -1.8 },     // FDL
       7: { x: 130, y: -132, scale: 1.0, rotation: -9.3 },   // RDL
     }
+  },
+  { 
+    id: "hangar_boras_vpn", 
+    label: "Borås",
+    assignedDrone: "E3-001",
+    cameraTransforms: {
+      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+    }
+  },
+  { 
+    id: "hangar_skovde_vpn", 
+    label: "Skövde",
+    assignedDrone: "E3-002",
+    cameraTransforms: {
+      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+    }
+  },
+  { 
+    id: "hangar_uddevalla_vpn", 
+    label: "Uddevalla",
+    assignedDrone: "E3-003",
+    cameraTransforms: {
+      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+    }
+  },
+  { 
+    id: "hangar_farsta_vpn", 
+    label: "Farsta",
+    assignedDrone: "E3-004",
+    cameraTransforms: {
+      0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+      7: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+    }
   }
 ];
 
 export const DRONE_OPTIONS = [
   { id: "bender", label: "Bender" },
   { id: "marvin", label: "Marvin" },
+  { id: "E3-001", label: "E3-001" },
+  { id: "E3-002", label: "E3-002" },
+  { id: "E3-003", label: "E3-003" },
+  { id: "E3-004", label: "E3-004" },
+  { id: "E3-005", label: "E3-005" },
+  { id: "E3-006", label: "E3-006" },
+  { id: "E3-007", label: "E3-007" },
 ];
 
 // Utility functions

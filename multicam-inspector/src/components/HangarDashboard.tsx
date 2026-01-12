@@ -1223,23 +1223,23 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       <div className="p-8">
 
         {/* Hangar Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-fr">
           {hangarStatuses.map(hangar => (
             <div
               key={hangar.id}
-              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all ${getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession)}`}
+              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all min-h-[200px] flex flex-col ${getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession)}`}
               onClick={() => {
                 if (hangar.state !== 'standby') {
                   setSelectedHangar(hangar.id);
                 }
               }}
             >
-              <div className="flex justify-between items-center">
-                <div>
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
                   <h3 className="font-bold text-gray-900 text-lg">{hangar.name}</h3>
                   <p className="text-xs text-gray-500 mt-0.5">{hangar.assignedDrone || 'No drone'}</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   {/* Show button for remote users when inspection is ready but not completed */}
                   {userType === 'remote' && hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
                    hangar.alarmSession?.inspections?.missionReset?.path && 
@@ -1267,7 +1267,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
               </div>
               
-              <div className="space-y-1">
+              <div className="flex-1 flex flex-col justify-end">
                 
                 {hangar.alarmSession && hangar.state !== 'standby' ? (
                   <>
