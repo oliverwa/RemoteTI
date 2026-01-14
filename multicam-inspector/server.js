@@ -2152,6 +2152,216 @@ app.post('/api/inspection/update-progress', async (req, res) => {
   }
 });
 
+// API endpoint to get maintenance history by drone (auto-detected from completed inspections)
+app.get('/api/maintenance-history', async (req, res) => {
+  try {
+    const maintenanceHistory = {};
+    
+    // Scan through all hangar folders to find drone sessions
+    if (fs.existsSync(SNAPSHOTS_DIR)) {
+      const hangarDirs = fs.readdirSync(SNAPSHOTS_DIR).filter(item => {
+        const itemPath = path.join(SNAPSHOTS_DIR, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+      
+      // Collect all sessions from all hangars
+      const allSessions = [];
+      
+      for (const hangarId of hangarDirs) {
+        const hangarPath = path.join(SNAPSHOTS_DIR, hangarId);
+        
+        // Get all session folders for this hangar
+        const sessions = fs.readdirSync(hangarPath)
+          .filter(item => {
+            const itemPath = path.join(hangarPath, item);
+            return fs.statSync(itemPath).isDirectory();
+          })
+          .map(sessionName => {
+            const sessionPath = path.join(hangarPath, sessionName);
+            const stats = fs.statSync(sessionPath);
+            
+            // Extract drone ID from session name
+            // Session names typically follow patterns like:
+            // - "drone-001_251124_140000"
+            // - "bender_251006_154641"
+            // - "onsite_ti_drone-001_241124_140000"
+            // - "full_remote_ti_bender_241124_140000"
+            let droneId = null;
+            const parts = sessionName.split('_');
+            
+            // Try to find the drone ID in the session name
+            if (sessionName.toLowerCase().includes('onsite') || 
+                sessionName.toLowerCase().includes('remote') ||
+                sessionName.toLowerCase().includes('extended') ||
+                sessionName.toLowerCase().includes('service') ||
+                sessionName.toLowerCase().includes('mission') ||
+                sessionName.toLowerCase().includes('basic')) {
+              // For inspection sessions, drone ID is usually after the type prefix
+              for (let i = 0; i < parts.length - 2; i++) {
+                // Skip type prefixes and look for the drone ID
+                if (!['onsite', 'ti', 'remote', 'full', 'initial', 'extended', 'service', 'mission', 'reset', 'basic'].includes(parts[i].toLowerCase())) {
+                  droneId = parts[i];
+                  break;
+                }
+              }
+            } else {
+              // For regular sessions, drone ID is usually the first part
+              droneId = parts[0];
+            }
+            
+            if (!droneId) return null;
+            
+            // Find inspection JSON file
+            const files = fs.readdirSync(sessionPath);
+            const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
+            
+            if (!inspectionFile) return null;
+            
+            try {
+              const inspectionData = JSON.parse(fs.readFileSync(path.join(sessionPath, inspectionFile), 'utf8'));
+              
+              // Also check if drone ID is in the inspection data
+              if (inspectionData.sessionInfo?.drone) {
+                droneId = inspectionData.sessionInfo.drone;
+              } else if (inspectionData.metadata?.droneId) {
+                droneId = inspectionData.metadata.droneId;
+              }
+              
+              // Determine inspection type
+              let type = null;
+              const sessionNameLower = sessionName.toLowerCase();
+              
+              if (sessionNameLower.includes('onsite') || inspectionData.type === 'onsite-ti-inspection') {
+                type = 'onsite-ti';
+              } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
+                type = 'extended-ti';
+              } else if (sessionNameLower.includes('service') || inspectionData.type === 'service-inspection') {
+                type = 'service';
+              }
+              
+              // Check if inspection is completed
+              const isCompleted = inspectionData.completionStatus?.status === 'completed' ||
+                                 (inspectionData.tasks && 
+                                  inspectionData.tasks.every(t => t.status === 'pass' || t.status === 'fail' || t.status === 'na'));
+              
+              if (type && isCompleted && droneId) {
+                return {
+                  droneId,
+                  type,
+                  date: inspectionData.completionStatus?.completedAt || stats.mtime.toISOString(),
+                  sessionName,
+                  hangarId
+                };
+              }
+            } catch (err) {
+              // Ignore parsing errors
+            }
+            
+            return null;
+          })
+          .filter(Boolean);
+        
+        allSessions.push(...sessions);
+      }
+      
+      // Group sessions by drone ID and find the most recent of each type
+      for (const session of allSessions) {
+        if (!maintenanceHistory[session.droneId]) {
+          maintenanceHistory[session.droneId] = {
+            lastOnsiteTI: null,
+            lastExtendedTI: null,
+            lastService: null
+          };
+        }
+        
+        if (session.type === 'onsite-ti') {
+          if (!maintenanceHistory[session.droneId].lastOnsiteTI || 
+              new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastOnsiteTI)) {
+            maintenanceHistory[session.droneId].lastOnsiteTI = session.date;
+          }
+        } else if (session.type === 'extended-ti') {
+          if (!maintenanceHistory[session.droneId].lastExtendedTI || 
+              new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastExtendedTI)) {
+            maintenanceHistory[session.droneId].lastExtendedTI = session.date;
+          }
+        } else if (session.type === 'service') {
+          if (!maintenanceHistory[session.droneId].lastService || 
+              new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastService)) {
+            maintenanceHistory[session.droneId].lastService = session.date;
+          }
+        }
+      }
+    }
+    
+    res.json(maintenanceHistory);
+    
+  } catch (error) {
+    log('error', 'Failed to get maintenance history:', error.message);
+    res.status(500).json({ error: 'Failed to get maintenance history' });
+  }
+});
+
+// API endpoint to update maintenance history for a hangar
+app.post('/api/maintenance-history/:hangarId', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const { type, date, notes } = req.body;
+    
+    if (!type || !date) {
+      return res.status(400).json({ error: 'Type and date are required' });
+    }
+    
+    const historyFile = path.join(BASE_DIR, 'data', 'maintenance-history.json');
+    let history = {};
+    
+    if (fs.existsSync(historyFile)) {
+      history = JSON.parse(fs.readFileSync(historyFile, 'utf8'));
+    }
+    
+    // Initialize hangar history if it doesn't exist
+    if (!history[hangarId]) {
+      history[hangarId] = {
+        lastOnsiteTI: null,
+        lastExtendedTI: null,
+        lastService: null,
+        history: []
+      };
+    }
+    
+    // Update the last maintenance date based on type
+    if (type === 'onsite-ti') {
+      history[hangarId].lastOnsiteTI = date;
+    } else if (type === 'extended-ti') {
+      history[hangarId].lastExtendedTI = date;
+    } else if (type === 'service') {
+      history[hangarId].lastService = date;
+    }
+    
+    // Add to history log
+    history[hangarId].history.push({
+      type,
+      date,
+      notes,
+      recordedAt: new Date().toISOString()
+    });
+    
+    // Keep only last 100 history entries per hangar
+    if (history[hangarId].history.length > 100) {
+      history[hangarId].history = history[hangarId].history.slice(-100);
+    }
+    
+    // Save updated history
+    fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
+    
+    log('info', `Updated maintenance history for ${hangarId}: ${type} on ${date}`);
+    res.json({ success: true, hangarHistory: history[hangarId] });
+    
+  } catch (error) {
+    log('error', 'Failed to update maintenance history:', error.message);
+    res.status(500).json({ error: 'Failed to update maintenance history' });
+  }
+});
+
 // Note: Frontend serving removed to avoid conflicts with API endpoints
 // The React app should be served from a separate process or different port
 

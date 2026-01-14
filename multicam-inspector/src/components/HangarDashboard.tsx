@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings } from 'lucide-react';
+import AdminPanel from './AdminPanel';
 
 interface HangarDashboardProps {
   currentUser: string;
@@ -25,6 +26,11 @@ interface HangarStatusData {
     assignedTo: string;
   };
   alarmSession?: any;
+  maintenanceHistory?: {
+    lastOnsiteTI: string | null;
+    lastExtendedTI: string | null;
+    lastService: string | null;
+  };
 }
 
 const HangarDashboard: React.FC<HangarDashboardProps> = ({
@@ -36,11 +42,30 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [hangarStatuses, setHangarStatuses] = useState<HangarStatusData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
+
+  // Helper function to calculate days since a date
+  const getDaysSince = (dateString: string): number => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
 
   // Load actual alarm session states for each hangar
   useEffect(() => {
     const fetchHangarStatuses = async () => {
       try {
+        // Fetch maintenance history
+        const historyResponse = await fetch('http://172.20.1.93:3001/api/maintenance-history');
+        let maintenanceData: {[key: string]: any} = {};
+        if (historyResponse.ok) {
+          maintenanceData = await historyResponse.json();
+          setMaintenanceHistory(maintenanceData);
+        }
+        
         // Start with default statuses
         const statuses: HangarStatusData[] = HANGARS.map(hangar => ({
           id: hangar.id,
@@ -48,7 +73,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           state: 'standby' as const,
           assignedDrone: hangar.assignedDrone,
           lastActivity: 'No recent activity',
-          operational: hangar.operational !== false // Default to true if not specified
+          operational: hangar.operational !== false, // Default to true if not specified
+          // Get maintenance history for the drone assigned to this hangar
+          maintenanceHistory: (hangar.assignedDrone && maintenanceData[hangar.assignedDrone]) ? {
+            lastOnsiteTI: maintenanceData[hangar.assignedDrone].lastOnsiteTI,
+            lastExtendedTI: maintenanceData[hangar.assignedDrone].lastExtendedTI,
+            lastService: maintenanceData[hangar.assignedDrone].lastService
+          } : {
+            lastOnsiteTI: null,
+            lastExtendedTI: null,
+            lastService: null
+          }
         }));
         
         // Fetch alarm session for each hangar
@@ -1208,13 +1243,22 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 <RefreshCw className="w-4 h-4" />
               </button>
               {userType === 'everdrone' && (
-                <Button
-                  onClick={onProceedToInspection}
-                  size="sm"
-                  className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
-                >
-                  Manual Inspection
-                </Button>
+                <>
+                  <button
+                    onClick={() => setShowAdminPanel(true)}
+                    className="p-2 hover:bg-white/50 rounded-lg transition-all text-gray-600 hover:text-gray-800"
+                    title="Admin Settings"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                  <Button
+                    onClick={onProceedToInspection}
+                    size="sm"
+                    className="bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
+                  >
+                    Manual Inspection
+                  </Button>
+                </>
               )}
               <Button
                 onClick={onLogout}
@@ -1234,10 +1278,23 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
 
         {/* Hangar Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-fr">
-          {hangarStatuses.map(hangar => (
+          {hangarStatuses.map(hangar => {
+            // Check if maintenance is overdue
+            const isMaintenanceOverdue = hangar.operational && hangar.assignedDrone && (
+              (hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
+              (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
+              (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
+              (!hangar.maintenanceHistory?.lastOnsiteTI && !hangar.maintenanceHistory?.lastExtendedTI && !hangar.maintenanceHistory?.lastService)
+            );
+
+            return (
             <div
               key={hangar.id}
-              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all min-h-[200px] flex flex-col ${getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession, hangar.operational)}`}
+              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all min-h-[200px] flex flex-col ${
+                isMaintenanceOverdue && hangar.state === 'standby' 
+                  ? 'bg-red-50 border-red-400 hover:border-red-500 hover:shadow-lg' 
+                  : getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession, hangar.operational)
+              }`}
               onClick={() => {
                 if (hangar.state !== 'standby' && hangar.operational) {
                   setSelectedHangar(hangar.id);
@@ -1277,6 +1334,67 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
               </div>
               
+              {/* Maintenance History */}
+              {hangar.operational && hangar.assignedDrone && (
+                <div className="mt-auto pt-4 mt-4 border-t-2 border-gray-100">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="text-sm font-semibold text-gray-700">
+                      Maintenance History - {hangar.assignedDrone}
+                    </div>
+                    {/* Show warning badge if any maintenance is overdue */}
+                    {((hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
+                      (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
+                      (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
+                      (!hangar.maintenanceHistory?.lastOnsiteTI && !hangar.maintenanceHistory?.lastExtendedTI && !hangar.maintenanceHistory?.lastService)) && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 rounded-md text-xs font-semibold">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                        Alarm
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">OnsiteTI:</div>
+                      <div className={`text-sm font-bold ${
+                        hangar.maintenanceHistory?.lastOnsiteTI 
+                          ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'text-red-600' : 'text-green-600'
+                          : 'text-gray-400'
+                      }`}>
+                        {hangar.maintenanceHistory?.lastOnsiteTI 
+                          ? `${getDaysSince(hangar.maintenanceHistory.lastOnsiteTI)} days ago`
+                          : 'Never'}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center">
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">ExtendedTI:</div>
+                      <div className={`text-sm font-bold ${
+                        hangar.maintenanceHistory?.lastExtendedTI 
+                          ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'text-red-600' : 'text-green-600'
+                          : 'text-gray-400'
+                      }`}>
+                        {hangar.maintenanceHistory?.lastExtendedTI 
+                          ? `${getDaysSince(hangar.maintenanceHistory.lastExtendedTI)} days ago`
+                          : 'Never'}
+                      </div>
+                    </div>
+                    <div className="flex-1 text-right">
+                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Service:</div>
+                      <div className={`text-sm font-bold ${
+                        hangar.maintenanceHistory?.lastService 
+                          ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'text-red-600' : 'text-green-600'
+                          : 'text-gray-400'
+                      }`}>
+                        {hangar.maintenanceHistory?.lastService 
+                          ? `${getDaysSince(hangar.maintenanceHistory.lastService)} days ago`
+                          : 'Never'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               <div className="flex-1 flex flex-col justify-end">
                 
                 {hangar.alarmSession && hangar.state !== 'standby' && hangar.operational ? (
@@ -1303,16 +1421,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   <>
                     {/* Show alarm button for Everdrone users when operational */}
                     {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && (
-                      <div className="flex justify-end -mt-8">
+                      <div className="flex justify-center mt-4">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleTriggerAlarm(hangar.id, hangar.assignedDrone);
                           }}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-red-50 hover:bg-red-100 text-red-600 rounded-md border border-red-200 transition-all hover:shadow-sm"
+                          className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all hover:shadow-lg transform hover:scale-105"
                         >
-                          <AlertTriangle className="w-3 h-3" />
-                          Alarm
+                          <AlertTriangle className="w-5 h-5" />
+                          Trigger Alarm
                         </button>
                       </div>
                     )}
@@ -1320,10 +1438,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
       </div>
+
+      {/* Admin Panel Modal */}
+      <AdminPanel 
+        isOpen={showAdminPanel}
+        onClose={() => setShowAdminPanel(false)}
+      />
     </div>
   );
 };
