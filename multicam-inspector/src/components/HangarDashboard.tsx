@@ -1,8 +1,9 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
+import { generateInspectionPDF } from '../utils/pdfGenerator';
 
 interface HangarDashboardProps {
   currentUser: string;
@@ -44,6 +45,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [availableInspections, setAvailableInspections] = useState<any[]>([]);
+  const [loadingPDF, setLoadingPDF] = useState(false);
+  const [selectedPDFInspection, setSelectedPDFInspection] = useState<any | null>(null);
 
   // Helper function to calculate days since a date
   const getDaysSince = (dateString: string): number => {
@@ -52,6 +57,167 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  // Fetch available completed inspections
+  const fetchAvailableInspections = async () => {
+    try {
+      console.log('Starting fetch of inspections...');
+      const response = await fetch('http://172.20.1.93:3001/api/folders');
+      
+      if (!response.ok) {
+        console.error('Failed to fetch folders:', response.status, response.statusText);
+        return;
+      }
+      
+      const data = await response.json();
+      console.log('Fetched data:', data);
+      console.log('Number of hangars:', data.hangars?.length || 0);
+      
+      const inspections: any[] = [];
+      
+      // Go through all hangars and sessions to find completed inspections
+      for (const hangar of data.hangars || []) {
+        console.log(`Checking hangar ${hangar.id} with ${hangar.sessions?.length || 0} sessions`);
+        
+        for (const session of hangar.sessions || []) {
+          // Check if session has an inspection and it's completed
+          if (session.hasInspection && session.inspectionStatus === 'completed') {
+            console.log(`Found completed inspection: ${session.name}`);
+            
+            // For now, just use the metadata we have instead of fetching full inspection
+            inspections.push({
+              hangarId: hangar.id,
+              hangarName: hangar.label || hangar.id,
+              sessionName: session.name,
+              sessionPath: `${hangar.id}/${session.name}`,
+              inspection: {
+                tasks: [],
+                type: session.inspectionType,
+                completionStatus: {
+                  status: 'completed',
+                  completedAt: session.created
+                }
+              },
+              images: session.images || [],
+              completedAt: session.created,
+              inspectorName: 'Inspector',
+              droneId: session.name.split('_')[1] || 'Unknown',
+              inspectionType: session.inspectionType || 'Unknown',
+              inspectionProgress: session.inspectionProgress
+            });
+          }
+        }
+      }
+      
+      console.log(`Found ${inspections.length} completed inspections`);
+      
+      // Sort by completion date (newest first)
+      inspections.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+      
+      setAvailableInspections(inspections);
+      console.log('Set inspections:', inspections);
+    } catch (error) {
+      console.error('Failed to fetch inspections:', error);
+      alert('Failed to fetch inspections. Check console for details.');
+    }
+  };
+
+  // Generate PDF report and open in new tab
+  const generatePDFReport = async (inspectionData: any) => {
+    try {
+      console.log('Starting PDF generation for:', inspectionData);
+      setLoadingPDF(true);
+      
+      // First fetch the full inspection data if we don't have it
+      let fullInspection = inspectionData.inspection;
+      if (!fullInspection.tasks || fullInspection.tasks.length === 0) {
+        console.log('Fetching full inspection data...');
+        try {
+          const response = await fetch(`http://172.20.1.93:3001/api/session/${inspectionData.hangarId}/${inspectionData.sessionName}/inspection`);
+          if (response.ok) {
+            fullInspection = await response.json();
+            console.log('Fetched full inspection:', fullInspection);
+          } else {
+            console.error('Failed to fetch inspection:', response.status);
+          }
+        } catch (err) {
+          console.error('Failed to fetch full inspection data:', err);
+        }
+      }
+      
+      // Prepare data for PDF generation
+      const data: any = {
+        inspection: fullInspection,
+        inspectorName: inspectionData.inspectorName,
+        droneId: inspectionData.droneId,
+        hangarName: inspectionData.hangarName,
+        sessionName: inspectionData.sessionName,
+        completedAt: inspectionData.completedAt,
+        images: []
+      };
+      
+      // If we have images, fetch them
+      if (inspectionData.images && inspectionData.images.length > 0) {
+        // Load image data for the selected inspection
+        const imagesWithData = await Promise.all(
+          inspectionData.images.slice(0, 2).map(async (img: any) => { // Only take first 2 images
+            try {
+              const response = await fetch(`http://172.20.1.93:3001/api/snapshot/${inspectionData.sessionPath}/${img}`);
+              const blob = await response.blob();
+              const dataUrl = await new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+              });
+              return { name: img.replace('.jpg', ''), data: dataUrl };
+            } catch (error) {
+              console.error(`Failed to load image ${img}:`, error);
+              return null;
+            }
+          })
+        );
+        
+        data.images = imagesWithData.filter(Boolean);
+      }
+      
+      // Generate the PDF blob
+      console.log('Generating PDF with data:', data);
+      const pdfBlob = await generateInspectionPDF(data);
+      console.log('PDF blob generated:', pdfBlob);
+      
+      // Create a download link and click it to open/download the PDF
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      console.log('PDF URL created:', pdfUrl);
+      
+      // Try to open in new tab first
+      const newWindow = window.open(pdfUrl, '_blank');
+      
+      // If popup was blocked, fall back to download
+      if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+        // Create a temporary link element
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = `Inspection_${inspectionData.sessionName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+        link.target = '_blank';
+        
+        // Append to body, click it, and remove it
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      // Clean up after a delay
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 10000);
+      
+      setShowPDFModal(false);
+      setLoadingPDF(false);
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to generate PDF report: ${errorMessage}`);
+      setLoadingPDF(false);
+    }
   };
 
   // Load actual alarm session states for each hangar
@@ -942,11 +1108,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     }
   };
 
-  const getStatusLabel = (state: string, currentPhase?: string, alarmSession?: any, isRemote?: boolean, operational?: boolean) => {
+  const getStatusLabel = (state: string, currentPhase?: string, alarmSession?: any, isRemote?: boolean, operational?: boolean, isMaintenanceOverdue?: boolean) => {
     // Non-operational hangars show "Under Construction"
     if (!operational) {
       return 'Under Construction';
     }
+    
+    // Check for overdue maintenance in standby state
+    if (state === 'standby' && isMaintenanceOverdue) {
+      return 'Maintenance Required';
+    }
+    
     // For remote users, show simplified states
     if (isRemote && alarmSession?.workflow?.phases) {
       const phases = alarmSession.workflow.phases;
@@ -1258,6 +1430,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   >
                     Manual Inspection
                   </Button>
+                  <Button
+                    onClick={() => {
+                      setShowPDFModal(true);
+                      fetchAvailableInspections();
+                    }}
+                    size="sm"
+                    className="bg-purple-500 hover:bg-purple-600 text-white shadow-sm flex items-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Generate PDF
+                  </Button>
                 </>
               )}
               <Button
@@ -1279,8 +1462,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         {/* Hangar Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-fr">
           {hangarStatuses.map(hangar => {
-            // Check if maintenance is overdue
-            const isMaintenanceOverdue = hangar.operational && hangar.assignedDrone && (
+            // Check if maintenance is overdue (only when in standby state)
+            const isMaintenanceOverdue = hangar.operational && hangar.assignedDrone && hangar.state === 'standby' && (
               (hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
               (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
               (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
@@ -1290,7 +1473,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             return (
             <div
               key={hangar.id}
-              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all min-h-[200px] flex flex-col ${
+              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all ${
+                !hangar.operational ? 'min-h-[120px]' : 'min-h-[200px]'
+              } flex flex-col ${
                 isMaintenanceOverdue && hangar.state === 'standby' 
                   ? 'bg-red-50 border-red-400 hover:border-red-500 hover:shadow-lg' 
                   : getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession, hangar.operational)
@@ -1301,10 +1486,12 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 }
               }}
             >
-              <div className="flex justify-between items-start mb-4">
+              <div className={`flex justify-between items-start ${hangar.operational ? 'mb-4' : ''}`}>
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg">{hangar.name}</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{hangar.assignedDrone || 'No drone'}</p>
+                  <h3 className={`font-bold text-gray-900 ${hangar.operational ? 'text-lg' : 'text-base'}`}>{hangar.name}</h3>
+                  {hangar.operational && (
+                    <p className="text-xs text-gray-500 mt-0.5">{hangar.assignedDrone || 'No drone'}</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {/* Show button for remote users when inspection is ready but not completed */}
@@ -1326,16 +1513,24 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     </button>
                   )}
                   {(hangar.state === 'standby' || !hangar.operational) && (
-                    <span className={`font-semibold ${hangar.operational ? 'text-green-700' : 'text-yellow-700'} text-base`}>
-                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'remote', hangar.operational)}
+                    <span className={`font-semibold ${
+                      !hangar.operational ? 'text-yellow-700' : 
+                      isMaintenanceOverdue ? 'text-red-700' : 
+                      'text-green-700'
+                    } text-base`}>
+                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'remote', hangar.operational, !!isMaintenanceOverdue)}
                     </span>
                   )}
-                  {hangar.operational && getStatusIcon(hangar.state, hangar.alarmSession, userType === 'remote')}
+                  {hangar.operational && (
+                    isMaintenanceOverdue && hangar.state === 'standby' 
+                      ? <XCircle className="w-6 h-6 text-red-600" />
+                      : getStatusIcon(hangar.state, hangar.alarmSession, userType === 'remote')
+                  )}
                 </div>
               </div>
               
-              {/* Maintenance History */}
-              {hangar.operational && hangar.assignedDrone && (
+              {/* Maintenance History - Only show when no workflow is active */}
+              {hangar.operational && hangar.assignedDrone && hangar.state === 'standby' && (
                 <div className="mt-auto pt-4 mt-4 border-t-2 border-gray-100">
                   <div className="flex justify-between items-center mb-3">
                     <div className="text-sm font-semibold text-gray-700">
@@ -1419,19 +1614,27 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   </>
                 ) : (
                   <>
-                    {/* Show alarm button for Everdrone users when operational */}
-                    {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && (
+                    {/* Show alarm button for Everdrone users when operational and not overdue */}
+                    {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && !isMaintenanceOverdue && (
                       <div className="flex justify-center mt-4">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleTriggerAlarm(hangar.id, hangar.assignedDrone);
                           }}
-                          className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all hover:shadow-lg transform hover:scale-105"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition-all hover:shadow-md"
                         >
-                          <AlertTriangle className="w-5 h-5" />
+                          <AlertTriangle className="w-4 h-4" />
                           Trigger Alarm
                         </button>
+                      </div>
+                    )}
+                    {/* Show maintenance required message when overdue */}
+                    {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && isMaintenanceOverdue && (
+                      <div className="flex justify-center mt-4">
+                        <div className="text-sm text-red-600 font-medium">
+                          Cannot trigger alarm - Maintenance required
+                        </div>
                       </div>
                     )}
                   </>
@@ -1449,6 +1652,117 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         isOpen={showAdminPanel}
         onClose={() => setShowAdminPanel(false)}
       />
+      
+      {/* PDF Generation Modal */}
+      {showPDFModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
+              <h2 className="text-2xl font-bold">Generate PDF Report</h2>
+              <p className="text-purple-100 mt-1">Select an inspection to generate a PDF report</p>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {availableInspections.length === 0 ? (
+                <div className="text-center py-12">
+                  <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-700 mb-2">No Completed Inspections</h3>
+                  <p className="text-gray-500">There are no completed inspections available to generate reports.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableInspections.map((inspection, index) => {
+                    const completedDate = new Date(inspection.completedAt);
+                    const isSelected = selectedPDFInspection === inspection;
+                    
+                    return (
+                      <div
+                        key={index}
+                        onClick={() => setSelectedPDFInspection(inspection)}
+                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          isSelected 
+                            ? 'border-purple-500 bg-purple-50' 
+                            : 'border-gray-200 hover:border-purple-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-gray-800">
+                              {inspection.hangarName} - {inspection.droneId}
+                            </h3>
+                            <p className="text-sm text-gray-600 mt-1">
+                              Session: {inspection.sessionName}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Type: {inspection.inspectionType || inspection.inspection.type || 'Standard Inspection'}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              Inspector: {inspection.inspectorName}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-700">
+                              {completedDate.toLocaleDateString()}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {completedDate.toLocaleTimeString()}
+                            </p>
+                            <div className="mt-2">
+                              {inspection.inspection.tasks && (
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-green-600">
+                                    ✓ {inspection.inspection.tasks.filter((t: any) => t.status === 'pass').length}
+                                  </span>
+                                  <span className="text-red-600">
+                                    ✗ {inspection.inspection.tasks.filter((t: any) => t.status === 'fail').length}
+                                  </span>
+                                  <span className="text-gray-500">
+                                    - {inspection.inspection.tasks.filter((t: any) => t.status === 'na').length}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            <div className="p-6 bg-gray-50 border-t flex justify-between items-center">
+              <button
+                onClick={() => {
+                  setShowPDFModal(false);
+                  setSelectedPDFInspection(null);
+                }}
+                disabled={loadingPDF}
+                className="px-6 py-2 text-gray-700 hover:text-gray-900 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => selectedPDFInspection && generatePDFReport(selectedPDFInspection)}
+                disabled={!selectedPDFInspection || loadingPDF}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              >
+                {loadingPDF ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4" />
+                    Generate PDF
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

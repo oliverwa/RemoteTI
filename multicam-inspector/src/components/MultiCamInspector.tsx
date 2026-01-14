@@ -603,6 +603,10 @@ export default function MultiCamInspector({
   });
   
   // --- Report generation state ---
+  const [showPDFModal, setShowPDFModal] = useState(false);
+  const [availableInspections, setAvailableInspections] = useState<any[]>([]);
+  const [selectedPDFInspection, setSelectedPDFInspection] = useState<any>(null);
+  const [loadingPDF, setLoadingPDF] = useState(false);
 
   // --- Core camera ops ---
   const resetView = useCallback((id: number) =>
@@ -2104,356 +2108,112 @@ export default function MultiCamInspector({
     }
   };
 
-  // Generate PDF report with enhanced styling and images
-  const generatePDFReport = async () => {
+  // Fetch available completed inspections
+  const fetchAvailableInspections = async () => {
     try {
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 20;
-      const contentWidth = pageWidth - 2 * margin;
-      let currentY = margin;
+      const response = await fetch('http://172.20.1.93:3001/api/folders');
+      const data = await response.json();
       
-      // Helper function to add new page with header
-      const addPageWithHeader = () => {
-        pdf.addPage();
-        currentY = margin;
-        
-        // Page header
-        pdf.setDrawColor(70, 130, 180);
-        pdf.setLineWidth(0.5);
-        pdf.line(margin, currentY, pageWidth - margin, currentY);
-        currentY += 8;
-        
-        pdf.setFontSize(10);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text('Drone Remote Inspection Report', margin, currentY);
-        pdf.text(`Session: ${inspectionMeta.sessionId}`, pageWidth - margin - 50, currentY);
-        currentY += 15;
-        
-        pdf.setTextColor(0, 0, 0);
-      };
+      const inspections: any[] = [];
       
-      // Header with branding
-      pdf.setFillColor(70, 130, 180);
-      pdf.rect(0, 0, pageWidth, 25, 'F');
-      
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(24);
-      pdf.text('DRONE INSPECTION REPORT', margin, 18);
-      
-      currentY = 35;
-      pdf.setTextColor(0, 0, 0);
-      
-      // Report metadata box
-      pdf.setFillColor(248, 249, 250);
-      pdf.rect(margin, currentY, contentWidth, 25, 'F');
-      pdf.setDrawColor(200, 200, 200);
-      pdf.rect(margin, currentY, contentWidth, 25);
-      
-      currentY += 8;
-      pdf.setFontSize(10);
-      pdf.setTextColor(100, 100, 100);
-      const reportDate = new Date().toLocaleString();
-      pdf.text(`Generated: ${reportDate}`, margin + 5, currentY);
-      pdf.text(`Report ID: ${inspectionMeta.sessionId}`, pageWidth - margin - 60, currentY);
-      currentY += 5;
-      pdf.text(`Page 1 of Multiple`, margin + 5, currentY);
-      
-      currentY += 20;
-      pdf.setTextColor(0, 0, 0);
-      
-      // Inspection Details Section
-      pdf.setFillColor(45, 55, 72);
-      pdf.rect(margin, currentY, contentWidth, 8, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(14);
-      pdf.text('INSPECTION DETAILS', margin + 5, currentY + 6);
-      
-      currentY += 15;
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFillColor(250, 250, 250);
-      pdf.rect(margin, currentY, contentWidth, 35, 'F');
-      
-      currentY += 8;
-      pdf.setFontSize(11);
-      
-      // Create two columns for inspection details
-      const leftCol = margin + 5;
-      const rightCol = margin + contentWidth/2 + 5;
-      
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Inspector:', leftCol, currentY);
-      pdf.text('Drone:', rightCol, currentY);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(inspectionMeta.inspectorName || 'Not specified', leftCol + 25, currentY);
-      pdf.text(inspectionMeta.droneName || 'Not specified', rightCol + 20, currentY);
-      
-      currentY += 8;
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Hangar:', leftCol, currentY);
-      pdf.text('Session ID:', rightCol, currentY);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(inspectionMeta.hangarName || 'Not specified', leftCol + 25, currentY);
-      pdf.text(inspectionMeta.sessionId, rightCol + 30, currentY);
-      
-      currentY += 8;
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Started:', leftCol, currentY);
-      pdf.setFont('helvetica', 'normal');
-      
-      if (inspectionMeta.startTime) {
-        const startTime = new Date(inspectionMeta.startTime).toLocaleString();
-        pdf.text(startTime, leftCol + 25, currentY);
-      } else {
-        pdf.text('Pending image capture', leftCol + 25, currentY);
-      }
-      
-      if (inspectionMeta.completedTime) {
-        const completedTime = new Date(inspectionMeta.completedTime).toLocaleString();
-        
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Completed:', rightCol, currentY);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text(completedTime, rightCol + 30, currentY);
-        
-        currentY += 8;
-        pdf.setFont('helvetica', 'bold');
-        pdf.text('Duration:', leftCol, currentY);
-        pdf.setFont('helvetica', 'normal');
-        
-        if (inspectionMeta.startTime) {
-          const duration = new Date(inspectionMeta.completedTime).getTime() - new Date(inspectionMeta.startTime).getTime();
-          const durationMinutes = Math.round(duration / 60000);
-          pdf.text(`${durationMinutes} minutes`, leftCol + 25, currentY);
-        } else {
-          pdf.text('Unable to calculate', leftCol + 25, currentY);
-        }
-      }
-      
-      currentY += 20;
-      
-      // Summary Section with visual stats
-      pdf.setFillColor(34, 197, 94);
-      pdf.rect(margin, currentY, contentWidth, 8, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(14);
-      pdf.text('INSPECTION SUMMARY', margin + 5, currentY + 6);
-      
-      currentY += 15;
-      pdf.setTextColor(0, 0, 0);
-      
-      const completedTasks = items.filter(item => !!item.status);
-      const passedTasks = items.filter(item => item.status === 'pass');
-      const failedTasks = items.filter(item => item.status === 'fail');
-      const naTasks = items.filter(item => item.status === 'na');
-      
-      // Summary boxes
-      const boxWidth = (contentWidth - 15) / 4;
-      const boxHeight = 25;
-      
-      // Total Tasks
-      pdf.setFillColor(59, 130, 246);
-      pdf.rect(margin, currentY, boxWidth, boxHeight, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(20);
-      pdf.text(items.length.toString(), margin + boxWidth/2 - 5, currentY + 12);
-      pdf.setFontSize(9);
-      pdf.text('TOTAL TASKS', margin + boxWidth/2 - 15, currentY + 20);
-      
-      // Passed
-      pdf.setFillColor(34, 197, 94);
-      pdf.rect(margin + boxWidth + 5, currentY, boxWidth, boxHeight, 'F');
-      pdf.setFontSize(20);
-      pdf.text(passedTasks.length.toString(), margin + boxWidth + 5 + boxWidth/2 - 5, currentY + 12);
-      pdf.setFontSize(9);
-      pdf.text('PASSED', margin + boxWidth + 5 + boxWidth/2 - 10, currentY + 20);
-      
-      // Failed
-      pdf.setFillColor(239, 68, 68);
-      pdf.rect(margin + 2*boxWidth + 10, currentY, boxWidth, boxHeight, 'F');
-      pdf.setFontSize(20);
-      pdf.text(failedTasks.length.toString(), margin + 2*boxWidth + 10 + boxWidth/2 - 5, currentY + 12);
-      pdf.setFontSize(9);
-      pdf.text('FAILED', margin + 2*boxWidth + 10 + boxWidth/2 - 8, currentY + 20);
-      
-      // N/A
-      pdf.setFillColor(156, 163, 175);
-      pdf.rect(margin + 3*boxWidth + 15, currentY, boxWidth, boxHeight, 'F');
-      pdf.setFontSize(20);
-      pdf.text(naTasks.length.toString(), margin + 3*boxWidth + 15 + boxWidth/2 - 5, currentY + 12);
-      pdf.setFontSize(9);
-      pdf.text('N/A', margin + 3*boxWidth + 15 + boxWidth/2 - 5, currentY + 20);
-      
-      currentY += 35;
-      pdf.setTextColor(0, 0, 0);
-      
-      // Camera Images Section
-      if (cams.some(cam => cam.src)) {
-        pdf.setFillColor(168, 85, 247);
-        pdf.rect(margin, currentY, contentWidth, 8, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(14);
-        pdf.text('CAMERA IMAGES', margin + 5, currentY + 6);
-        
-        currentY += 15;
-        pdf.setTextColor(0, 0, 0);
-        
-        const imagesWithData = cams.filter(cam => cam.src);
-        if (imagesWithData.length > 0) {
-          const imageSize = 35;
-          const imagesPerRow = 4;
-          let imageX = margin;
-          let imageRow = 0;
-          
-          for (let i = 0; i < imagesWithData.length; i++) {
-            const cam = imagesWithData[i];
-            
-            if (i > 0 && i % imagesPerRow === 0) {
-              imageRow++;
-              imageX = margin;
-              currentY += imageSize + 15;
-              
-              // Check if we need a new page
-              if (currentY + imageSize > pageHeight - margin) {
-                addPageWithHeader();
-                imageRow = 0;
-              }
+      // Go through all hangars and sessions to find completed inspections
+      data.hangars?.forEach((hangar: any) => {
+        hangar.sessions?.forEach((session: any) => {
+          if (session.inspection) {
+            const inspection = session.inspection;
+            // Check if inspection is completed
+            if (inspection.completionStatus?.status === 'completed' || 
+                (inspection.tasks && inspection.tasks.every((t: any) => t.status))) {
+              inspections.push({
+                hangarId: hangar.id,
+                hangarName: hangar.label,
+                sessionName: session.name,
+                sessionPath: `${hangar.id}/${session.name}`,
+                inspection: inspection,
+                images: session.images || [],
+                completedAt: inspection.completionStatus?.completedAt || session.created,
+                inspectorName: inspection.completionStatus?.completedBy || 'Unknown',
+                droneId: session.name.split('_')[0] // Extract drone ID from session name
+              });
             }
-            
-            try {
-              // Add image with border
-              pdf.setDrawColor(200, 200, 200);
-              pdf.rect(imageX, currentY, imageSize, imageSize);
-              
-              if (cam.src) {
-                pdf.addImage(cam.src, 'JPEG', imageX + 1, currentY + 1, imageSize - 2, imageSize - 2);
-              }
-              
-              // Camera label
-              pdf.setFontSize(8);
-              pdf.setFont('helvetica', 'bold');
-              pdf.text(cam.name, imageX + imageSize/2 - 5, currentY + imageSize + 5);
-              
-            } catch (error) {
-              console.warn(`Failed to add image for camera ${cam.name}:`, error);
-              // Add placeholder
-              pdf.setFillColor(240, 240, 240);
-              pdf.rect(imageX + 1, currentY + 1, imageSize - 2, imageSize - 2, 'F');
-              pdf.setFontSize(10);
-              pdf.text('No Image', imageX + imageSize/2 - 10, currentY + imageSize/2);
-            }
-            
-            imageX += imageSize + 5;
           }
-          
-          currentY += imageSize + 20;
-        }
-      }
-      
-      // Start new page for task details
-      addPageWithHeader();
-      
-      // Task Details Section
-      pdf.setFillColor(234, 88, 12);
-      pdf.rect(margin, currentY, contentWidth, 8, 'F');
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(14);
-      pdf.text('DETAILED TASK RESULTS', margin + 5, currentY + 6);
-      
-      currentY += 20;
-      pdf.setTextColor(0, 0, 0);
-      
-      items.forEach((item, index) => {
-        // Check if we need a new page
-        if (currentY > pageHeight - 60) {
-          addPageWithHeader();
-        }
-        
-        // Task box - set status color
-        if (item.status === 'pass') {
-          pdf.setFillColor(34, 197, 94);
-        } else if (item.status === 'fail') {
-          pdf.setFillColor(239, 68, 68);
-        } else if (item.status === 'na') {
-          pdf.setFillColor(156, 163, 175);
-        } else {
-          pdf.setFillColor(209, 213, 219);
-        }
-        pdf.rect(margin, currentY, 8, 8, 'F');
-        
-        // Task header
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'bold');
-        const statusIcon = item.status === 'pass' ? '✓' : item.status === 'fail' ? '✗' : item.status === 'na' ? 'N/A' : '○';
-        const statusText = `${index + 1}. ${item.title} [${statusIcon}]`;
-        pdf.text(statusText, margin + 12, currentY + 6);
-        currentY += 10;
-        
-        currentY += 2;
-        
-        // Description
-        pdf.setFontSize(9);
-        pdf.setFont('helvetica', 'normal');
-        const descriptionLines = pdf.splitTextToSize(item.detail, contentWidth - 10);
-        pdf.text(descriptionLines, margin + 5, currentY);
-        currentY += Math.max(descriptionLines.length * 3.5, 10);
-        
-        // Completion time and comment in a box
-        if (item.completedAt || (item.comment && item.comment.trim())) {
-          pdf.setFillColor(249, 250, 251);
-          const boxHeight = (item.completedAt ? 6 : 0) + (item.comment?.trim() ? 15 : 0);
-          pdf.rect(margin + 5, currentY, contentWidth - 10, boxHeight, 'F');
-          
-          currentY += 4;
-          
-          if (item.completedAt) {
-            const completedTime = new Date(item.completedAt).toLocaleString();
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Completed:', margin + 8, currentY);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(completedTime, margin + 30, currentY);
-            currentY += 5;
-          }
-          
-          if (item.comment && item.comment.trim()) {
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Inspector Comment:', margin + 8, currentY);
-            currentY += 4;
-            pdf.setFont('helvetica', 'normal');
-            const commentLines = pdf.splitTextToSize(item.comment, contentWidth - 20);
-            pdf.text(commentLines, margin + 10, currentY);
-            currentY += commentLines.length * 3;
-          }
-          
-          currentY += 5;
-        }
-        
-        currentY += 8; // Space between tasks
+        });
       });
       
-      // Footer on last page
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 100, 100);
-      pdf.text('Generated by MultiCam Inspection System', margin, pageHeight - 10);
-      pdf.text(new Date().toLocaleString(), pageWidth - margin - 40, pageHeight - 10);
+      // Sort by completion date (newest first)
+      inspections.sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
       
-      // Save the PDF
-      const filename = `DroneInspection_${inspectionMeta.droneName || 'Unknown'}_${inspectionMeta.sessionId}_${new Date().toISOString().slice(0, 10)}.pdf`;
-      pdf.save(filename);
+      setAvailableInspections(inspections);
+    } catch (error) {
+      console.error('Failed to fetch inspections:', error);
+      addLog('❌ Failed to fetch available inspections');
+    }
+  };
+
+  // Generate PDF report and open in new tab
+  const generatePDFReport = async (inspectionData?: any) => {
+    try {
+      setLoadingPDF(true);
       
-      addLog(`📄 Enhanced PDF report generated: ${filename}`);
+      // Import the PDF generator
+      const { generateInspectionPDF } = await import('../utils/pdfGenerator');
+      
+      // Use provided inspection data or current inspection
+      const data = inspectionData || {
+        inspection: { tasks: items },
+        inspectorName: inspectionMeta.inspectorName,
+        droneId: inspectionMeta.droneName,
+        hangarName: inspectionMeta.hangarName,
+        sessionName: inspectionMeta.sessionId,
+        completedAt: inspectionMeta.completedTime,
+        images: cams.filter(c => c.src).map(c => ({ name: c.name, data: c.src }))
+      };
+      
+      // If we have selected inspection data, we need to fetch its images
+      if (inspectionData && inspectionData.images && inspectionData.images.length > 0) {
+        // Load image data for the selected inspection
+        const imagesWithData = await Promise.all(
+          inspectionData.images.map(async (img: any) => {
+            try {
+              const response = await fetch(`http://172.20.1.93:3001/api/snapshot/${inspectionData.sessionPath}/${img}`);
+              const blob = await response.blob();
+              const dataUrl = await new Promise<string>((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result as string);
+                reader.readAsDataURL(blob);
+              });
+              return { name: img.replace('.jpg', ''), data: dataUrl };
+            } catch (error) {
+              console.error(`Failed to load image ${img}:`, error);
+              return null;
+            }
+          })
+        );
+        
+        data.images = imagesWithData.filter(Boolean);
+      }
+      
+      // Generate the PDF blob
+      const pdfBlob = await generateInspectionPDF(data);
+      
+      // Open PDF in new tab
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
+      
+      // Clean up after a delay
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 100);
+      
+      addLog('📄 PDF report generated and opened in new tab');
+      setShowPDFModal(false);
+      setLoadingPDF(false);
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       addLog(`❌ Failed to generate PDF report: ${errorMessage}`);
       alert(`Failed to generate PDF report: ${errorMessage}`);
+      setLoadingPDF(false);
     }
   };
-
-
 
   // --- Backend health check ---
   useEffect(() => {
@@ -2468,10 +2228,10 @@ export default function MultiCamInspector({
           addLog("⚠️ Backend API not responding - camera capture will not work");
         }
       } catch (error) {
-        addLog("❌ Backend API connection failed - start the server with 'npm run server'");
+        addLog("⚠️ Failed to check backend health");
       }
     };
-    
+
     checkBackendHealth();
   }, [addLog]);
 
@@ -2553,8 +2313,19 @@ export default function MultiCamInspector({
   return (
     <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white text-black">
       {/* Header – main controls */}
-      <div className="flex flex-wrap items-center gap-2">
-        
+      <div className="flex flex-wrap items-center gap-2 p-2 bg-gray-50 rounded-lg">
+        <button
+          onClick={() => {
+            setShowPDFModal(true);
+            fetchAvailableInspections();
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          Generate PDF
+        </button>
       </div>
 
 
@@ -3266,6 +3037,122 @@ export default function MultiCamInspector({
               </div>
             )}
 
+          </div>
+        </div>
+      )}
+
+      {/* PDF Selection Modal */}
+      {showPDFModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+              <h2 className="text-2xl font-bold">Generate PDF Report</h2>
+              <p className="text-blue-100 mt-1">Select an inspection to generate a PDF report</p>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {loadingPDF ? (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center gap-3">
+                    <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    <span className="text-lg text-gray-700">Generating PDF...</span>
+                  </div>
+                </div>
+              ) : availableInspections.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-lg font-medium">No completed inspections found</p>
+                  <p className="text-sm mt-2">Complete an inspection first to generate a report</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {availableInspections.map((inspection, index) => (
+                    <div
+                      key={index}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                        selectedPDFInspection === inspection 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                      onClick={() => setSelectedPDFInspection(inspection)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900">
+                            {inspection.hangarName} - {inspection.droneId}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Session: {inspection.sessionName}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Completed: {new Date(inspection.completedAt).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            Inspector: {inspection.inspectorName}
+                          </p>
+                          <div className="flex gap-4 mt-2 text-xs">
+                            <span className="text-green-600">
+                              ✓ {inspection.inspection.tasks?.filter((t: any) => t.status === 'pass').length || 0} Passed
+                            </span>
+                            <span className="text-red-600">
+                              ✗ {inspection.inspection.tasks?.filter((t: any) => t.status === 'fail').length || 0} Failed
+                            </span>
+                            <span className="text-gray-500">
+                              {inspection.inspection.tasks?.filter((t: any) => t.status === 'na').length || 0} N/A
+                            </span>
+                          </div>
+                          {inspection.images.length > 0 && (
+                            <p className="text-xs text-blue-600 mt-1">
+                              📷 {inspection.images.length} camera images
+                            </p>
+                          )}
+                        </div>
+                        <div className="ml-4">
+                          {selectedPDFInspection === inspection && (
+                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowPDFModal(false);
+                  setSelectedPDFInspection(null);
+                }}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (selectedPDFInspection) {
+                    generatePDFReport(selectedPDFInspection);
+                  }
+                }}
+                disabled={!selectedPDFInspection || loadingPDF}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Generate PDF
+              </button>
+            </div>
           </div>
         </div>
       )}
