@@ -1,13 +1,14 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import { generateInspectionPDF } from '../utils/pdfGenerator';
+import { API_CONFIG } from '../config/api.config';
 
 interface HangarDashboardProps {
   currentUser: string;
-  userType: 'everdrone' | 'remote';
+  userType: 'admin' | 'everdrone' | 'service_partner';
   onProceedToInspection: () => void;
   onLogout: () => void;
 }
@@ -40,6 +41,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   onProceedToInspection,
   onLogout
 }) => {
+  // Filter hangars based on userType - service_partner users only see operational hangars
+  const visibleHangars = userType === 'service_partner' 
+    ? HANGARS.filter(hangar => hangar.operational !== false)
+    : HANGARS;
+
   const [hangarStatuses, setHangarStatuses] = useState<HangarStatusData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
@@ -63,7 +69,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const fetchAvailableInspections = async () => {
     try {
       console.log('Starting fetch of inspections...');
-      const response = await fetch('http://172.20.1.93:3001/api/folders');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders`);
       
       if (!response.ok) {
         console.error('Failed to fetch folders:', response.status, response.statusText);
@@ -134,7 +140,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       if (!fullInspection.tasks || fullInspection.tasks.length === 0) {
         console.log('Fetching full inspection data...');
         try {
-          const response = await fetch(`http://172.20.1.93:3001/api/session/${inspectionData.hangarId}/${inspectionData.sessionName}/inspection`);
+          const response = await fetch(`${API_CONFIG.BASE_URL}/api/session/${inspectionData.hangarId}/${inspectionData.sessionName}/inspection`);
           if (response.ok) {
             fullInspection = await response.json();
             console.log('Fetched full inspection:', fullInspection);
@@ -163,7 +169,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         const imagesWithData = await Promise.all(
           inspectionData.images.slice(0, 2).map(async (img: any) => { // Only take first 2 images
             try {
-              const response = await fetch(`http://172.20.1.93:3001/api/snapshot/${inspectionData.sessionPath}/${img}`);
+              const response = await fetch(`${API_CONFIG.BASE_URL}/api/snapshot/${inspectionData.sessionPath}/${img}`);
               const blob = await response.blob();
               const dataUrl = await new Promise<string>((resolve) => {
                 const reader = new FileReader();
@@ -224,16 +230,18 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   useEffect(() => {
     const fetchHangarStatuses = async () => {
       try {
-        // Fetch maintenance history
-        const historyResponse = await fetch('http://172.20.1.93:3001/api/maintenance-history');
+        // Fetch maintenance history (only for admin and everdrone users)
         let maintenanceData: {[key: string]: any} = {};
-        if (historyResponse.ok) {
-          maintenanceData = await historyResponse.json();
-          setMaintenanceHistory(maintenanceData);
+        if (userType === 'admin' || userType === 'everdrone') {
+          const historyResponse = await fetch(`${API_CONFIG.BASE_URL}/api/maintenance-history`);
+          if (historyResponse.ok) {
+            maintenanceData = await historyResponse.json();
+            setMaintenanceHistory(maintenanceData);
+          }
         }
         
         // Start with default statuses
-        const statuses: HangarStatusData[] = HANGARS.map(hangar => ({
+        const statuses: HangarStatusData[] = visibleHangars.map(hangar => ({
           id: hangar.id,
           name: hangar.label,
           state: 'standby' as const,
@@ -253,9 +261,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         }));
         
         // Fetch alarm session for each hangar
-        for (const hangar of HANGARS) {
+        for (const hangar of visibleHangars) {
           try {
-            const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangar.id}`);
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangar.id}`);
             if (response.ok) {
               const data = await response.json();
               if (data.session) {
@@ -690,7 +698,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-full-rti`, {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-full-rti`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -813,7 +821,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/clear-area`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -840,7 +848,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             onClick={async (e) => {
               e.stopPropagation();
               try {
-                const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/clear-area`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -869,7 +877,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 onClick={async (e) => {
                   e.stopPropagation();
                   try {
-                    const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/route-decision`, {
+                    const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/route-decision`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
@@ -892,7 +900,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 onClick={async (e) => {
                   e.stopPropagation();
                   try {
-                    const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/route-decision`, {
+                    const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/route-decision`, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
@@ -902,7 +910,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     if (response.ok) {
                       // Automatically generate Onsite TI after route decision
                       setTimeout(async () => {
-                        await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-onsite-ti`, {
+                        await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-onsite-ti`, {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
@@ -1172,7 +1180,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
 
   const handleTriggerAlarm = async (hangarId: string, droneId?: string) => {
     try {
-      const response = await fetch('http://172.20.1.93:3001/api/trigger-alarm', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/trigger-alarm`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1315,7 +1323,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             return h;
           }));
           
-          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-initial-rti`, {
+          const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-initial-rti`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -1371,7 +1379,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
 
   const updatePhase = async (hangarId: string, phase: string, updates: any) => {
     try {
-      await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/update-phase`, {
+      await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/update-phase`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1405,7 +1413,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               <div className="flex items-center gap-2 text-sm text-gray-600 px-3 py-1.5 bg-white/50 rounded-lg">
                 <User className="w-4 h-4" />
                 <span>{currentUser}</span>
-                <span className="text-xs text-gray-400">({userType === 'everdrone' ? 'Everdrone' : 'Remote'})</span>
+                <span className="text-xs text-gray-400">({
+                  userType === 'admin' ? 'Admin' :
+                  userType === 'everdrone' ? 'Everdrone' : 'Service Partner'
+                })</span>
               </div>
               <button
                 onClick={handleRefresh}
@@ -1414,15 +1425,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               >
                 <RefreshCw className="w-4 h-4" />
               </button>
-              {userType === 'everdrone' && (
+              {userType === 'admin' && (
+                <button
+                  onClick={() => setShowAdminPanel(true)}
+                  className="p-2 hover:bg-white/50 rounded-lg transition-all text-gray-600 hover:text-gray-800"
+                  title="Admin Settings"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              )}
+              {(userType === 'admin' || userType === 'everdrone') && (
                 <>
-                  <button
-                    onClick={() => setShowAdminPanel(true)}
-                    className="p-2 hover:bg-white/50 rounded-lg transition-all text-gray-600 hover:text-gray-800"
-                    title="Admin Settings"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </button>
                   <Button
                     onClick={onProceedToInspection}
                     size="sm"
@@ -1462,8 +1475,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         {/* Hangar Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-fr">
           {hangarStatuses.map(hangar => {
-            // Check if maintenance is overdue (only when in standby state)
-            const isMaintenanceOverdue = hangar.operational && hangar.assignedDrone && hangar.state === 'standby' && (
+            // Check if maintenance is overdue (only for admin/everdrone users and when in standby state)
+            const isMaintenanceOverdue = (userType === 'admin' || userType === 'everdrone') && hangar.operational && hangar.assignedDrone && hangar.state === 'standby' && (
               (hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
               (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
               (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
@@ -1478,7 +1491,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               } flex flex-col ${
                 isMaintenanceOverdue && hangar.state === 'standby' 
                   ? 'bg-red-50 border-red-400 hover:border-red-500 hover:shadow-lg' 
-                  : getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'remote', hangar.alarmSession, hangar.operational)
+                  : getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'service_partner', hangar.alarmSession, hangar.operational)
               }`}
               onClick={() => {
                 if (hangar.state !== 'standby' && hangar.operational) {
@@ -1495,7 +1508,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
                   {/* Show button for remote users when inspection is ready but not completed */}
-                  {userType === 'remote' && hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
+                  {userType === 'service_partner' && hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
                    hangar.alarmSession?.inspections?.missionReset?.path && 
                    hangar.alarmSession?.workflow?.phases?.missionReset?.status !== 'completed' && (
                     <button
@@ -1518,19 +1531,19 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       isMaintenanceOverdue ? 'text-red-700' : 
                       'text-green-700'
                     } text-base`}>
-                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'remote', hangar.operational, !!isMaintenanceOverdue)}
+                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'service_partner', hangar.operational, !!isMaintenanceOverdue)}
                     </span>
                   )}
                   {hangar.operational && (
                     isMaintenanceOverdue && hangar.state === 'standby' 
                       ? <XCircle className="w-6 h-6 text-red-600" />
-                      : getStatusIcon(hangar.state, hangar.alarmSession, userType === 'remote')
+                      : getStatusIcon(hangar.state, hangar.alarmSession, userType === 'service_partner')
                   )}
                 </div>
               </div>
               
-              {/* Maintenance History - Only show when no workflow is active */}
-              {hangar.operational && hangar.assignedDrone && hangar.state === 'standby' && (
+              {/* Maintenance History - Only show for everdrone users when no workflow is active */}
+              {userType === 'everdrone' && hangar.operational && hangar.assignedDrone && hangar.state === 'standby' && (
                 <div className="mt-auto pt-4 mt-4 border-t-2 border-gray-100">
                   <div className="flex justify-between items-center mb-3">
                     <div className="text-sm font-semibold text-gray-700">
@@ -1594,7 +1607,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 
                 {hangar.alarmSession && hangar.state !== 'standby' && hangar.operational ? (
                   <>
-                    {userType === 'remote' ? (
+                    {userType === 'service_partner' ? (
                       /* Simplified view for remote users */
                       <RemoteUserStatus 
                         alarmSession={hangar.alarmSession} 
@@ -1615,25 +1628,25 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 ) : (
                   <>
                     {/* Show alarm button for Everdrone users when operational and not overdue */}
-                    {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && !isMaintenanceOverdue && (
+                    {hangar.state === 'standby' && (userType === 'admin' || userType === 'everdrone') && hangar.operational && !isMaintenanceOverdue && (
                       <div className="flex justify-center mt-4">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleTriggerAlarm(hangar.id, hangar.assignedDrone);
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-red-500 hover:bg-red-600 text-white rounded-md transition-all hover:shadow-md"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-all hover:shadow-md"
                         >
-                          <AlertTriangle className="w-4 h-4" />
-                          Trigger Alarm
+                          <PlayCircle className="w-4 h-4" />
+                          Trigger inspection workflow
                         </button>
                       </div>
                     )}
                     {/* Show maintenance required message when overdue */}
-                    {hangar.state === 'standby' && userType === 'everdrone' && hangar.operational && isMaintenanceOverdue && (
+                    {hangar.state === 'standby' && (userType === 'admin' || userType === 'everdrone') && hangar.operational && isMaintenanceOverdue && (
                       <div className="flex justify-center mt-4">
                         <div className="text-sm text-red-600 font-medium">
-                          Cannot trigger alarm - Maintenance required
+                          Cannot trigger workflow - Maintenance required
                         </div>
                       </div>
                     )}

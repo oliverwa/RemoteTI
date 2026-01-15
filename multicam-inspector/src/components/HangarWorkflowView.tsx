@@ -17,6 +17,7 @@ import {
   Activity,
   ChevronRight
 } from 'lucide-react';
+import { API_CONFIG } from '../config/api.config';
 
 interface HangarWorkflowViewProps {
   hangarId: string;
@@ -57,7 +58,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
   useEffect(() => {
     const fetchAlarmSession = async () => {
       try {
-        const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}`);
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}`);
         if (response.ok) {
           const data = await response.json();
           if (data.session) {
@@ -203,7 +204,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
       
       // Send the decision to the backend
       try {
-        const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/route-decision`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/route-decision`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -578,7 +579,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                       // Trigger Full RTI creation if Mission Reset is complete and Full RTI hasn't started
                       if (alarmSession?.workflow?.phases?.basicTI?.status === 'completed' && !alarmSession?.inspections?.fullRTI?.sessionId) {
                         try {
-                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-full-rti`, {
+                          const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-full-rti`, {
                             method: 'POST',
                             headers: {
                               'Content-Type': 'application/json',
@@ -662,7 +663,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                       if (alarmSession?.workflow?.phases?.fullRTI?.status === 'completed' && 
                           !alarmSession?.workflow?.phases?.clearArea?.status) {
                         try {
-                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                          const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/clear-area`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' }
                           });
@@ -717,7 +718,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                       // Trigger Onsite TI creation if route is selected and inspection not created
                       if (alarmSession?.workflow?.routeDecision === 'onsite' && !alarmSession?.inspections?.onsiteTI?.sessionId) {
                         try {
-                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/generate-onsite-ti`, {
+                          const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-onsite-ti`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' }
                           });
@@ -789,7 +790,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                       if (alarmSession?.workflow?.phases?.onsiteTI?.status === 'completed' && 
                           !alarmSession?.workflow?.phases?.clearArea?.status) {
                         try {
-                          const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/clear-area`, {
+                          const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/clear-area`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' }
                           });

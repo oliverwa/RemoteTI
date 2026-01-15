@@ -17,7 +17,7 @@ interface InspectionConfig {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<string>('');
-  const [userType, setUserType] = useState<'everdrone' | 'remote'>('everdrone');
+  const [userType, setUserType] = useState<'admin' | 'everdrone' | 'service_partner'>('everdrone');
   const [inspectionConfig, setInspectionConfig] = useState<InspectionConfig | null>(null);
   const [showDashboard, setShowDashboard] = useState(true);
   const [startedFromDashboard, setStartedFromDashboard] = useState(false);
@@ -30,21 +30,21 @@ function App() {
     const session = urlParams.get('session');
     const type = urlParams.get('type');
     const returnToDashboard = urlParams.get('returnToDashboard');
-    const returnUserType = urlParams.get('userType') as 'everdrone' | 'remote' | null;
+    const returnUserType = urlParams.get('userType') as 'admin' | 'everdrone' | 'service_partner' | null;
     
     if (returnToDashboard === 'true') {
       // Auto-login when returning from inspection completion
       setIsAuthenticated(true);
-      setCurrentUser(returnUserType === 'remote' ? 'Remote User' : 'Inspector');
+      setCurrentUser(returnUserType === 'service_partner' ? 'Service Partner User' : 'Inspector');
       setUserType(returnUserType || 'everdrone');
       setShowDashboard(true);
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (action === 'load-session' && hangar && session && type) {
       // Auto-login for direct session links
-      const sessionUserType = urlParams.get('userType') as 'everdrone' | 'remote' | null;
+      const sessionUserType = urlParams.get('userType') as 'admin' | 'everdrone' | 'service_partner' | null;
       setIsAuthenticated(true);
-      setCurrentUser(sessionUserType === 'remote' ? 'Remote User' : 'Inspector');
+      setCurrentUser(sessionUserType === 'service_partner' ? 'Service Partner User' : 'Inspector');
       setUserType(sessionUserType || 'everdrone');
       setShowDashboard(false);
       setStartedFromDashboard(true); // Mark that this came from dashboard
@@ -63,7 +63,7 @@ function App() {
     }
   }, []);
 
-  const handleLogin = (username: string, type: 'everdrone' | 'remote') => {
+  const handleLogin = (username: string, type: 'admin' | 'everdrone' | 'service_partner') => {
     setCurrentUser(username);
     setUserType(type);
     setIsAuthenticated(true);

@@ -335,15 +335,15 @@ const environmentConfigs = {
   
   dev: {
     api: {
-      host: process.env.API_HOST || "http://172.20.1.93:3001",
+      host: process.env.API_HOST || "http://localhost:5001",
       timeout: 30000
     },
     paths: {
       base: process.cwd(),
-      snapshots: path.join(process.env.HOME || os.homedir(), "hangar_snapshots"),
-      snapshotsAbsolute: path.join(process.env.HOME || os.homedir(), "hangar_snapshots"),
+      snapshots: "data/sessions",
+      snapshotsAbsolute: path.join(process.cwd(), "data/sessions"),
       scripts: {
-        cameraFetch: path.join(process.cwd(), "camera_fetch.sh")
+        cameraFetch: "camera_fetch.sh"
       },
       data: {
         inspectionJson: "data/templates/remote-ti-inspection.json"

@@ -29,11 +29,11 @@ CURL_RETRIES=5
 # The SESSION_TIMESTAMP parameter now contains the full subfolder path
 # e.g., "hangar_sisjon_vpn/remote_bender_251204_093440"
 if [ -n "${SESSION_TIMESTAMP}" ]; then
-    OUT_DIR="${HOME}/RemoteTI/data/sessions/${SESSION_TIMESTAMP}"
+    OUT_DIR="${HOME}/Documents/GitHub/RemoteTI/multicam-inspector/data/sessions/${SESSION_TIMESTAMP}"
 else
     # Fallback to old format if not provided
     RUN_STAMP="$(date +'%y%m%d_%H%M%S')"
-    OUT_DIR="${HOME}/RemoteTI/data/sessions/${HANGAR_HOST}/${DRONE_NAME}_${RUN_STAMP}"
+    OUT_DIR="${HOME}/Documents/GitHub/RemoteTI/multicam-inspector/data/sessions/${HANGAR_HOST}/${DRONE_NAME}_${RUN_STAMP}"
 fi
 
 mkdir -p "${OUT_DIR}"

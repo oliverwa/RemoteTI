@@ -1,0 +1,80 @@
+{
+  "users": [
+    {
+      "id": "usr_001",
+      "username": "admin",
+      "email": "",
+      "password": "$2b$10$P9UMSR.QElX.G5VOgl7hOOGORhDtPU0HWA0iblD74XoIWutcoIzqi",
+      "type": "admin",
+      "permissions": {
+        "canCaptureImages": true,
+        "canBrowseSessions": true,
+        "canDeleteSessions": true,
+        "canExportData": true,
+        "canAccessAllHangars": true,
+        "canPerformInspections": true
+      },
+      "createdAt": "2026-01-15T07:33:52.484Z",
+      "lastLogin": "2026-01-15T10:45:20.886Z",
+      "phone": "",
+      "updatedAt": "2026-01-15T10:45:37.104Z"
+    },
+    {
+      "id": "usr_002",
+      "username": "remote_inspector",
+      "email": "inspector@remote.com",
+      "password": "$2b$10$YgRvBcMnTsS3RmY2.DgkBOyMoD3lJIVCdAMDQqToxYgQCnOLA.PQC",
+      "type": "service_partner",
+      "permissions": {
+        "canCaptureImages": false,
+        "canBrowseSessions": true,
+        "canDeleteSessions": false,
+        "canExportData": true,
+        "canAccessAllHangars": false,
+        "allowedHangars": [
+          "THN",
+          "VÄN"
+        ],
+        "canPerformInspections": true,
+        "inspectionTypes": [
+          "remote-ti-inspection",
+          "initial-remote-ti-inspection",
+          "full-remote-ti-inspection"
+        ]
+      },
+      "createdAt": "2026-01-15T07:33:52.554Z",
+      "lastLogin": "2026-01-15T09:42:40.163Z"
+    },
+    {
+      "id": "usr_556052_qkd",
+      "username": "test_user",
+      "password": "$2b$10$GBy4Nz2/J50WPPnAXAlLVO0FenAW5Ob8dKC7Nvie1EUoBOCCv/U.y",
+      "type": "everdrone",
+      "permissions": {
+        "canCaptureImages": true,
+        "canBrowseSessions": true,
+        "canDeleteSessions": true,
+        "canExportData": true,
+        "canAccessAllHangars": true,
+        "canPerformInspections": true
+      },
+      "createdAt": "2026-01-15T10:39:16.127Z"
+    },
+    {
+      "id": "usr_022438_hyp",
+      "username": "oliverwallin",
+      "password": "$2b$10$aLfxhRcquldkaGiEvoHIKuVN6sYKXSr6JOv0XUIYYA3N.P0yR.WjW",
+      "type": "admin",
+      "permissions": {
+        "canCaptureImages": true,
+        "canBrowseSessions": true,
+        "canDeleteSessions": true,
+        "canExportData": true,
+        "canAccessAllHangars": true,
+        "canPerformInspections": true
+      },
+      "createdAt": "2026-01-15T10:47:02.547Z",
+      "lastLogin": "2026-01-15T10:47:23.401Z"
+    }
+  ]
+}

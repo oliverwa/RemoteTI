@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Settings, Plane, ChevronDown, Edit2, Check, Power, MapPin, Wrench, HardHat, Clock } from 'lucide-react';
+import { X, Settings, Plane, ChevronDown, Edit2, Check, Power, MapPin, Wrench, HardHat, Clock, Users } from 'lucide-react';
 import { HANGARS, DRONE_OPTIONS } from '../constants';
+import { API_CONFIG } from '../config/api.config';
+import UserManagement from './UserManagement';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ interface DroneData {
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
+  const [activeTab, setActiveTab] = useState<'hangars' | 'users'>('hangars');
   const [hangars, setHangars] = useState<HangarData[]>([]);
   const [drones, setDrones] = useState<DroneData[]>([]);
   const [editingHangar, setEditingHangar] = useState<string | null>(null);
@@ -149,7 +152,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
   const fetchMaintenanceHistory = async () => {
     try {
-      const response = await fetch('http://172.20.1.93:3001/api/maintenance-history');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/maintenance-history`);
       if (response.ok) {
         const data = await response.json();
         setMaintenanceHistory(data);
@@ -195,68 +198,104 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Settings className="w-6 h-6" />
-            <h2 className="text-2xl font-bold">Admin Panel</h2>
-            <span className="text-blue-200 text-sm">Hangar & Drone Management</span>
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+          <div className="p-6 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Settings className="w-6 h-6" />
+              <h2 className="text-2xl font-bold">Admin Panel</h2>
+              <span className="text-blue-200 text-sm">System Management</span>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          
+          {/* Tabs */}
+          <div className="px-6 pb-0">
+            <div className="flex gap-1">
+              <button
+                onClick={() => setActiveTab('hangars')}
+                className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
+                  activeTab === 'hangars'
+                    ? 'bg-white text-blue-700'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <MapPin className="w-4 h-4" />
+                Hangars & Drones
+              </button>
+              <button
+                onClick={() => setActiveTab('users')}
+                className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
+                  activeTab === 'users'
+                    ? 'bg-white text-blue-700'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                User Management
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)]">
-          {/* Stats Bar */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-600 font-medium">Operational</p>
-                  <p className="text-2xl font-bold text-green-700">{hangars.filter(h => h.status === 'operational').length}</p>
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+          {activeTab === 'hangars' && (
+            <>
+              {/* Stats Bar */}
+              <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-green-600 font-medium">Operational</p>
+                      <p className="text-2xl font-bold text-green-700">{hangars.filter(h => h.status === 'operational').length}</p>
+                    </div>
+                    <Power className="w-8 h-8 text-green-500" />
+                  </div>
                 </div>
-                <Power className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-yellow-600 font-medium">Maintenance</p>
-                  <p className="text-2xl font-bold text-yellow-700">{hangars.filter(h => h.status === 'maintenance').length}</p>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-yellow-600 font-medium">Maintenance</p>
+                      <p className="text-2xl font-bold text-yellow-700">{hangars.filter(h => h.status === 'maintenance').length}</p>
+                    </div>
+                    <Wrench className="w-8 h-8 text-yellow-500" />
+                  </div>
                 </div>
-                <Wrench className="w-8 h-8 text-yellow-500" />
-              </div>
-            </div>
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-orange-600 font-medium">Construction</p>
-                  <p className="text-2xl font-bold text-orange-700">{hangars.filter(h => h.status === 'construction').length}</p>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-orange-600 font-medium">Construction</p>
+                      <p className="text-2xl font-bold text-orange-700">{hangars.filter(h => h.status === 'construction').length}</p>
+                    </div>
+                    <HardHat className="w-8 h-8 text-orange-500" />
+                  </div>
                 </div>
-                <HardHat className="w-8 h-8 text-orange-500" />
-              </div>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-blue-600 font-medium">Active Drones</p>
-                  <p className="text-2xl font-bold text-blue-700">{drones.filter(d => d.status === 'assigned').length}/{drones.length}</p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-blue-600 font-medium">Active Drones</p>
+                      <p className="text-2xl font-bold text-blue-700">{drones.filter(d => d.status === 'assigned').length}/{drones.length}</p>
+                    </div>
+                    <Plane className="w-8 h-8 text-blue-500" />
+                  </div>
                 </div>
-                <Plane className="w-8 h-8 text-blue-500" />
               </div>
-            </div>
-          </div>
+            </>
+          )}
 
-          {/* Hangars Grid */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Hangar Locations</h3>
-            </div>
+          {activeTab === 'hangars' && (
+            <>
+              {/* Hangars Grid */}
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin className="w-5 h-5 text-gray-600" />
+                  <h3 className="text-lg font-semibold text-gray-800">Hangar Locations</h3>
+                </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {hangars.map(hangar => {
@@ -472,6 +511,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
+            </>
+          )}
+
+          {/* User Management Tab */}
+          {activeTab === 'users' && (
+            <UserManagement />
+          )}
         </div>
       </div>
     </div>

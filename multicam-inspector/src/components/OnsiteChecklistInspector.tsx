@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from './ui/button';
 import { ChevronRight, ChevronLeft, Clock, ListTodo, Check, X } from 'lucide-react';
+import { API_CONFIG } from '../config/api.config';
 
 interface Task {
   id: string;  // Backend ID for the task
@@ -37,7 +38,7 @@ interface OnsiteChecklistInspectorProps {
   selectedDrone: string;
   currentUser?: string;
   action?: 'capture' | 'load' | 'browse' | 'load-session';
-  userType?: 'everdrone' | 'remote';
+  userType?: 'admin' | 'everdrone' | 'service_partner';
 }
 
 const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
@@ -46,7 +47,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   selectedDrone,
   currentUser = 'User',
   action,
-  userType = 'everdrone'
+  userType = 'admin'
 }) => {
   const [inspectionData, setInspectionData] = useState<InspectionData | null>(null);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -108,7 +109,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           console.log('Creating inspection session:', sessionFolderPath);
           
           // Create session and get inspection data
-          const createSessionResponse = await fetch('http://172.20.1.93:3001/api/create-inspection-session', {
+          const createSessionResponse = await fetch(`${API_CONFIG.BASE_URL}/api/create-inspection-session`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -127,7 +128,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         }
         
         // Always use Pi backend for consistency
-        const apiUrl = `http://172.20.1.93:3001/api/inspection-data/${selectedInspection}`;
+        const apiUrl = `${API_CONFIG.BASE_URL}/api/inspection-data/${selectedInspection}`;
         
         console.log('Loading inspection data from:', apiUrl);
         
@@ -182,7 +183,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         if (action === 'load-session' && sessionFolderPath) {
           try {
             const existingInspectionResponse = await fetch(
-              `http://172.20.1.93:3001/api/inspection/${sessionFolderPath}/data`
+              `${API_CONFIG.BASE_URL}/api/inspection/${sessionFolderPath}/data`
             );
             if (existingInspectionResponse.ok) {
               const existingData = await existingInspectionResponse.json();
@@ -327,7 +328,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           
           // Update progress in alarm session
           try {
-            await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/update-onsite-progress`, {
+            await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/update-onsite-progress`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -348,10 +349,10 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
             sessionFolder,
             taskId: task.id,
             status,
-            url: `http://172.20.1.93:3001/api/inspection/${sessionFolder}/task/${task.id}/status`
+            url: `${API_CONFIG.BASE_URL}/api/inspection/${sessionFolder}/task/${task.id}/status`
           });
           try {
-            const response = await fetch(`http://172.20.1.93:3001/api/inspection/${sessionFolder}/task/${task.id}/status`, {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${sessionFolder}/task/${task.id}/status`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -370,7 +371,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               // Update alarm session progress if this is part of an alarm workflow
               if (sessionFolder) {
                 try {
-                  await fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+                  await fetch(`${API_CONFIG.BASE_URL}/api/inspection/update-progress`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
@@ -442,7 +443,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         const progressPercentage = Math.round((completedTasksCount / inspectionData.tasks.length) * 100);
         
         // Update the completion status in the alarm session
-        const response = await fetch(`http://172.20.1.93:3001/api/alarm-session/${hangarId}/complete-onsite-ti`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/complete-onsite-ti`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -697,7 +698,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                     // Update backend if task has been completed
                     if (sessionFolder && currentTask.id && taskStatuses[currentTask.taskNumber] !== 'pending') {
                       try {
-                        await fetch(`http://172.20.1.93:3001/api/inspection/${sessionFolder}/task/${currentTask.id}/status`, {
+                        await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${sessionFolder}/task/${currentTask.id}/status`, {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',

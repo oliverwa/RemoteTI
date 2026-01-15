@@ -1,11 +1,17 @@
 // API Configuration
 // Centralized configuration for all API endpoints
 
-const API_HOST = process.env.REACT_APP_API_HOST || 'http://172.20.1.93:3001';
+const API_HOST = process.env.REACT_APP_API_HOST || 'http://localhost:5001';
+export const API_BASE_URL = API_HOST;
 
 export const API_CONFIG = {
   BASE_URL: API_HOST,
   ENDPOINTS: {
+    // Authentication endpoints
+    AUTH_LOGIN: `${API_HOST}/api/auth/login`,
+    AUTH_VALIDATE: `${API_HOST}/api/auth/validate`,
+    AUTH_CHANGE_PASSWORD: `${API_HOST}/api/auth/change-password`,
+    
     // Inspection endpoints
     INSPECTION_TYPES: `${API_HOST}/api/inspection-types`,
     INSPECTION_DATA: (type: string) => `${API_HOST}/api/inspection-data/${type}`,

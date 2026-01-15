@@ -6,7 +6,7 @@
 // Since config.js is a Node.js module, we need to access it via environment variables
 // or through a build-time process. For now, we'll use environment variables.
 
-const API_HOST = process.env.REACT_APP_API_HOST || 'http://172.20.1.93:3001';
+const API_HOST = process.env.REACT_APP_API_HOST || 'http://localhost:5001';
 
 export const config = {
   api: {

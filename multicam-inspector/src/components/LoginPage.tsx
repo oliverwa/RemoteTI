@@ -1,19 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import backgroundImage from '../background.jpg';
+import authService from '../services/authService';
+import { API_CONFIG } from '../config/api.config';
 
 interface LoginPageProps {
-  onLogin: (username: string, userType: 'everdrone' | 'remote') => void;
+  onLogin: (username: string, userType: 'admin' | 'everdrone' | 'service_partner') => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState<'everdrone' | 'remote'>('everdrone');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [demoMode, setDemoMode] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Check if backend is available
+  useEffect(() => {
+    checkBackendConnection();
+  }, []);
+
+  const checkBackendConnection = async () => {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/health`);
+      setDemoMode(!response.ok);
+    } catch {
+      setDemoMode(true);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = username || (userType === 'everdrone' ? 'Operator' : 'Remote User');
-    onLogin(user, userType);
+    setError(null);
+
+    // Demo mode - no authentication
+    if (demoMode) {
+      const userType = username.toLowerCase().includes('remote') || username.toLowerCase().includes('service') 
+        ? 'service_partner' 
+        : username.toLowerCase().includes('admin') 
+          ? 'admin' 
+          : 'everdrone';
+      const user = username || (userType === 'admin' ? 'Administrator' : userType === 'everdrone' ? 'Operator' : 'Service Partner');
+      onLogin(user, userType);
+      return;
+    }
+
+    // Real authentication
+    if (!username || !password) {
+      setError('Please enter username and password');
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const response = await authService.login({ username, password });
+      
+      if (response.success && response.user) {
+        onLogin(response.user.username, response.user.type);
+      } else {
+        setError(response.message || 'Login failed');
+      }
+    } catch (err) {
+      setError('Unable to connect to server. Running in demo mode.');
+      setDemoMode(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -63,47 +115,33 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
             />
           </div>
 
-          {/* User Type Selection */}
-          <div className="space-y-2">
-            <label className="text-sm text-gray-600 font-medium">User Type</label>
-            <div className="flex gap-4">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="userType"
-                  value="everdrone"
-                  checked={userType === 'everdrone'}
-                  onChange={(e) => setUserType(e.target.value as 'everdrone' | 'remote')}
-                  className="mr-2 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-gray-700">Everdrone User</span>
-              </label>
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="radio"
-                  name="userType"
-                  value="remote"
-                  checked={userType === 'remote'}
-                  onChange={(e) => setUserType(e.target.value as 'everdrone' | 'remote')}
-                  className="mr-2 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-gray-700">Remote User</span>
-              </label>
+          {/* Error message */}
+          {error && (
+            <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm">
+              {error}
             </div>
-          </div>
+          )}
 
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            disabled={isLoading}
+            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign In
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         {/* Demo notice */}
-        <p className="text-center text-gray-400 text-xs mt-6">
-          Demo mode - no credentials required
-        </p>
+        {demoMode && (
+          <div className="text-center mt-6">
+            <p className="text-gray-400 text-xs">
+              Demo mode - no credentials required
+            </p>
+            <p className="text-gray-400 text-xs mt-1">
+              Username with 'remote' = Remote user, otherwise Everdrone user
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

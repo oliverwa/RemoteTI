@@ -5,11 +5,28 @@ const fs = require('fs-extra');
 const path = require('path');
 const https = require('https');
 
+// Try to load dotenv if available (for development)
+try {
+  require('dotenv').config();
+} catch (e) {
+  console.log('dotenv not available, using environment variables directly');
+}
+
 const app = express();
 
 // Load unified configuration
 const config = require('./config.js');
-const PORT = config.server.port;
+const PORT = process.env.PORT || config.server.port;
+
+// Load authentication module - try full version first, fall back to simple
+let auth;
+try {
+  auth = require('./server/auth.js');
+  console.log('Using full authentication module with bcrypt/jwt');
+} catch (e) {
+  console.log('bcrypt/jwt not available, using simplified authentication');
+  auth = require('./server/auth-simple.js');
+}
 
 // Derived configurations
 const BASE_DIR = config.paths.base === '.' ? __dirname : config.paths.base;
@@ -26,6 +43,25 @@ app.use('/public', express.static('public'));
 // Serve static files from build directory (but don't catch all routes yet)
 app.use('/static', express.static(path.join(__dirname, 'build/static')));
 
+// Initialize authentication system
+auth.initializeUsersDB().catch(console.error);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Authentication routes
+app.post('/api/auth/login', auth.handleLogin);
+app.post('/api/auth/validate', auth.handleValidateToken);
+app.post('/api/auth/change-password', auth.authenticateToken, auth.handleChangePassword);
+
+// User management routes (admin only)
+app.get('/api/users', auth.authenticateToken, auth.handleGetUsers);
+app.post('/api/users', auth.authenticateToken, auth.handleCreateUser);
+app.put('/api/users/:id', auth.authenticateToken, auth.handleUpdateUser);
+app.delete('/api/users/:id', auth.authenticateToken, auth.handleDeleteUser);
+app.put('/api/users/:id/password', auth.authenticateToken, auth.handleChangeUserPassword);
 
 // Logging utility
 function log(level, message, data = null) {
@@ -95,12 +131,13 @@ function generateSessionTimestamp() {
   return `${year}${month}${day}_${hour}${minute}${second}`;
 }
 
-function initializeCaptureProcess(requestId, hangar, drone, sessionFolder) {
+function initializeCaptureProcess(requestId, hangar, drone, sessionFolder, inspectionType) {
   global.captureProcesses = global.captureProcesses || {};
   global.captureProcesses[requestId] = {
     hangar,
     drone,
     sessionFolder,
+    inspectionType,
     startTime: Date.now(),
     capturedImages: [],
     failedImages: [],
@@ -201,7 +238,7 @@ app.post('/api/capture', async (req, res) => {
       log('info', `Created inspection file: ${destinationFile}`);
     }
     
-    initializeCaptureProcess(requestId, hangar, drone, sessionFolder);
+    initializeCaptureProcess(requestId, hangar, drone, sessionFolder, inspectionType);
     
     // Start capture in background
     captureInParallel(requestId, hangar, drone, sessionFolder);
@@ -275,6 +312,31 @@ async function turnOnHangarLights(hangar) {
 
 // Optimized parallel capture function
 async function captureInParallel(requestId, hangar, drone, sessionFolder) {
+  // Check if camera script exists
+  if (!fs.existsSync(CAMERA_SCRIPT_PATH)) {
+    log('error', `[${requestId}] Camera script not found at ${CAMERA_SCRIPT_PATH}`);
+    
+    // Update global capture process to indicate failure
+    if (global.captureProcesses[requestId]) {
+      global.captureProcesses[requestId].status = 'failed';
+      global.captureProcesses[requestId].error = 'Camera capture system unavailable';
+      global.captureProcesses[requestId].failedImages = CAMERAS.map(cam => ({
+        camera: cam,
+        error: 'Camera script not found'
+      }));
+    }
+    
+    // Send failure notification
+    sendSSEUpdate(requestId, {
+      type: 'capture-failed',
+      requestId,
+      error: 'Camera capture system is not available. Please ensure the camera system is properly installed.',
+      details: `Camera script not found at: ${CAMERA_SCRIPT_PATH}`
+    });
+    
+    return;
+  }
+  
   // Set a global timeout for the entire capture process (5 minutes)
   const globalTimeout = setTimeout(() => {
     if (global.captureProcesses[requestId] && global.captureProcesses[requestId].status === 'running') {
@@ -350,9 +412,32 @@ async function captureInParallel(requestId, hangar, drone, sessionFolder) {
     global.captureProcesses[requestId].status = 'failed';
     global.captureProcesses[requestId].error = `Capture failed: ${successCount}/${totalCameras} cameras succeeded`;
     log('error', `[${requestId}] Parallel capture FAILED. Success: ${successCount}, Failed: ${failureCount}`);
+    
+    // Send failure notification to frontend
+    sendSSEUpdate(requestId, {
+      type: 'capture-failed',
+      requestId,
+      error: `Capture failed: Only ${successCount} out of ${totalCameras} cameras succeeded`,
+      successCount,
+      failureCount,
+      totalCameras,
+      failedCameras: global.captureProcesses[requestId].failedImages
+    });
   } else {
     global.captureProcesses[requestId].status = 'completed';
     log('info', `[${requestId}] Parallel capture completed. Success: ${successCount}, Failed: ${failureCount}`);
+    
+    // Send completion notification to frontend
+    sendSSEUpdate(requestId, {
+      type: 'capture-complete',
+      requestId,
+      sessionFolder: global.captureProcesses[requestId].sessionFolder,
+      successCount,
+      failureCount,
+      totalCameras,
+      capturedImages: global.captureProcesses[requestId].capturedImages,
+      failedImages: global.captureProcesses[requestId].failedImages
+    });
   }
   
   global.captureProcesses[requestId].currentCameras = [];
@@ -364,6 +449,14 @@ async function captureInParallel(requestId, hangar, drone, sessionFolder) {
     global.captureProcesses[requestId].error = `Critical capture error: ${error.message}`;
     global.captureProcesses[requestId].currentCameras = [];
     global.captureProcesses[requestId].currentPhase = null;
+    
+    // Send critical error notification to frontend
+    sendSSEUpdate(requestId, {
+      type: 'capture-failed',
+      requestId,
+      error: `Critical error during capture: ${error.message}`,
+      critical: true
+    });
   } finally {
     clearTimeout(globalTimeout);
   }
@@ -1006,7 +1099,7 @@ app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) =
     
     const captureOptions = {
       hostname: 'localhost',
-      port: 3001,
+      port: PORT,
       path: '/api/capture',
       method: 'POST',
       headers: {
@@ -1646,7 +1739,7 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
     
     const captureOptions = {
       hostname: 'localhost',
-      port: 3001,
+      port: PORT,
       path: '/api/capture',
       method: 'POST',
       headers: {

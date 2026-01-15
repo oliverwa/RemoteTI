@@ -14,6 +14,7 @@ import type {
   InspectionMetadata 
 } from '../types';
 import { HANGARS, CAMERA_LAYOUT, clamp } from '../constants';
+import { API_CONFIG } from '../config/api.config';
 
 // Import extracted modals
 import { 
@@ -82,7 +83,7 @@ interface MultiCamInspectorProps {
   selectedHangar?: string;
   selectedDrone?: string;
   action?: 'capture' | 'load' | 'browse' | 'load-session';
-  userType?: 'everdrone' | 'remote';
+  userType?: 'admin' | 'everdrone' | 'service_partner';
 }
 
 export default function MultiCamInspector({ 
@@ -90,7 +91,7 @@ export default function MultiCamInspector({
   selectedHangar,
   selectedDrone,
   action = 'capture',
-  userType = 'everdrone' 
+  userType = 'admin' 
 }: MultiCamInspectorProps = {}) {
   // --- State for inspection data ---
   const [inspectionData, setInspectionData] = useState<any>(null);
@@ -204,7 +205,7 @@ export default function MultiCamInspector({
   useEffect(() => {
     const fetchTransforms = async () => {
       try {
-        const response = await fetch('http://172.20.1.93:3001/api/hangars/config');
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/hangars/config`);
         if (response.ok) {
           const data = await response.json();
           const transforms: { [hangarId: string]: { [cameraId: number]: CameraTransform } } = {};
@@ -230,7 +231,7 @@ export default function MultiCamInspector({
   // Save transforms to backend
   const saveTransformsToBackend = async (hangarId: string, transforms: { [cameraId: number]: CameraTransform }) => {
     try {
-      const response = await fetch(`http://172.20.1.93:3001/api/hangars/${hangarId}/transforms`, {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/hangars/${hangarId}/transforms`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -297,9 +298,7 @@ export default function MultiCamInspector({
         setIsLoadingInspection(true);
         
         // Determine the API URL based on environment and selected inspection
-        const baseUrl = window.location.hostname === 'localhost' 
-          ? 'http://localhost:3001' 
-          : 'http://172.20.1.93:3001';
+        const baseUrl = API_CONFIG.BASE_URL;
         
         const apiUrl = selectedInspection 
           ? `${baseUrl}/api/inspection-data/${selectedInspection}`
@@ -559,7 +558,7 @@ export default function MultiCamInspector({
     try {
       addLog(`💾 Saving validation box "${validationBox.id}" to JSON file...`);
       
-      const response = await fetch('http://172.20.1.93:3001/api/update-validation-box', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/update-validation-box`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -948,7 +947,7 @@ export default function MultiCamInspector({
       };
       console.log(`📤 Sending request to API:`, requestBody);
       
-      const response = await fetch('http://localhost:3002/api/analyze-session', {
+      const response = await fetch(`${API_CONFIG.BASE_URL.replace('5001', '3002')}/api/analyze-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1027,7 +1026,7 @@ export default function MultiCamInspector({
     try {
       addLog(`🗑️ Deleting session folder: ${darkImageDetails.session}`);
       
-      const response = await fetch('http://localhost:3002/api/delete-sessions', {
+      const response = await fetch(`${API_CONFIG.BASE_URL.replace('5001', '3002')}/api/delete-sessions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1183,7 +1182,7 @@ export default function MultiCamInspector({
     
     try {
       // Start the capture process (non-blocking)
-      const response = await fetch('http://172.20.1.93:3001/api/capture', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/capture`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1215,7 +1214,7 @@ export default function MultiCamInspector({
       // Fast polling for image updates
       const pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await fetch(`http://172.20.1.93:3001/api/capture/${requestId}/status`);
+          const statusResponse = await fetch(`${API_CONFIG.BASE_URL}/api/capture/${requestId}/status`);
           if (!statusResponse.ok) {
             throw new Error('Failed to get capture status');
           }
@@ -1300,7 +1299,7 @@ export default function MultiCamInspector({
                 if (cameraPosition) {
                   // Add cache-busting parameter to ensure fresh load
                   const timestamp = Date.now();
-                  const imageUrl = `http://172.20.1.93:3001/api/image/${snapshotHangar}/${imageInfo.session}/${imageInfo.filename}?t=${timestamp}`;
+                  const imageUrl = `${API_CONFIG.BASE_URL}/api/image/${snapshotHangar}/${imageInfo.session}/${imageInfo.filename}?t=${timestamp}`;
                   
                   console.log(`Storing image for ${cameraName}:`, imageUrl);
                   
@@ -1487,7 +1486,7 @@ export default function MultiCamInspector({
     try {
       addLog(`🔄 Looking for latest session across all hangars...`);
       
-      const response = await fetch(`http://172.20.1.93:3001/api/folders`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders`);
       if (!response.ok) {
         throw new Error(`Failed to load folders: ${response.statusText}`);
       }
@@ -1531,7 +1530,7 @@ export default function MultiCamInspector({
         const imageFile = latestSession.images.find((img: string) => img.startsWith(cameraName));
         
         if (imageFile) {
-          const imageUrl = `http://172.20.1.93:3001/api/image/${latestHangar}/${latestSession.name}/${imageFile}?t=${timestamp}`;
+          const imageUrl = `${API_CONFIG.BASE_URL}/api/image/${latestHangar}/${latestSession.name}/${imageFile}?t=${timestamp}`;
           console.log(`🖼️ Loading image ${index} (${cameraName}): ${imageUrl}`);
           return { ...cam, src: imageUrl, isLoading: false };
         } else {
@@ -1565,7 +1564,7 @@ export default function MultiCamInspector({
       
       // Load the inspection JSON from this session if it exists
       try {
-        const inspectionResponse = await fetch(`http://172.20.1.93:3001/api/inspection/${fullSessionPath}/data`);
+        const inspectionResponse = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${fullSessionPath}/data`);
         if (inspectionResponse.ok) {
           const inspectionData = await inspectionResponse.json();
           if (inspectionData.tasks) {
@@ -1592,7 +1591,7 @@ export default function MultiCamInspector({
     try {
       addLog(`🔄 Loading latest folder for ${hangar}...`);
       
-      const response = await fetch(`http://172.20.1.93:3001/api/folders/latest/${hangar}`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders/latest/${hangar}`);
       if (!response.ok) {
         throw new Error(`Failed to load latest folder: ${response.statusText}`);
       }
@@ -1612,7 +1611,7 @@ export default function MultiCamInspector({
         const imageFile = session.images.find((img: string) => img.startsWith(cameraName));
         
         if (imageFile) {
-          const imageUrl = `http://172.20.1.93:3001/api/image/${session.hangar}/${session.name}/${imageFile}?t=${timestamp}`;
+          const imageUrl = `${API_CONFIG.BASE_URL}/api/image/${session.hangar}/${session.name}/${imageFile}?t=${timestamp}`;
           return { ...cam, src: imageUrl, sourceUrl: imageUrl };
         }
         return cam;
@@ -1635,7 +1634,7 @@ export default function MultiCamInspector({
       setLoadingFolders(true);
       addLog('📁 Loading available folders...');
       
-      const response = await fetch('http://172.20.1.93:3001/api/folders');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders`);
       if (!response.ok) {
         throw new Error(`Failed to load folders: ${response.statusText}`);
       }
@@ -1665,7 +1664,7 @@ export default function MultiCamInspector({
         const imageFile = images.find((img: string) => img.startsWith(cameraName));
         
         if (imageFile) {
-          const imageUrl = `http://172.20.1.93:3001/api/image/${hangar}/${sessionName}/${imageFile}?t=${timestamp}`;
+          const imageUrl = `${API_CONFIG.BASE_URL}/api/image/${hangar}/${sessionName}/${imageFile}?t=${timestamp}`;
           return { ...cam, src: imageUrl, sourceUrl: imageUrl };
         }
         return cam;
@@ -1682,7 +1681,7 @@ export default function MultiCamInspector({
       
       // Load the inspection JSON from this session if it exists
       try {
-        const inspectionResponse = await fetch(`http://172.20.1.93:3001/api/inspection/${fullSessionPath}/data`);
+        const inspectionResponse = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${fullSessionPath}/data`);
         if (inspectionResponse.ok) {
           const inspectionData = await inspectionResponse.json();
           if (inspectionData.tasks) {
@@ -1765,13 +1764,13 @@ export default function MultiCamInspector({
       console.log('🔧 Mapped hangar ID to folder name:', { hangarId, folderName });
       
       // Load Mölndal baseline image from actual available session
-      const baselineUrl = `http://172.20.1.93:3001/api/image/hangar_sisjon_vpn/remote_bender_251205_084655/${cameraName}_251205_084655.jpg?t=${Date.now()}`;
+      const baselineUrl = `${API_CONFIG.BASE_URL}/api/image/hangar_sisjon_vpn/remote_bender_251205_084655/${cameraName}_251205_084655.jpg?t=${Date.now()}`;
       console.log('🔧 Baseline URL:', baselineUrl);
       setMolndalImage(baselineUrl);
       addLog(`📍 Loading baseline: ${cameraName} from Mölndal`);
       
       // Get all folders and find the latest session for selected hangar
-      const foldersUrl = `http://172.20.1.93:3001/api/folders`;
+      const foldersUrl = `${API_CONFIG.BASE_URL}/api/folders`;
       console.log('🔧 Folders URL:', foldersUrl);
       const foldersResponse = await fetch(foldersUrl);
       
@@ -1793,7 +1792,7 @@ export default function MultiCamInspector({
           console.log('🔧 Target image filename:', targetImageFilename);
           
           if (targetImageFilename) {
-            const hangarImageUrl = `http://172.20.1.93:3001/api/image/${hangarId}/${latestSession.name}/${targetImageFilename}?t=${Date.now()}`;
+            const hangarImageUrl = `${API_CONFIG.BASE_URL}/api/image/${hangarId}/${latestSession.name}/${targetImageFilename}?t=${Date.now()}`;
             console.log('🔧 Hangar image URL:', hangarImageUrl);
             setHangarImage(hangarImageUrl);
             addLog(`🎯 Loading target: ${cameraName} from ${latestSession.name}`);
@@ -1859,7 +1858,7 @@ export default function MultiCamInspector({
     });
     
     if (currentSessionName && currentTask.id) {
-      const url = `http://172.20.1.93:3001/api/inspection/${currentSessionName}/task/${currentTask.id}/status`;
+      const url = `${API_CONFIG.BASE_URL}/api/inspection/${currentSessionName}/task/${currentTask.id}/status`;
       const payload = {
         status: s,
         completedBy: inspectionMeta.inspectorName || 'Inspector',
@@ -1896,7 +1895,7 @@ export default function MultiCamInspector({
             
             // Notify alarm session that inspection is complete
             try {
-              const progressResponse = await fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+              const progressResponse = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/update-progress`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -1922,7 +1921,7 @@ export default function MultiCamInspector({
           } else {
             // Update progress for alarm session
             try {
-              await fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+              await fetch(`${API_CONFIG.BASE_URL}/api/inspection/update-progress`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -1977,7 +1976,7 @@ export default function MultiCamInspector({
               if (currentSessionName) {
                 const completedTasks = items.filter(item => item.status).length;
                 const totalTasks = items.length;
-                fetch('http://172.20.1.93:3001/api/inspection/update-progress', {
+                fetch(`${API_CONFIG.BASE_URL}/api/inspection/update-progress`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -2091,7 +2090,7 @@ export default function MultiCamInspector({
     // If task has been completed, update backend with new comment
     if (currentSessionName && currentTask.id && currentTask.status) {
       try {
-        await fetch(`http://172.20.1.93:3001/api/inspection/${currentSessionName}/task/${currentTask.id}/status`, {
+        await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${currentSessionName}/task/${currentTask.id}/status`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2111,7 +2110,7 @@ export default function MultiCamInspector({
   // Fetch available completed inspections
   const fetchAvailableInspections = async () => {
     try {
-      const response = await fetch('http://172.20.1.93:3001/api/folders');
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders`);
       const data = await response.json();
       
       const inspections: any[] = [];
@@ -2175,7 +2174,7 @@ export default function MultiCamInspector({
         const imagesWithData = await Promise.all(
           inspectionData.images.map(async (img: any) => {
             try {
-              const response = await fetch(`http://172.20.1.93:3001/api/snapshot/${inspectionData.sessionPath}/${img}`);
+              const response = await fetch(`${API_CONFIG.BASE_URL}/api/snapshot/${inspectionData.sessionPath}/${img}`);
               const blob = await response.blob();
               const dataUrl = await new Promise<string>((resolve) => {
                 const reader = new FileReader();
@@ -2219,7 +2218,7 @@ export default function MultiCamInspector({
   useEffect(() => {
     const checkBackendHealth = async () => {
       try {
-        const response = await fetch('http://172.20.1.93:3001/api/health');
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/health`);
         if (response.ok) {
           const health = await response.json();
           addLog("🔗 Backend API connected successfully");
@@ -2275,7 +2274,7 @@ export default function MultiCamInspector({
           if (hangarId && sessionName) {
             addLog(`Loading session: ${sessionName}`);
             // Fetch images for this session from the server
-            fetch(`http://172.20.1.93:3001/api/folders`)
+            fetch(`${API_CONFIG.BASE_URL}/api/folders`)
               .then(res => res.json())
               .then(data => {
                 // Find the session in the data

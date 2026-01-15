@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
 import { HANGARS, DRONE_OPTIONS } from '../constants';
+import { API_CONFIG } from '../config/api.config';
 import FolderBrowserModal from './modals/FolderBrowserModal';
 
 interface InspectionType {
@@ -37,7 +38,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   useEffect(() => {
     setLoading(true);
     // Always use Pi backend for consistency, add cache busting
-    const apiUrl = `http://172.20.1.93:3001/api/inspection-types?t=${Date.now()}`;
+    const apiUrl = `${API_CONFIG.BASE_URL}/api/inspection-types?t=${Date.now()}`;
     
     fetch(apiUrl, {
       cache: 'no-cache',
@@ -86,7 +87,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   const handleLoadLatest = async () => {
     // Find the most recent inspection across all hangars
     try {
-      const response = await fetch(`http://172.20.1.93:3001/api/folders`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders`);
       if (response.ok) {
         const data = await response.json();
         
@@ -155,7 +156,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
     // Open the folder browser directly here
     setLoadingFolders(true);
     try {
-      const response = await fetch(`http://172.20.1.93:3001/api/folders`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/folders`);
       if (response.ok) {
         const data = await response.json();
         console.log('Loaded folders data:', data);
