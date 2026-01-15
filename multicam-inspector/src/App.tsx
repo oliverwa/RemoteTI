@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage';
 import UnifiedInspectionScreen from './components/UnifiedInspectionScreen';
 import HangarDashboard from './components/HangarDashboard';
 import BackendConnectionCheck from './components/BackendConnectionCheck';
+import authService from './services/authService';
 import './App.css';
 
 interface InspectionConfig {
@@ -35,7 +36,9 @@ function App() {
     if (returnToDashboard === 'true') {
       // Auto-login when returning from inspection completion
       setIsAuthenticated(true);
-      setCurrentUser(returnUserType === 'service_partner' ? 'Service Partner User' : 'Inspector');
+      // Try to get username from auth service, fallback to generic name
+      const user = authService.getCurrentUser();
+      setCurrentUser(user?.username || (returnUserType === 'service_partner' ? 'Service Partner User' : 'Inspector'));
       setUserType(returnUserType || 'everdrone');
       setShowDashboard(true);
       // Clean up URL
@@ -44,7 +47,9 @@ function App() {
       // Auto-login for direct session links
       const sessionUserType = urlParams.get('userType') as 'admin' | 'everdrone' | 'service_partner' | null;
       setIsAuthenticated(true);
-      setCurrentUser(sessionUserType === 'service_partner' ? 'Service Partner User' : 'Inspector');
+      // Try to get username from auth service, fallback to generic name
+      const user = authService.getCurrentUser();
+      setCurrentUser(user?.username || (sessionUserType === 'service_partner' ? 'Service Partner User' : 'Inspector'));
       setUserType(sessionUserType || 'everdrone');
       setShowDashboard(false);
       setStartedFromDashboard(true); // Mark that this came from dashboard
@@ -152,6 +157,7 @@ function App() {
               selectedDrone={inspectionConfig.drone}
               action={inspectionConfig.action}
               userType={userType}
+              currentUser={currentUser}
             />
           ) : (
             <OnsiteChecklistInspector

@@ -1,0 +1,471 @@
+{
+  "hangars": [
+    {
+      "id": "hangar_sisjon_vpn",
+      "label": "Mölndal",
+      "assignedDrone": "bender",
+      "operational": true,
+      "ipAddress": "10.0.10.113",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "operational",
+      "updatedAt": "2026-01-15T12:40:49.628Z"
+    },
+    {
+      "id": "hangar_rouen_vpn",
+      "label": "Forges-les-Eaux",
+      "assignedDrone": "marvin",
+      "operational": true,
+      "ipAddress": "10.0.10.172",
+      "cameraTransforms": {
+        "0": {
+          "x": -77,
+          "y": 11,
+          "scale": 1,
+          "rotation": -3.3
+        },
+        "1": {
+          "x": -50,
+          "y": -75,
+          "scale": 1,
+          "rotation": 1.4
+        },
+        "2": {
+          "x": 27,
+          "y": -11,
+          "scale": 0.99,
+          "rotation": -6.3
+        },
+        "3": {
+          "x": 22,
+          "y": -13,
+          "scale": 0.98,
+          "rotation": -5.3
+        },
+        "4": {
+          "x": -202,
+          "y": -29,
+          "scale": 0.97,
+          "rotation": -1.8
+        },
+        "5": {
+          "x": 139,
+          "y": -7,
+          "scale": 0.98,
+          "rotation": 1.7
+        },
+        "6": {
+          "x": 5,
+          "y": -30,
+          "scale": 0.99,
+          "rotation": -1.8
+        },
+        "7": {
+          "x": 130,
+          "y": -132,
+          "scale": 1,
+          "rotation": -9.3
+        }
+      },
+      "status": "operational",
+      "updatedAt": "2026-01-15T12:14:37.721Z"
+    },
+    {
+      "id": "hangar_boras_vpn",
+      "label": "Borås",
+      "assignedDrone": "E3-001",
+      "operational": false,
+      "ipAddress": "",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "construction",
+      "updatedAt": "2026-01-15T12:40:20.994Z"
+    },
+    {
+      "id": "hangar_skovde_vpn",
+      "label": "Skövde",
+      "assignedDrone": "E3-002",
+      "operational": false,
+      "ipAddress": "",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "construction"
+    },
+    {
+      "id": "hangar_uddevalla_vpn",
+      "label": "Uddevalla",
+      "assignedDrone": "E3-003",
+      "operational": false,
+      "ipAddress": "",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "construction"
+    },
+    {
+      "id": "hangar_farsta_vpn",
+      "label": "Farsta",
+      "assignedDrone": "E3-004",
+      "operational": false,
+      "ipAddress": "",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "construction"
+    },
+    {
+      "id": "hangar_trollhattan_vpn",
+      "label": "Trollhättan",
+      "assignedDrone": "E3-005",
+      "operational": false,
+      "ipAddress": "",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "construction"
+    },
+    {
+      "id": "hangar_vanersborg_vpn",
+      "label": "Vänersborg",
+      "assignedDrone": "E3-006",
+      "operational": false,
+      "ipAddress": "",
+      "cameraTransforms": {
+        "0": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "1": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "2": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "3": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "4": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "5": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "6": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        },
+        "7": {
+          "x": 0,
+          "y": 0,
+          "scale": 1,
+          "rotation": 0
+        }
+      },
+      "status": "construction"
+    }
+  ]
+}

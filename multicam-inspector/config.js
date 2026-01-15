@@ -370,15 +370,66 @@ const environmentConfigs = {
   }
 };
 
+// Load hangars from hangars.json if available
+function loadHangarsFromJson() {
+  try {
+    const hangarsPath = path.join(__dirname, 'data', 'hangars.json');
+    if (fs.existsSync(hangarsPath)) {
+      const data = JSON.parse(fs.readFileSync(hangarsPath, 'utf-8'));
+      const hangarsObj = {};
+      
+      data.hangars.forEach(h => {
+        hangarsObj[h.id] = {
+          id: h.id,
+          label: h.label,
+          description: h.label + ' hangar',
+          connection: {
+            ssh_host: h.ipAddress ? `system@${h.ipAddress}` : '',
+            ip: h.ipAddress || ''
+          },
+          folderName: h.label.replace(/[^a-zA-Z0-9]/g, ''),
+          lights: {
+            enabled: true,
+            endpoint: h.ipAddress ? `https://${h.ipAddress}:7548/hangar/lightson` : '',
+            username: 'system',
+            password: 'FJjf93/#',
+            waitTime: 3
+          },
+          cameraTransforms: h.cameraTransforms || {
+            0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            2: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            3: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            4: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            5: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            6: { x: 0, y: 0, scale: 1.0, rotation: 0 },
+            7: { x: 0, y: 0, scale: 1.0, rotation: 0 }
+          }
+        };
+      });
+      
+      return hangarsObj;
+    }
+  } catch (error) {
+    console.log('Could not load hangars.json, using default configuration');
+  }
+  return null;
+}
+
 // Create final configuration
 function createConfig() {
   const environment = detectEnvironment();
   const envConfig = environmentConfigs[environment] || environmentConfigs.dev;
   
+  // Try to load hangars from JSON file
+  const loadedHangars = loadHangarsFromJson();
+  
   const finalConfig = {
     ...baseConfig,
     ...envConfig,
     environment,
+    // Use loaded hangars from JSON if available, otherwise use defaults
+    hangars: loadedHangars || baseConfig.hangars,
     meta: {
       generatedAt: new Date().toISOString(),
       nodeVersion: process.version,

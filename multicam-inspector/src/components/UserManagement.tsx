@@ -295,31 +295,6 @@ const UserManagement: React.FC = () => {
         </button>
       </div>
 
-      {/* Default Credentials */}
-      <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Users className="w-5 h-5 text-blue-600" />
-          <h4 className="text-sm font-semibold text-blue-800">Default Credentials</h4>
-          <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">For initial setup</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div className="bg-white rounded-lg p-3 border border-blue-100">
-            <p className="text-xs font-medium text-blue-700 mb-1">Admin</p>
-            <div className="text-sm">
-              <p className="text-gray-700"><span className="font-medium">Username:</span> admin</p>
-              <p className="text-gray-700"><span className="font-medium">Password:</span> everdrone2024</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg p-3 border border-blue-100">
-            <p className="text-xs font-medium text-green-700 mb-1">Service Partner Inspector</p>
-            <div className="text-sm">
-              <p className="text-gray-700"><span className="font-medium">Username:</span> remote_inspector</p>
-              <p className="text-gray-700"><span className="font-medium">Password:</span> remote2024</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* User Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">

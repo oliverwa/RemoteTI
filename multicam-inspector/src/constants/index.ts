@@ -10,12 +10,21 @@ export const CAMERA_LAYOUT = [
 // Also make CAMERAS available as an alias for CAMERA_LAYOUT for backwards compatibility
 export const CAMERAS = CAMERA_LAYOUT.map(cam => ({ ...cam, label: cam.name }));
 
+// IMPORTANT: These are FALLBACK values only!
+// The real hangar configuration is in data/hangars.json
+// That file is the single source of truth for:
+// - IP addresses (used for camera operations) 
+// - Status (operational/maintenance/construction)
+// - Camera transforms
+// - All other hangar settings
+// These constants are only used if the API fails to load
 export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_sisjon_vpn", 
     label: "Mölndal",
     assignedDrone: "bender",
     operational: true,
+    status: "operational" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -32,6 +41,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Forges-les-Eaux",
     assignedDrone: "marvin",
     operational: true,
+    status: "operational" as const,
     cameraTransforms: {
       0: { x: -77, y: 11, scale: 1.0, rotation: -3.3 },     // RUR
       1: { x: -50, y: -75, scale: 1.0, rotation: 1.4 },     // FUR
@@ -48,6 +58,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Borås",
     assignedDrone: "E3-001",
     operational: false,
+    status: "construction" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -64,6 +75,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Skövde",
     assignedDrone: "E3-002",
     operational: false,
+    status: "construction" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -80,6 +92,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Uddevalla",
     assignedDrone: "E3-003",
     operational: false,
+    status: "construction" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -96,6 +109,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Farsta",
     assignedDrone: "E3-004",
     operational: false,
+    status: "construction" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -112,6 +126,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Trollhättan",
     assignedDrone: "E3-005",
     operational: false,
+    status: "construction" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },
@@ -128,6 +143,7 @@ export const HANGARS: HangarConfig[] = [
     label: "Vänersborg",
     assignedDrone: "E3-006",
     operational: false,
+    status: "construction" as const,
     cameraTransforms: {
       0: { x: 0, y: 0, scale: 1.0, rotation: 0 },
       1: { x: 0, y: 0, scale: 1.0, rotation: 0 },

@@ -3,7 +3,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 // Removed static import - will fetch from API instead
-import jsPDF from 'jspdf';
 
 // Import shared types and constants
 import type { 
@@ -84,6 +83,7 @@ interface MultiCamInspectorProps {
   selectedDrone?: string;
   action?: 'capture' | 'load' | 'browse' | 'load-session';
   userType?: 'admin' | 'everdrone' | 'service_partner';
+  currentUser?: string;
 }
 
 export default function MultiCamInspector({ 
@@ -91,7 +91,8 @@ export default function MultiCamInspector({
   selectedHangar,
   selectedDrone,
   action = 'capture',
-  userType = 'admin' 
+  userType = 'admin',
+  currentUser = 'Inspector' 
 }: MultiCamInspectorProps = {}) {
   // --- State for inspection data ---
   const [inspectionData, setInspectionData] = useState<any>(null);
@@ -594,7 +595,7 @@ export default function MultiCamInspector({
   
   // --- Inspection metadata ---
   const [inspectionMeta, setInspectionMeta] = useState<InspectionMetadata>({
-    inspectorName: '',
+    inspectorName: currentUser,
     droneName: '',
     hangarName: '',
     startTime: '', // Will be set when images are loaded
@@ -602,10 +603,7 @@ export default function MultiCamInspector({
   });
   
   // --- Report generation state ---
-  const [showPDFModal, setShowPDFModal] = useState(false);
   const [availableInspections, setAvailableInspections] = useState<any[]>([]);
-  const [selectedPDFInspection, setSelectedPDFInspection] = useState<any>(null);
-  const [loadingPDF, setLoadingPDF] = useState(false);
 
   // --- Core camera ops ---
   const resetView = useCallback((id: number) =>
@@ -1861,7 +1859,7 @@ export default function MultiCamInspector({
       const url = `${API_CONFIG.BASE_URL}/api/inspection/${currentSessionName}/task/${currentTask.id}/status`;
       const payload = {
         status: s,
-        completedBy: inspectionMeta.inspectorName || 'Inspector',
+        completedBy: inspectionMeta.inspectorName || currentUser,
         comment: currentTask.comment || ''
       };
       
@@ -2097,7 +2095,7 @@ export default function MultiCamInspector({
           },
           body: JSON.stringify({
             status: currentTask.status,
-            completedBy: inspectionMeta.inspectorName || 'Inspector',
+            completedBy: inspectionMeta.inspectorName || currentUser,
             comment: comment
           })
         });
@@ -2149,70 +2147,6 @@ export default function MultiCamInspector({
     }
   };
 
-  // Generate PDF report and open in new tab
-  const generatePDFReport = async (inspectionData?: any) => {
-    try {
-      setLoadingPDF(true);
-      
-      // Import the PDF generator
-      const { generateInspectionPDF } = await import('../utils/pdfGenerator');
-      
-      // Use provided inspection data or current inspection
-      const data = inspectionData || {
-        inspection: { tasks: items },
-        inspectorName: inspectionMeta.inspectorName,
-        droneId: inspectionMeta.droneName,
-        hangarName: inspectionMeta.hangarName,
-        sessionName: inspectionMeta.sessionId,
-        completedAt: inspectionMeta.completedTime,
-        images: cams.filter(c => c.src).map(c => ({ name: c.name, data: c.src }))
-      };
-      
-      // If we have selected inspection data, we need to fetch its images
-      if (inspectionData && inspectionData.images && inspectionData.images.length > 0) {
-        // Load image data for the selected inspection
-        const imagesWithData = await Promise.all(
-          inspectionData.images.map(async (img: any) => {
-            try {
-              const response = await fetch(`${API_CONFIG.BASE_URL}/api/snapshot/${inspectionData.sessionPath}/${img}`);
-              const blob = await response.blob();
-              const dataUrl = await new Promise<string>((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result as string);
-                reader.readAsDataURL(blob);
-              });
-              return { name: img.replace('.jpg', ''), data: dataUrl };
-            } catch (error) {
-              console.error(`Failed to load image ${img}:`, error);
-              return null;
-            }
-          })
-        );
-        
-        data.images = imagesWithData.filter(Boolean);
-      }
-      
-      // Generate the PDF blob
-      const pdfBlob = await generateInspectionPDF(data);
-      
-      // Open PDF in new tab
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      window.open(pdfUrl, '_blank');
-      
-      // Clean up after a delay
-      setTimeout(() => URL.revokeObjectURL(pdfUrl), 100);
-      
-      addLog('📄 PDF report generated and opened in new tab');
-      setShowPDFModal(false);
-      setLoadingPDF(false);
-      
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      addLog(`❌ Failed to generate PDF report: ${errorMessage}`);
-      alert(`Failed to generate PDF report: ${errorMessage}`);
-      setLoadingPDF(false);
-    }
-  };
 
   // --- Backend health check ---
   useEffect(() => {
@@ -2312,20 +2246,6 @@ export default function MultiCamInspector({
   return (
     <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white text-black">
       {/* Header – main controls */}
-      <div className="flex flex-wrap items-center gap-2 p-2 bg-gray-50 rounded-lg">
-        <button
-          onClick={() => {
-            setShowPDFModal(true);
-            fetchAvailableInspections();
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-          </svg>
-          Generate PDF
-        </button>
-      </div>
 
 
       {/* ETA Countdown Display */}
@@ -3040,121 +2960,6 @@ export default function MultiCamInspector({
         </div>
       )}
 
-      {/* PDF Selection Modal */}
-      {showPDFModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
-              <h2 className="text-2xl font-bold">Generate PDF Report</h2>
-              <p className="text-blue-100 mt-1">Select an inspection to generate a PDF report</p>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
-              {loadingPDF ? (
-                <div className="text-center py-12">
-                  <div className="inline-flex items-center gap-3">
-                    <svg className="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span className="text-lg text-gray-700">Generating PDF...</span>
-                  </div>
-                </div>
-              ) : availableInspections.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <p className="text-lg font-medium">No completed inspections found</p>
-                  <p className="text-sm mt-2">Complete an inspection first to generate a report</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {availableInspections.map((inspection, index) => (
-                    <div
-                      key={index}
-                      className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                        selectedPDFInspection === inspection 
-                          ? 'border-blue-500 bg-blue-50' 
-                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedPDFInspection(inspection)}
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900">
-                            {inspection.hangarName} - {inspection.droneId}
-                          </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Session: {inspection.sessionName}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Completed: {new Date(inspection.completedAt).toLocaleString()}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Inspector: {inspection.inspectorName}
-                          </p>
-                          <div className="flex gap-4 mt-2 text-xs">
-                            <span className="text-green-600">
-                              ✓ {inspection.inspection.tasks?.filter((t: any) => t.status === 'pass').length || 0} Passed
-                            </span>
-                            <span className="text-red-600">
-                              ✗ {inspection.inspection.tasks?.filter((t: any) => t.status === 'fail').length || 0} Failed
-                            </span>
-                            <span className="text-gray-500">
-                              {inspection.inspection.tasks?.filter((t: any) => t.status === 'na').length || 0} N/A
-                            </span>
-                          </div>
-                          {inspection.images.length > 0 && (
-                            <p className="text-xs text-blue-600 mt-1">
-                              📷 {inspection.images.length} camera images
-                            </p>
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          {selectedPDFInspection === inspection && (
-                            <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            
-            <div className="border-t bg-gray-50 px-6 py-4 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowPDFModal(false);
-                  setSelectedPDFInspection(null);
-                }}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (selectedPDFInspection) {
-                    generatePDFReport(selectedPDFInspection);
-                  }
-                }}
-                disabled={!selectedPDFInspection || loadingPDF}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                </svg>
-                Generate PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Report Modal */}
 

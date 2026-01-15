@@ -63,6 +63,14 @@ app.put('/api/users/:id', auth.authenticateToken, auth.handleUpdateUser);
 app.delete('/api/users/:id', auth.authenticateToken, auth.handleDeleteUser);
 app.put('/api/users/:id/password', auth.authenticateToken, auth.handleChangeUserPassword);
 
+// Hangar management routes
+const hangars = require('./server/hangars');
+app.get('/api/hangars', auth.authenticateToken, hangars.getHangars);
+app.get('/api/hangars/:id', auth.authenticateToken, hangars.getHangar);
+app.post('/api/hangars', auth.authenticateToken, hangars.createHangar);
+app.put('/api/hangars/:id', auth.authenticateToken, hangars.updateHangar);
+app.delete('/api/hangars/:id', auth.authenticateToken, hangars.deleteHangar);
+
 // Logging utility
 function log(level, message, data = null) {
   const timestamp = new Date().toISOString();

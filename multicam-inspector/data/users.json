@@ -1,69 +1,9 @@
 {
   "users": [
     {
-      "id": "usr_001",
-      "username": "admin",
-      "email": "",
-      "password": "$2b$10$P9UMSR.QElX.G5VOgl7hOOGORhDtPU0HWA0iblD74XoIWutcoIzqi",
-      "type": "admin",
-      "permissions": {
-        "canCaptureImages": true,
-        "canBrowseSessions": true,
-        "canDeleteSessions": true,
-        "canExportData": true,
-        "canAccessAllHangars": true,
-        "canPerformInspections": true
-      },
-      "createdAt": "2026-01-15T07:33:52.484Z",
-      "lastLogin": "2026-01-15T10:45:20.886Z",
-      "phone": "",
-      "updatedAt": "2026-01-15T10:45:37.104Z"
-    },
-    {
-      "id": "usr_002",
-      "username": "remote_inspector",
-      "email": "inspector@remote.com",
-      "password": "$2b$10$YgRvBcMnTsS3RmY2.DgkBOyMoD3lJIVCdAMDQqToxYgQCnOLA.PQC",
-      "type": "service_partner",
-      "permissions": {
-        "canCaptureImages": false,
-        "canBrowseSessions": true,
-        "canDeleteSessions": false,
-        "canExportData": true,
-        "canAccessAllHangars": false,
-        "allowedHangars": [
-          "THN",
-          "VÄN"
-        ],
-        "canPerformInspections": true,
-        "inspectionTypes": [
-          "remote-ti-inspection",
-          "initial-remote-ti-inspection",
-          "full-remote-ti-inspection"
-        ]
-      },
-      "createdAt": "2026-01-15T07:33:52.554Z",
-      "lastLogin": "2026-01-15T09:42:40.163Z"
-    },
-    {
-      "id": "usr_556052_qkd",
-      "username": "test_user",
-      "password": "$2b$10$GBy4Nz2/J50WPPnAXAlLVO0FenAW5Ob8dKC7Nvie1EUoBOCCv/U.y",
-      "type": "everdrone",
-      "permissions": {
-        "canCaptureImages": true,
-        "canBrowseSessions": true,
-        "canDeleteSessions": true,
-        "canExportData": true,
-        "canAccessAllHangars": true,
-        "canPerformInspections": true
-      },
-      "createdAt": "2026-01-15T10:39:16.127Z"
-    },
-    {
       "id": "usr_022438_hyp",
       "username": "oliverwallin",
-      "password": "$2b$10$aLfxhRcquldkaGiEvoHIKuVN6sYKXSr6JOv0XUIYYA3N.P0yR.WjW",
+      "password": "$2b$10$h8RHQTnApSc08fL5s8KM6uyUxTEno38vkG8ySIyPq5OM5EoveAaEi",
       "type": "admin",
       "permissions": {
         "canCaptureImages": true,
@@ -74,7 +14,51 @@
         "canPerformInspections": true
       },
       "createdAt": "2026-01-15T10:47:02.547Z",
-      "lastLogin": "2026-01-15T10:47:23.401Z"
+      "lastLogin": "2026-01-15T14:17:07.216Z",
+      "updatedAt": "2026-01-15T11:46:09.640Z"
+    },
+    {
+      "id": "usr_438877_g58",
+      "username": "hangar_trollhattan",
+      "password": "$2b$10$WCJwRhl2b64fYpHxrQiEP.GJI1V7D.dqlsZ0Ugtd36v5A68npibbS",
+      "type": "service_partner",
+      "permissions": {
+        "canCaptureImages": false,
+        "canBrowseSessions": true,
+        "canDeleteSessions": false,
+        "canExportData": true,
+        "canAccessAllHangars": false,
+        "allowedHangars": [
+          "hangar_sisjon_vpn",
+          "hangar_rouen_vpn"
+        ],
+        "canPerformInspections": true,
+        "inspectionTypes": [
+          "remote-ti-inspection",
+          "initial-remote-ti-inspection",
+          "full-remote-ti-inspection"
+        ]
+      },
+      "createdAt": "2026-01-15T12:00:38.974Z",
+      "updatedAt": "2026-01-15T12:25:13.123Z",
+      "lastLogin": "2026-01-15T16:11:43.904Z"
+    },
+    {
+      "id": "usr_468746_u1r",
+      "username": "pilot",
+      "password": "$2b$10$0TRDPDWZo0zDv1sdF5EqG./uI4bNTAZA5NdZj4hkDXmJihpj3WL1i",
+      "type": "everdrone",
+      "permissions": {
+        "canCaptureImages": true,
+        "canBrowseSessions": true,
+        "canDeleteSessions": true,
+        "canExportData": true,
+        "canAccessAllHangars": true,
+        "canPerformInspections": true
+      },
+      "createdAt": "2026-01-15T12:01:08.856Z",
+      "updatedAt": "2026-01-15T12:20:21.671Z",
+      "lastLogin": "2026-01-15T13:00:09.722Z"
     }
   ]
 }
