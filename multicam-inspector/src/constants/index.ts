@@ -160,6 +160,7 @@ export const HANGARS: HangarConfig[] = [
 export const DRONE_OPTIONS = [
   { id: "bender", label: "Bender" },
   { id: "marvin", label: "Marvin" },
+  { id: "lancelot", label: "Lancelot" },
   { id: "E3-001", label: "E3-001" },
   { id: "E3-002", label: "E3-002" },
   { id: "E3-003", label: "E3-003" },

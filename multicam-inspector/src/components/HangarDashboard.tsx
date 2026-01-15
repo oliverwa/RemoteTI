@@ -1378,67 +1378,66 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               (!hangar.maintenanceHistory?.lastOnsiteTI && !hangar.maintenanceHistory?.lastExtendedTI && !hangar.maintenanceHistory?.lastService)
             );
 
+            // Determine the left border color based on state
+            const getBorderColor = () => {
+              if (hangar.status === 'construction') return 'border-l-yellow-500';
+              if (hangar.status === 'maintenance') return 'border-l-orange-500';
+              if (isMaintenanceOverdue && hangar.state === 'standby') return 'border-l-red-500';
+              
+              // For service partners with active mission reset
+              if (userType === 'service_partner' && hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
+                  hangar.alarmSession?.inspections?.missionReset?.path && 
+                  hangar.alarmSession?.workflow?.phases?.missionReset?.status !== 'completed') {
+                return 'border-l-blue-500';
+              }
+              
+              switch(hangar.state) {
+                case 'standby': return 'border-l-green-500';
+                case 'alarm': return 'border-l-red-500';
+                case 'post_flight': return 'border-l-amber-500';
+                case 'inspection': return 'border-l-blue-500';
+                case 'verification': return 'border-l-violet-500';
+                default: return 'border-l-gray-400';
+              }
+            };
+
             return (
             <div
               key={hangar.id}
-              className={`relative rounded-xl border-[6px] p-5 cursor-pointer transition-all ${
-                hangar.status !== 'operational' ? 'min-h-[120px]' : userType === 'service_partner' ? 'min-h-[180px]' : 'min-h-[200px]'
-              } flex flex-col ${
-                isMaintenanceOverdue && hangar.state === 'standby' 
-                  ? 'bg-red-50 border-red-400 hover:border-red-500 hover:shadow-lg' 
-                  : getStatusColor(hangar.state, !!hangar.alarmSession?.workflow?.phases, userType === 'service_partner', hangar.alarmSession, hangar.status || 'operational')
-              }`}
+              className={`relative bg-white rounded-lg shadow-md hover:shadow-lg transition-all border-l-8 ${
+                getBorderColor()
+              } p-5 cursor-pointer ${
+                hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[180px]' : 'min-h-[220px]'
+              } flex flex-col`}
               onClick={() => {
                 if (hangar.state !== 'standby' && hangar.status === 'operational') {
                   setSelectedHangar(hangar.id);
                 }
               }}
             >
-              <div className={`flex justify-between items-start ${hangar.status === 'operational' && userType !== 'service_partner' ? 'mb-4' : ''}`}>
+              {/* Header */}
+              <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
-                  <h3 className={`font-bold text-gray-900 ${hangar.status === 'operational' ? 'text-xl' : 'text-base'}`}>{hangar.name}</h3>
-                  {hangar.status === 'operational' && userType !== 'service_partner' && (
-                    <p className="text-xs text-gray-500 mt-0.5">{hangar.assignedDrone || 'No drone'}</p>
-                  )}
-                  {hangar.status === 'operational' && userType === 'service_partner' && (
-                    <p className="text-sm text-gray-600 mt-1 font-medium">{hangar.assignedDrone || 'No drone assigned'}</p>
-                  )}
+                  <h3 className="text-xl font-bold text-gray-900">{hangar.name}</h3>
+                  <p className="text-sm text-gray-600 mt-0.5">
+                    Drone: {hangar.assignedDrone || 'Not assigned'}
+                  </p>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  {/* Status icon for non-service partner users and when not showing Mission Reset button */}
-                  {userType !== 'service_partner' && (
-                    <>
-                      {(hangar.state === 'standby' || hangar.status !== 'operational') && (
-                        <span className={`font-semibold ${
-                          hangar.status !== 'operational' ? 'text-yellow-700' : 
-                          isMaintenanceOverdue ? 'text-red-700' : 
-                          'text-green-700'
-                        } text-base`}>
-                          {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, false, hangar.status || 'operational', !!isMaintenanceOverdue)}
-                        </span>
-                      )}
-                      {hangar.status === 'operational' && (
-                        isMaintenanceOverdue && hangar.state === 'standby' 
-                          ? <XCircle className="w-6 h-6 text-red-600" />
-                          : getStatusIcon(hangar.state, hangar.alarmSession, false)
-                      )}
-                    </>
-                  )}
-                  {/* Service partner simplified view */}
-                  {userType === 'service_partner' && !(
-                    hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
-                    hangar.alarmSession?.inspections?.missionReset?.path && 
-                    hangar.alarmSession?.workflow?.phases?.missionReset?.status !== 'completed'
-                  ) && (
-                    <>
-                      {hangar.status !== 'operational' && (
-                        <span className="font-semibold text-yellow-700 text-base">
-                          {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, true, hangar.status || 'operational', !!isMaintenanceOverdue)}
-                        </span>
-                      )}
-                      {hangar.status === 'operational' && getStatusIcon(hangar.state, hangar.alarmSession, true)}
-                    </>
-                  )}
+                {/* Status Badge */}
+                <div className="flex items-center">
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    hangar.status === 'construction' ? 'bg-yellow-100 text-yellow-800' :
+                    hangar.status === 'maintenance' ? 'bg-orange-100 text-orange-800' :
+                    isMaintenanceOverdue && hangar.state === 'standby' ? 'bg-red-100 text-red-800' :
+                    hangar.state === 'standby' ? 'bg-green-100 text-green-800' :
+                    hangar.state === 'alarm' ? 'bg-red-100 text-red-800 animate-pulse' :
+                    hangar.state === 'post_flight' ? 'bg-amber-100 text-amber-800' :
+                    hangar.state === 'inspection' ? 'bg-blue-100 text-blue-800' :
+                    hangar.state === 'verification' ? 'bg-violet-100 text-violet-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'service_partner', hangar.status || 'operational', !!isMaintenanceOverdue)}
+                  </span>
                 </div>
               </div>
               
@@ -1478,61 +1477,57 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
               )}
               
-              {/* Maintenance History - Show for admin and everdrone users when no workflow is active */}
+              {/* Maintenance History - Simplified grid layout */}
               {(userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && hangar.assignedDrone && hangar.state === 'standby' && (
-                <div className="mt-auto pt-4 mt-4 border-t-2 border-gray-100">
-                  <div className="flex justify-between items-center mb-3">
-                    <div className="text-sm font-semibold text-gray-700">
-                      Maintenance History - {hangar.assignedDrone}
-                    </div>
-                    {/* Show warning badge if any maintenance is overdue */}
-                    {((hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
-                      (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
-                      (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
-                      (!hangar.maintenanceHistory?.lastOnsiteTI && !hangar.maintenanceHistory?.lastExtendedTI && !hangar.maintenanceHistory?.lastService)) && (
-                      <div className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 rounded-md text-xs font-semibold">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                        Alarm
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="text-xs text-gray-500 mb-1.5 font-medium">OnsiteTI:</div>
-                      <div className={`text-sm font-bold ${
+                <div className="mt-auto pt-3 border-t border-gray-200">
+                  <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Maintenance History</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className={`p-2 rounded-lg text-center ${
+                      hangar.maintenanceHistory?.lastOnsiteTI 
+                        ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'bg-red-50' : 'bg-green-50'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className="text-[10px] font-medium text-gray-600">Onsite TI</div>
+                      <div className={`text-xs font-bold mt-0.5 ${
                         hangar.maintenanceHistory?.lastOnsiteTI 
                           ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'text-red-600' : 'text-green-600'
                           : 'text-gray-400'
                       }`}>
                         {hangar.maintenanceHistory?.lastOnsiteTI 
-                          ? `${getDaysSince(hangar.maintenanceHistory.lastOnsiteTI)} days ago`
-                          : 'Never'}
+                          ? `${getDaysSince(hangar.maintenanceHistory.lastOnsiteTI)}d`
+                          : '-'}
                       </div>
                     </div>
-                    <div className="flex-1 text-center">
-                      <div className="text-xs text-gray-500 mb-1.5 font-medium">ExtendedTI:</div>
-                      <div className={`text-sm font-bold ${
+                    <div className={`p-2 rounded-lg text-center ${
+                      hangar.maintenanceHistory?.lastExtendedTI 
+                        ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'bg-red-50' : 'bg-green-50'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className="text-[10px] font-medium text-gray-600">Extended</div>
+                      <div className={`text-xs font-bold mt-0.5 ${
                         hangar.maintenanceHistory?.lastExtendedTI 
                           ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'text-red-600' : 'text-green-600'
                           : 'text-gray-400'
                       }`}>
                         {hangar.maintenanceHistory?.lastExtendedTI 
-                          ? `${getDaysSince(hangar.maintenanceHistory.lastExtendedTI)} days ago`
-                          : 'Never'}
+                          ? `${getDaysSince(hangar.maintenanceHistory.lastExtendedTI)}d`
+                          : '-'}
                       </div>
                     </div>
-                    <div className="flex-1 text-right">
-                      <div className="text-xs text-gray-500 mb-1.5 font-medium">Service:</div>
-                      <div className={`text-sm font-bold ${
+                    <div className={`p-2 rounded-lg text-center ${
+                      hangar.maintenanceHistory?.lastService 
+                        ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'bg-red-50' : 'bg-green-50'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className="text-[10px] font-medium text-gray-600">Service</div>
+                      <div className={`text-xs font-bold mt-0.5 ${
                         hangar.maintenanceHistory?.lastService 
                           ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'text-red-600' : 'text-green-600'
                           : 'text-gray-400'
                       }`}>
                         {hangar.maintenanceHistory?.lastService 
-                          ? `${getDaysSince(hangar.maintenanceHistory.lastService)} days ago`
-                          : 'Never'}
+                          ? `${getDaysSince(hangar.maintenanceHistory.lastService)}d`
+                          : '-'}
                       </div>
                     </div>
                   </div>
@@ -1565,16 +1560,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   <>
                     {/* Show alarm button for Everdrone users when operational and not overdue */}
                     {hangar.state === 'standby' && (userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && !isMaintenanceOverdue && (
-                      <div className="flex justify-center mt-4">
+                      <div className="flex justify-center mt-3">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleTriggerAlarm(hangar.id, hangar.assignedDrone);
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-all hover:shadow-md"
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                         >
-                          <PlayCircle className="w-4 h-4" />
-                          Trigger inspection workflow
+                          <PlayCircle className="w-5 h-5" />
+                          Start Inspection
                         </button>
                       </div>
                     )}

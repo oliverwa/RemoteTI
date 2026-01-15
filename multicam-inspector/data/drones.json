@@ -1,0 +1,81 @@
+{
+  "drones": [
+    {
+      "id": "bender",
+      "label": "Bender",
+      "serialNumber": "DRN-001",
+      "model": "Everdrone Model X",
+      "status": "assigned",
+      "currentHangar": "hangar_sisjon_vpn",
+      "lastMaintenanceDate": "2024-11-15T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-11-15T00:00:00.000Z"
+    },
+    {
+      "id": "maggie", 
+      "label": "Maggie",
+      "serialNumber": "DRN-002",
+      "model": "Everdrone Model X",
+      "status": "assigned",
+      "currentHangar": "hangar_rouen_vpn",
+      "lastMaintenanceDate": "2024-11-20T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-11-20T00:00:00.000Z"
+    },
+    {
+      "id": "lisa",
+      "label": "Lisa",
+      "serialNumber": "DRN-003",
+      "model": "Everdrone Model X",
+      "status": "assigned",
+      "currentHangar": "hangar_ostersund_vpn",
+      "lastMaintenanceDate": "2024-11-25T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-11-25T00:00:00.000Z"
+    },
+    {
+      "id": "bart",
+      "label": "Bart",
+      "serialNumber": "DRN-004",
+      "model": "Everdrone Model X",
+      "status": "assigned",
+      "currentHangar": "hangar_linkoping_vpn",
+      "lastMaintenanceDate": "2024-12-01T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-12-01T00:00:00.000Z"
+    },
+    {
+      "id": "homer",
+      "label": "Homer",
+      "serialNumber": "DRN-005",
+      "model": "Everdrone Model X",
+      "status": "assigned",
+      "currentHangar": "hangar_boras_vpn",
+      "lastMaintenanceDate": "2024-12-05T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-12-05T00:00:00.000Z"
+    },
+    {
+      "id": "marge",
+      "label": "Marge",
+      "serialNumber": "DRN-006",
+      "model": "Everdrone Model X",
+      "status": "available",
+      "currentHangar": null,
+      "lastMaintenanceDate": "2024-12-10T00:00:00.000Z",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-12-10T00:00:00.000Z"
+    },
+    {
+      "id": "lancelot",
+      "label": "Lancelot",
+      "serialNumber": "DRN-007",
+      "model": "Everdrone Model X",
+      "status": "available",
+      "currentHangar": null,
+      "lastMaintenanceDate": "2025-01-15T00:00:00.000Z",
+      "createdAt": "2025-01-15T00:00:00.000Z",
+      "updatedAt": "2025-01-15T00:00:00.000Z"
+    }
+  ]
+}
