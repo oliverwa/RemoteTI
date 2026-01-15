@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
-import { HANGARS, DRONE_OPTIONS } from '../constants';
+import { DRONE_OPTIONS } from '../constants';
+import { HangarConfig } from '../types';
 import { API_CONFIG } from '../config/api.config';
 import FolderBrowserModal from './modals/FolderBrowserModal';
 
@@ -33,6 +34,43 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [availableFolders, setAvailableFolders] = useState<any[]>([]);
+  const [hangars, setHangars] = useState<HangarConfig[]>([]);
+
+  // Fetch hangars from API with auth token
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    
+    if (token) {
+      fetch(`${API_CONFIG.BASE_URL}/api/hangars`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.hangars) {
+            setHangars(data.hangars);
+          } else {
+            // If no hangars in response or error, use constants
+            import('../constants').then(module => {
+              setHangars(module.HANGARS);
+            });
+          }
+        })
+        .catch(err => {
+          console.error('Failed to fetch hangars:', err);
+          // Fall back to constants if API fails
+          import('../constants').then(module => {
+            setHangars(module.HANGARS);
+          });
+        });
+    } else {
+      // No token, use constants directly
+      import('../constants').then(module => {
+        setHangars(module.HANGARS);
+      });
+    }
+  }, []);
 
   // Fetch available inspection types
   useEffect(() => {
@@ -71,12 +109,12 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
 
   // Auto-select drone when hangar changes
   useEffect(() => {
-    const hangar = HANGARS.find(h => h.id === selectedHangar);
+    const hangar = hangars.find(h => h.id === selectedHangar);
     if (hangar?.assignedDrone) {
       setSelectedDrone(hangar.assignedDrone);
       setIsEditingDrone(false);
     }
-  }, [selectedHangar]);
+  }, [selectedHangar, hangars]);
 
   const handleCaptureSnapshot = () => {
     if (selectedInspection && selectedHangar && selectedDrone) {
@@ -206,7 +244,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
     onStartInspection('load-session', inspectionType, sessionData, 'session');
   };
 
-  const selectedHangarObj = HANGARS.find(h => h.id === selectedHangar);
+  const selectedHangarObj = hangars.find(h => h.id === selectedHangar);
   const assignedDroneName = selectedHangarObj?.assignedDrone 
     ? DRONE_OPTIONS.find(d => d.id === selectedHangarObj.assignedDrone)?.label 
     : null;
@@ -263,7 +301,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
               Select Hangar
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {HANGARS.map((h) => (
+              {hangars.map((h) => (
                 <button
                   key={h.id}
                   onClick={() => setSelectedHangar(h.id)}

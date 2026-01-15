@@ -28,12 +28,14 @@ CURL_RETRIES=5
 # Output directory - use provided session folder path
 # The SESSION_TIMESTAMP parameter now contains the full subfolder path
 # e.g., "hangar_sisjon_vpn/remote_bender_251204_093440"
+# Get the script's directory to find the data folder relative to it
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ -n "${SESSION_TIMESTAMP}" ]; then
-    OUT_DIR="${HOME}/Documents/GitHub/RemoteTI/multicam-inspector/data/sessions/${SESSION_TIMESTAMP}"
+    OUT_DIR="${SCRIPT_DIR}/data/sessions/${SESSION_TIMESTAMP}"
 else
     # Fallback to old format if not provided
     RUN_STAMP="$(date +'%y%m%d_%H%M%S')"
-    OUT_DIR="${HOME}/Documents/GitHub/RemoteTI/multicam-inspector/data/sessions/${HANGAR_HOST}/${DRONE_NAME}_${RUN_STAMP}"
+    OUT_DIR="${SCRIPT_DIR}/data/sessions/${HANGAR_HOST}/${DRONE_NAME}_${RUN_STAMP}"
 fi
 
 mkdir -p "${OUT_DIR}"

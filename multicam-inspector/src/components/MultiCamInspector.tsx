@@ -16,11 +16,9 @@ import { HANGARS, CAMERA_LAYOUT, clamp } from '../constants';
 import { API_CONFIG } from '../config/api.config';
 
 // Import extracted modals
-import { 
-  CameraTransformModal, 
-  CameraCalibrationSelectionModal, 
-  FolderBrowserModal 
-} from './modals';
+import CameraTransformModal from './modals/CameraTransformModal';
+import CameraCalibrationSelectionModal from './modals/CameraCalibrationModals';
+import FolderBrowserModal from './modals/FolderBrowserModal';
 
 // ---------------------------------------------------------
 // Hangar MultiCam Inspector – 4×2 Grid + TI Checklist (v8.6)

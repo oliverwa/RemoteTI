@@ -1102,7 +1102,8 @@ app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) =
     const captureData = JSON.stringify({
       hangar: hangarId,
       drone: droneId,
-      inspectionType: 'initial-remote-ti-inspection'
+      inspectionType: 'initial-remote-ti-inspection',
+      sessionName: sessionName  // Pass the session name to ensure images go to correct folder
     });
     
     const captureOptions = {
@@ -2463,8 +2464,29 @@ app.post('/api/maintenance-history/:hangarId', async (req, res) => {
   }
 });
 
-// Note: Frontend serving removed to avoid conflicts with API endpoints
-// The React app should be served from a separate process or different port
+// Serve static files from React build
+const buildPath = path.join(__dirname, 'build');
+if (fs.existsSync(buildPath)) {
+  // Serve static files
+  app.use(express.static(buildPath));
+  
+  // Serve index.html for all non-API routes (SPA support)
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      // Let API routes pass through
+      next();
+    } else if (req.method === 'GET') {
+      // Serve React app for all other GET requests
+      res.sendFile(path.join(buildPath, 'index.html'));
+    } else {
+      next();
+    }
+  });
+  
+  log('info', `Serving static files from: ${buildPath}`);
+} else {
+  log('warn', 'No build folder found. Run "npm run build" to create production build.');
+}
 
 process.on('SIGINT', () => {
   log('info', 'Received SIGINT, shutting down gracefully');

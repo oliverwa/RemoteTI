@@ -51,16 +51,3 @@ export const API_CONFIG = {
     BACKEND_CHECK: `${API_HOST}/api/health`,
   }
 };
-
-// Helper function for fetch with default options
-export const apiFetch = async (url: string, options?: RequestInit) => {
-  const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-    ...options,
-  };
-  
-  return fetch(url, defaultOptions);
-};

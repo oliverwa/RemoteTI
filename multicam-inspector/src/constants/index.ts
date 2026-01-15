@@ -7,9 +7,6 @@ export const CAMERA_LAYOUT = [
   { id: 4, name: 'RDR' }, { id: 5, name: 'FDR' }, { id: 6, name: 'FDL' }, { id: 7, name: 'RDL' }
 ];
 
-// Also make CAMERAS available as an alias for CAMERA_LAYOUT for backwards compatibility
-export const CAMERAS = CAMERA_LAYOUT.map(cam => ({ ...cam, label: cam.name }));
-
 // IMPORTANT: These are FALLBACK values only!
 // The real hangar configuration is in data/hangars.json
 // That file is the single source of truth for:
@@ -22,7 +19,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_sisjon_vpn", 
     label: "Mölndal",
-    assignedDrone: "bender",
+    assignedDrone: "lancelot",
     operational: true,
     status: "operational" as const,
     cameraTransforms: {
