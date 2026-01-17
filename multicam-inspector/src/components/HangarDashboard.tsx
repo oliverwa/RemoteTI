@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
 import { HANGARS } from '../constants';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, Plane, Navigation, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import { API_CONFIG } from '../config/api.config';
 import authService from '../services/authService';
@@ -347,8 +347,6 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     let currentPhase = '';
     if (phases.initialRTI?.status === 'in-progress') {
       currentPhase = 'Initial assessment';
-    } else if (phases.flight?.status === 'in-progress') {
-      currentPhase = 'Flight in progress';
     } else if (phases.telemetryAnalysis?.status === 'in-progress') {
       currentPhase = 'Analyzing data';
     }
@@ -356,7 +354,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     // Get status text for remote users
     const getRemoteStatusText = () => {
       // Always show "Standby for inspection" for all stages before route decision
-      if (!routeDecision && phases.flight?.status) {
+      if (!routeDecision && phases.telemetryAnalysis?.status) {
         return 'Standby for inspection';
       }
       return '';
@@ -365,7 +363,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     // Determine remote user state
     let canPerformBasicTI = false;
     
-    if (!phases.flight?.status) {
+    if (!phases.telemetryAnalysis?.status) {
       // No alarm yet
       return null;
     } else if (phases.clearArea?.status === 'completed') {
@@ -514,9 +512,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       isAlternative?: boolean;
       routeType?: 'basic' | 'onsite';
     }> = [
-      { id: 'flight', icon: Plane, label: 'Flight', status: phases.flight?.status },
-      { id: 'landing', icon: Navigation, label: 'Land', status: phases.landing?.status },
-      { id: 'telemetryAnalysis', icon: BarChart, label: 'Data', status: phases.telemetryAnalysis?.status },
+      { id: 'telemetryAnalysis', icon: BarChart, label: 'Data Analysis', status: phases.telemetryAnalysis?.status },
       { 
         id: 'initialRTI', 
         icon: Camera, 
@@ -1074,8 +1070,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         return 'Ready for Inspection';
       } else if (routeDecision === 'onsite') {
         return 'No Action Required';
-      } else if (phases.flight?.status) {
-        return '🚁 Post-flight inspection in progress';
+      } else if (phases.telemetryAnalysis?.status) {
+        return '🔍 Post-alarm analysis in progress';
       }
     }
     
@@ -1084,18 +1080,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       if (currentPhase.toLowerCase().includes('initial remote ti')) return 'Initial RTI';
       if (currentPhase.toLowerCase().includes('basic ti') || currentPhase.toLowerCase().includes('mission reset')) return 'Mission Reset Active';
       if (currentPhase.toLowerCase().includes('remote crew')) return 'Field Team Active';
-      if (currentPhase.toLowerCase().includes('initial')) return 'Initial Assessment';
     }
     
     switch(state) {
       case 'standby':
         return 'Open - Ready for alarm!';
       case 'alarm':
-        return 'Alarm Active';
+        return 'Workflow Active';
       case 'post_flight':
         return 'Post-Flight';
       case 'inspection':
-        return 'Inspection';
+        return 'Workflow Active';
       case 'verification':
         return 'Verification';
       default:
@@ -1132,11 +1127,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           if (h.id === hangarId) {
             return {
               ...h,
-              state: 'alarm',
-              currentPhase: 'Flight in progress',
+              state: 'inspection',
+              currentPhase: 'Starting data analysis',
               lastActivity: 'Just now',
               activeInspection: {
-                type: 'Alarm Response',
+                type: 'Post-Alarm Analysis',
                 progress: 0,
                 assignedTo: 'System'
               }
@@ -1156,31 +1151,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   };
 
   const startWorkflowProgression = (hangarId: string) => {
-    // 5 seconds: Land drone
-    setTimeout(async () => {
-      await updatePhase(hangarId, 'landing', {
-        status: 'completed',
-        timestamp: new Date().toISOString()
-      });
-      await updatePhase(hangarId, 'flight', {
-        status: 'completed',
-        endTime: new Date().toISOString()
-      });
-      
-      setHangarStatuses(prev => prev.map(h => {
-        if (h.id === hangarId) {
-          return {
-            ...h,
-            state: 'post_flight',
-            currentPhase: 'Drone landed',
-            lastActivity: 'Just landed'
-          };
-        }
-        return h;
-      }));
-    }, 5000);
-
-    // 10 seconds: Start telemetry analysis
+    // Start telemetry analysis immediately (after 2 seconds for UX)
     setTimeout(async () => {
       await updatePhase(hangarId, 'telemetryAnalysis', {
         status: 'in-progress',
@@ -1201,9 +1172,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         }
         return h;
       }));
-    }, 10000);
+    }, 2000);
 
-    // 15 seconds: Complete telemetry and trigger Initial Remote TI
+    // 5 seconds: Complete telemetry and trigger Initial Remote TI
     setTimeout(async () => {
       await updatePhase(hangarId, 'telemetryAnalysis', {
         status: 'completed',
@@ -1308,7 +1279,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           console.error('Error generating Initial RTI:', error);
         }
       }, 2000);
-    }, 15000);
+    }, 5000);
   };
 
   const updatePhase = async (hangarId: string, phase: string, updates: any) => {
@@ -1421,7 +1392,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               
               switch(hangar.state) {
                 case 'standby': return 'border-l-green-500';
-                case 'alarm': return 'border-l-red-500';
+                case 'alarm': return 'border-l-blue-500';
                 case 'post_flight': return 'border-l-amber-500';
                 case 'inspection': return 'border-l-blue-500';
                 case 'verification': return 'border-l-violet-500';
@@ -1458,7 +1429,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     hangar.status === 'maintenance' ? 'bg-orange-100 text-orange-800' :
                     isMaintenanceOverdue && hangar.state === 'standby' ? 'bg-red-100 text-red-800' :
                     hangar.state === 'standby' ? 'bg-green-100 text-green-800' :
-                    hangar.state === 'alarm' ? 'bg-red-100 text-red-800 animate-pulse' :
+                    hangar.state === 'alarm' ? 'bg-blue-100 text-blue-800' :
                     hangar.state === 'post_flight' ? 'bg-amber-100 text-amber-800' :
                     hangar.state === 'inspection' ? 'bg-blue-100 text-blue-800' :
                     hangar.state === 'verification' ? 'bg-violet-100 text-violet-800' :
