@@ -6,7 +6,25 @@
 // Since config.js is a Node.js module, we need to access it via environment variables
 // or through a build-time process. For now, we'll use environment variables.
 
-const API_HOST = process.env.REACT_APP_API_HOST || 'http://localhost:5001';
+// Dynamically determine the API host based on where the frontend is served from
+const getApiHost = () => {
+  // If explicitly set in environment, use that
+  if (process.env.REACT_APP_API_HOST) {
+    return process.env.REACT_APP_API_HOST;
+  }
+  
+  // If not on localhost, assume production and use the same host as frontend
+  const hostname = window.location.hostname;
+  if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+    const protocol = window.location.protocol;
+    return `${protocol}//${hostname}:5001`;
+  }
+  
+  // Default for local development
+  return 'http://localhost:5001';
+};
+
+const API_HOST = getApiHost();
 
 export const config = {
   api: {

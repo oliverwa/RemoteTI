@@ -4,7 +4,7 @@
 # This script builds locally and copies directly to the server
 
 # Configuration
-SERVER="root@172.20.1.24"
+SERVER="root@172.20.1.254"
 REMOTE_DIR="/root/multicam-inspector"
 LOCAL_BUILD="build"
 
@@ -20,7 +20,8 @@ echo ""
 
 # Step 1: Build the React app locally with production API
 echo -e "${YELLOW}Step 1: Building React app with production settings...${NC}"
-REACT_APP_API_HOST=http://172.20.1.24:5001 npm run build
+# Build with NODE_ENV=production to enable auto-detection of server IP
+NODE_ENV=production npm run build
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Build failed! Fix errors and try again.${NC}"
     exit 1
@@ -128,7 +129,7 @@ ssh $SERVER "cd $REMOTE_DIR && \
   # Ensure other required variables are set
   grep -q '^NODE_ENV=' .env || echo 'NODE_ENV=production' >> .env; \
   grep -q '^PORT=' .env || echo 'PORT=5001' >> .env; \
-  grep -q '^REACT_APP_API_HOST=' .env || echo 'REACT_APP_API_HOST=http://172.20.1.24:5001' >> .env; \
+  # REACT_APP_API_HOST is now auto-detected, no need to set it \
   grep -q '^BCRYPT_ROUNDS=' .env || echo 'BCRYPT_ROUNDS=10' >> .env; \
   grep -q '^REQUIRE_AUTH=' .env || echo 'REQUIRE_AUTH=true' >> .env; \
   \
@@ -149,7 +150,7 @@ echo ""
 # Step 8: Final instructions
 echo -e "${GREEN}🎉 Deployment complete!${NC}"
 echo ""
-echo "The server is ready to run at: http://172.20.1.24:5001"
+echo "The server is ready to run at: http://172.20.1.254:5001"
 echo ""
 echo "To start the server:"
 echo "1. SSH into server: ssh $SERVER"

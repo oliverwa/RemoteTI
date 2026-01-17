@@ -60,6 +60,34 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     return diffDays;
   };
 
+  // Helper function to format time since with more granularity
+  const formatTimeSince = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffMinutes < 60) {
+      return `${diffMinutes}m`;
+    } else if (diffHours < 24) {
+      return `${diffHours}h`;
+    } else if (diffDays < 7) {
+      return `${diffDays}d`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks}w`;
+    } else if (diffDays < 365) {
+      const months = Math.floor(diffDays / 30);
+      return `${months}mo`;
+    } else {
+      const years = Math.floor(diffDays / 365);
+      return `${years}y`;
+    }
+  };
+
 
   // Fetch hangars from backend (reads from hangars.json)
   const fetchHangars = async () => {
@@ -219,7 +247,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     } else if (phases.initialRTI?.status === 'completed' && !session.workflow?.routeDecision) {
                       // Initial RTI completed but no route decision yet
                       state = 'inspection';
-                      currentPhase = 'Choose inspection route';
+                      currentPhase = '🚨 Initial assessment complete - Choose route';
                     } else if (phases.initialRTI?.status === 'completed' && phases.missionReset?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
                       // Route selected but Mission Reset not started
                       state = 'inspection';
@@ -501,9 +529,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       },
     ];
     
-    // Show route decision point when Initial RTI is ready (has path) or complete
+    // Show route decision point ONLY when Initial RTI is actually complete
     const initialRTIReady = phases.initialRTI?.status === 'completed' || 
-                           (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.path) ||
                            (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.progress === '100%');
     
     // Always show decision point and possible paths in timeline
@@ -1048,7 +1075,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       } else if (routeDecision === 'onsite') {
         return 'No Action Required';
       } else if (phases.flight?.status) {
-        return 'Standby for Inspection';
+        return '🚁 Post-flight inspection in progress';
       }
     }
     
@@ -1218,7 +1245,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             if (h.id === hangarId) {
               return {
                 ...h,
-                currentPhase: 'Capturing images...',
+                currentPhase: '📸 Starting image capture...',
                 activeInspection: {
                   type: 'Initial Remote TI',
                   progress: 5,
@@ -1245,7 +1272,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               if (h.id === hangarId) {
                 return {
                   ...h,
-                  currentPhase: 'Capturing camera images...',
+                  currentPhase: '📸 Capturing images from 8 cameras...',
                   activeInspection: {
                     type: 'Initial Remote TI',
                     progress: 0,
@@ -1256,19 +1283,20 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               return h;
             }));
             
-            // After 40 seconds, show as ready
+            // After 40 seconds, show as ready with clear next steps
             setTimeout(() => {
               
-              // Update status to show inspection is ready
+              // Update status to show inspection is ready with action needed
               setHangarStatuses(prev => prev.map(h => {
                 if (h.id === hangarId) {
                   return {
                     ...h,
-                    currentPhase: 'Initial Remote TI Ready',
+                    currentPhase: '✅ Images captured - Ready for route decision',
                     activeInspection: {
                       type: 'Initial Remote TI',
-                      progress: 10,
-                      assignedTo: 'Everdrone'
+                      progress: 100,
+                      assignedTo: 'Everdrone',
+                      nextAction: 'Select inspection route'
                     }
                   };
                 }
@@ -1494,7 +1522,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           : 'text-gray-400'
                       }`}>
                         {hangar.maintenanceHistory?.lastOnsiteTI 
-                          ? `${getDaysSince(hangar.maintenanceHistory.lastOnsiteTI)}d`
+                          ? formatTimeSince(hangar.maintenanceHistory.lastOnsiteTI)
                           : '-'}
                       </div>
                     </div>
@@ -1510,7 +1538,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           : 'text-gray-400'
                       }`}>
                         {hangar.maintenanceHistory?.lastExtendedTI 
-                          ? `${getDaysSince(hangar.maintenanceHistory.lastExtendedTI)}d`
+                          ? formatTimeSince(hangar.maintenanceHistory.lastExtendedTI)
                           : '-'}
                       </div>
                     </div>
@@ -1526,7 +1554,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           : 'text-gray-400'
                       }`}>
                         {hangar.maintenanceHistory?.lastService 
-                          ? `${getDaysSince(hangar.maintenanceHistory.lastService)}d`
+                          ? formatTimeSince(hangar.maintenanceHistory.lastService)
                           : '-'}
                       </div>
                     </div>
@@ -1569,7 +1597,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                         >
                           <PlayCircle className="w-5 h-5" />
-                          Start Inspection
+                          Trigger Post-Alarm Workflow
                         </button>
                       </div>
                     )}

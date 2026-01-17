@@ -19,7 +19,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_sisjon_vpn", 
     label: "Mölndal",
-    assignedDrone: "lancelot",
+    assignedDrone: "bender",
     operational: true,
     status: "operational" as const,
     cameraTransforms: {
@@ -36,7 +36,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_rouen_vpn", 
     label: "Forges-les-Eaux",
-    assignedDrone: "marvin",
+    assignedDrone: "maggie",
     operational: true,
     status: "operational" as const,
     cameraTransforms: {
@@ -53,7 +53,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_boras_vpn", 
     label: "Borås",
-    assignedDrone: "E3-001",
+    assignedDrone: "homer",
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -156,7 +156,11 @@ export const HANGARS: HangarConfig[] = [
 
 export const DRONE_OPTIONS = [
   { id: "bender", label: "Bender" },
-  { id: "marvin", label: "Marvin" },
+  { id: "maggie", label: "Maggie" },
+  { id: "lisa", label: "Lisa" },
+  { id: "bart", label: "Bart" },
+  { id: "homer", label: "Homer" },
+  { id: "marge", label: "Marge" },
   { id: "lancelot", label: "Lancelot" },
   { id: "E3-001", label: "E3-001" },
   { id: "E3-002", label: "E3-002" },
@@ -164,7 +168,6 @@ export const DRONE_OPTIONS = [
   { id: "E3-004", label: "E3-004" },
   { id: "E3-005", label: "E3-005" },
   { id: "E3-006", label: "E3-006" },
-  { id: "E3-007", label: "E3-007" },
 ];
 
 // Utility functions

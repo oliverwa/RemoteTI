@@ -3,7 +3,7 @@
     {
       "id": "hangar_sisjon_vpn",
       "label": "Mölndal",
-      "assignedDrone": "lancelot",
+      "assignedDrone": "bender",
       "operational": true,
       "ipAddress": "10.0.10.113",
       "cameraTransforms": {
@@ -62,7 +62,7 @@
     {
       "id": "hangar_rouen_vpn",
       "label": "Forges-les-Eaux",
-      "assignedDrone": "marvin",
+      "assignedDrone": "maggie",
       "operational": true,
       "ipAddress": "10.0.10.172",
       "cameraTransforms": {
@@ -121,7 +121,7 @@
     {
       "id": "hangar_boras_vpn",
       "label": "Borås",
-      "assignedDrone": "E3-001",
+      "assignedDrone": "homer",
       "operational": false,
       "ipAddress": "",
       "cameraTransforms": {
