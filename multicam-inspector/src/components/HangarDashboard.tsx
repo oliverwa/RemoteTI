@@ -11,6 +11,7 @@ interface HangarDashboardProps {
   currentUser: string;
   userType: 'admin' | 'everdrone' | 'service_partner';
   onProceedToInspection: () => void;
+  onOpenInspection?: (hangar: string, session: string, type: string) => void;
   onLogout: () => void;
 }
 
@@ -41,6 +42,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   currentUser,
   userType,
   onProceedToInspection,
+  onOpenInspection,
   onLogout
 }) => {
   const [visibleHangars, setVisibleHangars] = useState<any[]>([]);
@@ -535,7 +537,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         progress: captureStartTimes[`${hangarId}-initialRTI`] && !inspections.initialRTI?.path
           ? getElapsedProgress(captureStartTimes[`${hangarId}-initialRTI`], 30000)
           : getProgress(inspections.initialRTI),
-        inspectionPath: inspections.initialRTI?.path
+        inspectionPath: inspections.initialRTI?.path,
+        clickable: !!inspections.initialRTI?.path
       },
     ];
     
@@ -543,32 +546,22 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     const initialRTIReady = phases.initialRTI?.status === 'completed' || 
                            (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.progress === '100%');
     
-    // Always show decision point and possible paths in timeline
+    // Show route/next steps based on workflow state
     if (!routeDecision) {
+      // No route decided yet - show pending route decision
       if (initialRTIReady) {
-        // Show route decision needed - highlight it as active
+        // Initial RTI complete - route decision needed
         workflowSteps.push(
-          { id: 'route', icon: AlertCircle, label: 'Decision', status: 'pending', highlight: true }
+          { id: 'route', icon: AlertCircle, label: 'Route Decision', status: 'pending', highlight: true }
         );
       } else {
-        // Show decision point as pending/grey (not ready yet)
+        // Initial RTI not complete - show future route as grey
         workflowSteps.push(
-          { id: 'route', icon: AlertCircle, label: 'Decision', status: 'pending', highlight: false }
+          { id: 'route', icon: HelpCircle, label: 'Route TBD', status: 'pending', highlight: false }
         );
       }
-      // Show undecided next step
-      workflowSteps.push(
-        { id: 'undecided', icon: HelpCircle, status: 'pending', label: 'Next Step' }
-      );
     } else {
-      // Route was decided - show as completed
-      workflowSteps.push(
-        { id: 'route', icon: CheckCircle, label: 'Decided', status: 'completed' }
-      );
-    }
-    
-    if (routeDecision) {
-      // Show the chosen path
+      // Route decided - show the actual route taken
       if (isOnsitePath) {
         workflowSteps.push(
           { 
@@ -577,7 +570,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             label: 'Onsite TI', 
             status: phases.onsiteTI?.status,
             progress: getProgress(inspections.onsiteTI),
-            inspectionPath: inspections.onsiteTI?.path
+            inspectionPath: inspections.onsiteTI?.path,
+            clickable: !!inspections.onsiteTI?.path
           }
         );
       } else if (isBasicPath) {
@@ -588,7 +582,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             label: 'Mission Reset', 
             status: phases.missionReset?.status,
             progress: getProgress(inspections.missionReset),
-            inspectionPath: inspections.missionReset?.path
+            inspectionPath: inspections.missionReset?.path,
+            clickable: !!inspections.missionReset?.path
           },
           { 
             id: 'fullRTI', 
@@ -598,7 +593,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             progress: captureStartTimes[`${hangarId}-fullRTI`] && !inspections.fullRTI?.path
               ? getElapsedProgress(captureStartTimes[`${hangarId}-fullRTI`], 30000)
               : getProgress(inspections.fullRTI),
-            inspectionPath: inspections.fullRTI?.path
+            inspectionPath: inspections.fullRTI?.path,
+            clickable: !!inspections.fullRTI?.path
           }
         );
       }
@@ -888,41 +884,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 const isCurrent = index === currentStepIndex;
                 const hasProgress = isInProgress && step.progress !== undefined && step.progress > 0;
                 
-                // For route decision point
-                if (step.id === 'route') {
-                  if (step.status === 'completed') {
-                    // Decision made
-                    return (
-                      <div key={step.id} className="flex flex-col items-center z-10 flex-1">
-                        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-sm">
-                          <CheckCircle className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="text-[10px] mt-1 text-green-600 font-medium">Decided</span>
-                      </div>
-                    );
-                  } else if (step.highlight) {
-                    // Active decision point - ready to decide
-                    return (
-                      <div key={step.id} className="flex flex-col items-center z-10 flex-1">
-                        <div className="w-8 h-8 bg-amber-50 border-2 border-amber-300 rounded-full flex items-center justify-center animate-pulse shadow-sm">
-                          <AlertCircle className="w-4 h-4 text-amber-600" />
-                        </div>
-                        <span className="text-[10px] mt-1 text-amber-600 font-medium">Decision</span>
-                      </div>
-                    );
-                  } else {
-                    // Pending decision - not ready yet (keep grey like other pending items)
-                    return (
-                      <div key={step.id} className="flex flex-col items-center z-10 flex-1">
-                        <div className="w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center shadow-sm">
-                          <AlertCircle className="w-4 h-4 text-gray-400" />
-                        </div>
-                        <span className="text-[10px] mt-1 text-gray-400">Decision</span>
-                      </div>
-                    );
-                  }
-                }
-                
+                // Special highlighting for route decision when needed
+                const highlightRoute = step.id === 'route' && step.highlight;
                 
                 const isClickable = (step as any).clickable;
                 const needsAttention = (step as any).needsAttention;
@@ -938,24 +901,50 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'pass' ? 'bg-green-500' : ''}
                         ${step.id !== 'telemetryAnalysis' && isCompleted && !needsAttention ? 'bg-green-500' : ''}
                         ${step.id !== 'telemetryAnalysis' && isCompleted && needsAttention ? 'bg-amber-500 animate-pulse ring-4 ring-amber-100' : ''}
-                        ${isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
-                        ${isPending ? 'bg-white border-2 border-gray-200' : ''}
+                        ${highlightRoute ? 'bg-amber-50 border-2 border-amber-300 animate-pulse' : ''}
+                        ${!highlightRoute && isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
+                        ${!highlightRoute && isPending ? 'bg-white border-2 border-gray-200' : ''}
                         ${isClickable ? 'cursor-pointer hover:scale-110' : ''}
                       `}
                       onClick={() => {
-                        if (isClickable && step.id === 'telemetryAnalysis') {
+                        if (!isClickable) return;
+                        
+                        // Handle telemetry analysis
+                        if (step.id === 'telemetryAnalysis') {
                           const currentHangar = hangarStatuses.find(h => h.id === hangarId);
                           if (currentHangar) {
                             setTelemetryHangar(currentHangar);
                             setShowTelemetryAnalysis(true);
                           }
                         }
+                        
+                        // Handle inspection viewing
+                        else if (step.inspectionPath) {
+                          const [h, s] = step.inspectionPath.split('/');
+                          const typeMap: any = {
+                            'initialRTI': 'initial-remote-ti-inspection',
+                            'basicTI': 'mission-reset-inspection',
+                            'onsiteTI': 'onsite-ti-inspection',
+                            'fullRTI': 'full-remote-ti-inspection'
+                          };
+                          
+                          const inspectionType = typeMap[step.id];
+                          if (inspectionType) {
+                            if (onOpenInspection) {
+                              onOpenInspection(h, s, inspectionType);
+                            } else {
+                              window.location.href = `/multi-cam-inspector?hangar=${h}&session=${s}&type=${inspectionType}&fromAlarm=true`;
+                            }
+                          }
+                        }
                       }}
-                      title={isClickable ? 'Click to view analysis' : ''}
+                      title={isClickable ? (step.id === 'telemetryAnalysis' ? 'Click to view analysis' : 'Click to open inspection') : ''}
                     >
                       <Icon className={`
                         w-4 h-4
-                        ${isCompleted || isInProgress ? 'text-white' : 'text-gray-400'}
+                        ${highlightRoute ? 'text-amber-600' : ''}
+                        ${!highlightRoute && (isCompleted || isInProgress) ? 'text-white' : ''}
+                        ${!highlightRoute && !(isCompleted || isInProgress) ? 'text-gray-400' : ''}
                       `} />
                     </div>
                     
@@ -966,8 +955,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'warning' ? 'text-yellow-600 font-medium' : ''}
                       ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'pass' ? 'text-green-600 font-medium' : ''}
                       ${step.id !== 'telemetryAnalysis' && isCompleted ? 'text-green-600 font-medium' : ''}
-                      ${isInProgress ? 'text-blue-600 font-semibold' : ''}
-                      ${isPending ? 'text-gray-400' : ''}
+                      ${highlightRoute ? 'text-amber-600 font-medium' : ''}
+                      ${!highlightRoute && isInProgress ? 'text-blue-600 font-semibold' : ''}
+                      ${!highlightRoute && isPending ? 'text-gray-400' : ''}
                     `}>
                       {step.label}
                     </span>

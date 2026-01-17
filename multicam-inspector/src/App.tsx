@@ -108,6 +108,40 @@ function App() {
   const handleBackToDashboard = () => {
     setShowDashboard(true);
     setInspectionConfig(null);
+    setStartedFromDashboard(false);
+  };
+
+  const handleOpenInspection = (hangar: string, session: string, type: string) => {
+    // Extract drone from session name (e.g., "initial_remote_marvin_260115_173150" -> "marvin")
+    let drone = 'Unknown';
+    const sessionParts = session.split('_');
+    
+    // Skip type prefixes to find drone name
+    for (let i = 0; i < sessionParts.length; i++) {
+      const part = sessionParts[i].toLowerCase();
+      if (!['initial', 'remote', 'full', 'basic', 'mission', 'reset', 'onsite', 'ti'].includes(part) && 
+          !/^\d+$/.test(part)) {
+        drone = sessionParts[i];
+        break;
+      }
+    }
+    
+    setInspectionConfig({
+      inspectionType: type,
+      hangar: `${hangar}|${session}`,  // Pass as "hangarId|sessionName" for load-session
+      drone,
+      action: 'load-session' as const
+    });
+    setShowDashboard(false);
+    setStartedFromDashboard(true);
+    
+    // Also set URL params for the inspector to find the session
+    const searchParams = new URLSearchParams();
+    searchParams.set('hangar', hangar);
+    searchParams.set('session', session);
+    searchParams.set('type', type);
+    searchParams.set('action', 'load-session');
+    window.history.replaceState({}, '', `?${searchParams.toString()}`);
   };
 
   return (
@@ -120,6 +154,7 @@ function App() {
             currentUser={currentUser}
             userType={userType}
             onProceedToInspection={handleProceedToManualInspection}
+            onOpenInspection={handleOpenInspection}
             onLogout={handleLogout}
           />
         ) : !inspectionConfig ? (
