@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { HANGARS } from '../constants';
 import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
+import TelemetryAnalysis from './TelemetryAnalysis';
 import { API_CONFIG } from '../config/api.config';
 import authService from '../services/authService';
 
@@ -48,6 +49,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [hangarsLoading, setHangarsLoading] = useState(true);
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showTelemetryAnalysis, setShowTelemetryAnalysis] = useState(false);
+  const [telemetryHangar, setTelemetryHangar] = useState<any>(null);
+  const [captureStartTimes, setCaptureStartTimes] = useState<{ [key: string]: number }>({});
   const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
   const [availableInspections, setAvailableInspections] = useState<any[]>([]);
 
@@ -338,7 +342,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   }, [visibleHangars, userType]);
 
   // Simplified status component for remote users
-  const RemoteUserStatus = ({ alarmSession, hangarId }: any) => {
+  const RemoteUserStatus = ({ alarmSession, hangarId, hangar }: any) => {
     const phases = alarmSession?.workflow?.phases || {};
     const routeDecision = alarmSession?.workflow?.routeDecision;
     const inspections = alarmSession?.inspections || {};
@@ -424,11 +428,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   };
   
   // Mini workflow timeline component  
-  const WorkflowTimeline = ({ alarmSession, hangarId, onOpenWorkflow, isRemoteUser }: any) => {
+  const WorkflowTimeline = ({ alarmSession, hangarId, onOpenWorkflow, isRemoteUser, captureStartTimes, setCaptureStartTimes }: any) => {
     const phases = alarmSession?.workflow?.phases || {};
     const routeDecision = alarmSession?.workflow?.routeDecision;
     const inspections = alarmSession?.inspections || {};
-    const [captureStartTimes, setCaptureStartTimes] = useState<{ [key: string]: number }>({});
     const [, forceUpdate] = useState(0);
     
     // Calculate progress based on elapsed time
@@ -454,13 +457,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       if (phases.initialRTI?.status === 'in-progress' && !inspections.initialRTI?.path) {
         const key = `${hangarId}-initialRTI`;
         if (!captureStartTimes[key]) {
-          setCaptureStartTimes(prev => ({ ...prev, [key]: Date.now() }));
+          setCaptureStartTimes((prev: any) => ({ ...prev, [key]: Date.now() }));
         }
       } else if (inspections.initialRTI?.path) {
         // Clear when complete
         const key = `${hangarId}-initialRTI`;
         if (captureStartTimes[key]) {
-          setCaptureStartTimes(prev => {
+          setCaptureStartTimes((prev: any) => {
             const newTimes = { ...prev };
             delete newTimes[key];
             return newTimes;
@@ -474,13 +477,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       if (phases.fullRTI?.status === 'in-progress' && !inspections.fullRTI?.path) {
         const key = `${hangarId}-fullRTI`;
         if (!captureStartTimes[key]) {
-          setCaptureStartTimes(prev => ({ ...prev, [key]: Date.now() }));
+          setCaptureStartTimes((prev: any) => ({ ...prev, [key]: Date.now() }));
         }
       } else if (inspections.fullRTI?.path) {
         // Clear when complete
         const key = `${hangarId}-fullRTI`;
         if (captureStartTimes[key]) {
-          setCaptureStartTimes(prev => {
+          setCaptureStartTimes((prev: any) => {
             const newTimes = { ...prev };
             delete newTimes[key];
             return newTimes;
@@ -511,8 +514,19 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       highlight?: boolean;
       isAlternative?: boolean;
       routeType?: 'basic' | 'onsite';
+      clickable?: boolean;
+      needsAttention?: boolean;
     }> = [
-      { id: 'telemetryAnalysis', icon: BarChart, label: 'Data Analysis', status: phases.telemetryAnalysis?.status },
+      { 
+        id: 'telemetryAnalysis', 
+        icon: BarChart, 
+        label: 'Data Analysis', 
+        status: phases.telemetryAnalysis?.status === 'completed' && (phases.initialRTI?.status || routeDecision) 
+          ? 'completed' 
+          : phases.telemetryAnalysis?.status,
+        clickable: phases.telemetryAnalysis?.status === 'in-progress' || phases.telemetryAnalysis?.status === 'completed',
+        needsAttention: phases.telemetryAnalysis?.status === 'completed' && !phases.initialRTI?.status && !routeDecision
+      },
       { 
         id: 'initialRTI', 
         icon: Camera, 
@@ -910,15 +924,35 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 }
                 
                 
+                const isClickable = (step as any).clickable;
+                const needsAttention = (step as any).needsAttention;
+                
                 return (
                   <div key={`${step.id}-${index}`} className="flex flex-col items-center z-10 flex-1">
                     {/* Step circle - always at same height */}
-                    <div className={`
-                      w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm
-                      ${isCompleted ? 'bg-green-500' : ''}
-                      ${isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
-                      ${isPending ? 'bg-white border-2 border-gray-200' : ''}
-                    `}>
+                    <div 
+                      className={`
+                        w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm
+                        ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'fail' ? 'bg-red-500' : ''}
+                        ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'warning' ? 'bg-yellow-500' : ''}
+                        ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'pass' ? 'bg-green-500' : ''}
+                        ${step.id !== 'telemetryAnalysis' && isCompleted && !needsAttention ? 'bg-green-500' : ''}
+                        ${step.id !== 'telemetryAnalysis' && isCompleted && needsAttention ? 'bg-amber-500 animate-pulse ring-4 ring-amber-100' : ''}
+                        ${isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
+                        ${isPending ? 'bg-white border-2 border-gray-200' : ''}
+                        ${isClickable ? 'cursor-pointer hover:scale-110' : ''}
+                      `}
+                      onClick={() => {
+                        if (isClickable && step.id === 'telemetryAnalysis') {
+                          const currentHangar = hangarStatuses.find(h => h.id === hangarId);
+                          if (currentHangar) {
+                            setTelemetryHangar(currentHangar);
+                            setShowTelemetryAnalysis(true);
+                          }
+                        }
+                      }}
+                      title={isClickable ? 'Click to view analysis' : ''}
+                    >
                       <Icon className={`
                         w-4 h-4
                         ${isCompleted || isInProgress ? 'text-white' : 'text-gray-400'}
@@ -928,7 +962,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     {/* Step label */}
                     <span className={`
                       text-[10px] mt-1 text-center
-                      ${isCompleted ? 'text-green-600 font-medium' : ''}
+                      ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'fail' ? 'text-red-600 font-medium' : ''}
+                      ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'warning' ? 'text-yellow-600 font-medium' : ''}
+                      ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'pass' ? 'text-green-600 font-medium' : ''}
+                      ${step.id !== 'telemetryAnalysis' && isCompleted ? 'text-green-600 font-medium' : ''}
                       ${isInProgress ? 'text-blue-600 font-semibold' : ''}
                       ${isPending ? 'text-gray-400' : ''}
                     `}>
@@ -1150,6 +1187,109 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     }
   };
 
+  const startInitialRTI = async (hangarId: string) => {
+    // Start Initial Remote TI phase
+    await updatePhase(hangarId, 'initialRTI', {
+      status: 'in-progress',
+      startTime: new Date().toISOString()
+    });
+    
+    setHangarStatuses(prev => prev.map(h => {
+      if (h.id === hangarId) {
+        return {
+          ...h,
+          state: 'inspection',
+          currentPhase: 'Generating Initial RTI',
+          activeInspection: {
+            type: 'Initial Remote TI',
+            progress: 0,
+            assignedTo: 'System'
+          }
+        };
+      }
+      return h;
+    }));
+    
+    // Generate the actual Initial RTI inspection after 2 seconds
+    setTimeout(async () => {
+      try {
+        // Update status to show we're capturing images
+        setHangarStatuses(prev => prev.map(h => {
+          if (h.id === hangarId) {
+            return {
+              ...h,
+              currentPhase: '📸 Starting image capture...',
+            };
+          }
+          return h;
+        }));
+
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-initial-rti`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authService.getToken()}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Track capture start time for progress
+          setCaptureStartTimes((prev: any) => ({
+            ...prev,
+            [`${hangarId}-initialRTI`]: Date.now()
+          }));
+          
+          // Update with the inspection path
+          await updatePhase(hangarId, 'initialRTI', {
+            status: 'in-progress',
+            inspectionPath: data.path
+          });
+          
+          // Show capturing status
+          setHangarStatuses(prev => prev.map(h => {
+            if (h.id === hangarId) {
+              return {
+                ...h,
+                currentPhase: '📸 Capturing images from 8 cameras...',
+                activeInspection: {
+                  type: 'Initial Remote TI',
+                  progress: 0,
+                  assignedTo: 'System'
+                }
+              };
+            }
+            return h;
+          }));
+        }
+      } catch (error) {
+        console.error('Error creating Initial RTI:', error);
+      }
+    }, 2000);
+    
+    // After 40 seconds, show as ready with clear next steps
+    setTimeout(() => {
+      
+      // Update status to show inspection is ready with action needed
+      setHangarStatuses(prev => prev.map(h => {
+        if (h.id === hangarId) {
+          return {
+            ...h,
+            currentPhase: '✅ Images captured - Ready for route decision',
+            activeInspection: {
+              type: 'Initial Remote TI',
+              progress: 100,
+              assignedTo: 'Everdrone',
+              nextAction: 'Select inspection route'
+            }
+          };
+        }
+        return h;
+      }));
+    }, 40000);
+  };
+
   const startWorkflowProgression = (hangarId: string) => {
     // Start telemetry analysis immediately (after 2 seconds for UX)
     setTimeout(async () => {
@@ -1174,33 +1314,58 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       }));
     }, 2000);
 
-    // 5 seconds: Complete telemetry and trigger Initial Remote TI
+    // Complete telemetry analysis after 5 seconds and automatically proceed to Initial RTI
     setTimeout(async () => {
+      // Generate mock telemetry data (same as in TelemetryAnalysis component)
+      const mockTelemetryData = {
+        summary: { totalChecks: 12, passed: 10, failed: 0, warnings: 2 },
+        flightData: {
+          flightTime: '12m 34s',
+          deliveryTime: '3m 2s',
+          completionStatus: 'completed',
+          abnormalEvents: [],
+          totalDistance: '2.3km',
+          maxAltitude: '120m',
+          weatherConditions: 'Wind: 10.8km/h, Temp: 15.0°C',
+          batteryUsed: '35%'
+        },
+        metrics: [
+          { name: 'Battery Level', value: 65, unit: '%', status: 'pass' },
+          { name: 'GPS Signal', value: 18, unit: 'satellites', status: 'pass' },
+          { name: 'Motor Temperature', value: 62, unit: '°C', status: 'warning' },
+          { name: 'Vibration Level', value: 0.9, unit: 'g', status: 'pass' },
+          { name: 'Landing Precision', value: 1.2, unit: 'm', status: 'pass' },
+          { name: 'Return Path Efficiency', value: 94, unit: '%', status: 'pass' },
+          { name: 'Max Speed', value: 48, unit: 'km/h', status: 'pass' },
+          { name: 'Communication Latency', value: 42, unit: 'ms', status: 'pass' },
+          { name: 'Obstacle Detections', value: 0, unit: 'count', status: 'pass' },
+          { name: 'Cargo Weight', value: 1.8, unit: 'kg', status: 'pass' },
+          { name: 'Power Consumption', value: 92.5, unit: 'A', status: 'warning' },
+          { name: 'Wind Conditions', value: 10.8, unit: 'km/h', status: 'pass' }
+        ]
+      };
+      
+      // Determine result based on metrics
+      const failedCount = mockTelemetryData.metrics.filter((m: any) => m.status === 'fail').length;
+      const warningCount = mockTelemetryData.metrics.filter((m: any) => m.status === 'warning').length;
+      const result = failedCount > 0 ? 'fail' : warningCount > 0 ? 'warning' : 'pass';
+      
       await updatePhase(hangarId, 'telemetryAnalysis', {
         status: 'completed',
         endTime: new Date().toISOString(),
-        data: {
-          batteryRemaining: 65,
-          flightDuration: 12,
-          errors: []
-        }
+        result: result,
+        data: mockTelemetryData
       });
       
-      // Start Initial Remote TI phase
-      await updatePhase(hangarId, 'initialRTI', {
-        status: 'in-progress',
-        startTime: new Date().toISOString()
-      });
-      
+      // Update status to show telemetry is complete
       setHangarStatuses(prev => prev.map(h => {
         if (h.id === hangarId) {
           return {
             ...h,
-            state: 'inspection',
-            currentPhase: 'Generating Initial RTI',
+            currentPhase: 'Data analysis complete',
             activeInspection: {
-              type: 'Initial Remote TI',
-              progress: 0,
+              type: 'Telemetry Analysis',
+              progress: 100,
               assignedTo: 'System'
             }
           };
@@ -1208,77 +1373,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         return h;
       }));
       
-      // Generate the actual Initial RTI inspection after 2 seconds
-      setTimeout(async () => {
-        try {
-          // Update status to show we're capturing images
-          setHangarStatuses(prev => prev.map(h => {
-            if (h.id === hangarId) {
-              return {
-                ...h,
-                currentPhase: '📸 Starting image capture...',
-                activeInspection: {
-                  type: 'Initial Remote TI',
-                  progress: 5,
-                  assignedTo: 'System'
-                }
-              };
-            }
-            return h;
-          }));
-          
-          const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-initial-rti`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            }
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('Initial RTI generation started:', data);
-            
-            // Show capturing status without progress bar
-            setHangarStatuses(prev => prev.map(h => {
-              if (h.id === hangarId) {
-                return {
-                  ...h,
-                  currentPhase: '📸 Capturing images from 8 cameras...',
-                  activeInspection: {
-                    type: 'Initial Remote TI',
-                    progress: 0,
-                    assignedTo: 'System'
-                  }
-                };
-              }
-              return h;
-            }));
-            
-            // After 40 seconds, show as ready with clear next steps
-            setTimeout(() => {
-              
-              // Update status to show inspection is ready with action needed
-              setHangarStatuses(prev => prev.map(h => {
-                if (h.id === hangarId) {
-                  return {
-                    ...h,
-                    currentPhase: '✅ Images captured - Ready for route decision',
-                    activeInspection: {
-                      type: 'Initial Remote TI',
-                      progress: 100,
-                      assignedTo: 'Everdrone',
-                      nextAction: 'Select inspection route'
-                    }
-                  };
-                }
-                return h;
-              }));
-            }, 40000);
-          }
-        } catch (error) {
-          console.error('Error generating Initial RTI:', error);
-        }
-      }, 2000);
+      // Automatically proceed to Initial RTI after 1 second
+      setTimeout(() => {
+        startInitialRTI(hangarId);
+      }, 1000);
     }, 5000);
   };
 
@@ -1542,6 +1640,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       <RemoteUserStatus 
                         alarmSession={hangar.alarmSession} 
                         hangarId={hangar.id}
+                        hangar={hangar}
                       />
                     ) : (
                       /* Full Workflow Timeline for Everdrone users */
@@ -1549,6 +1648,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         alarmSession={hangar.alarmSession} 
                         hangarId={hangar.id}
                         isRemoteUser={false}
+                        captureStartTimes={captureStartTimes}
+                        setCaptureStartTimes={setCaptureStartTimes}
                         onOpenWorkflow={() => {
                           setSelectedHangar(hangar.id);
                         }}
@@ -1595,6 +1696,120 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         isOpen={showAdminPanel}
         onClose={() => setShowAdminPanel(false)}
       />
+
+      {/* Telemetry Analysis Modal */}
+      {showTelemetryAnalysis && telemetryHangar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <TelemetryAnalysis
+              droneId={telemetryHangar.assignedDrone || 'Unknown'}
+              hangarId={telemetryHangar.id}
+              existingData={telemetryHangar.alarmSession?.workflow?.phases?.telemetryAnalysis?.data}
+              viewOnly={telemetryHangar.alarmSession?.workflow?.phases?.telemetryAnalysis?.status === 'completed'}
+              onComplete={async (status, telemetryData) => {
+                setShowTelemetryAnalysis(false);
+                
+                // Mark telemetry analysis as complete with full telemetry data
+                const session = telemetryHangar.alarmSession;
+                if (session?.workflow?.phases?.telemetryAnalysis?.status !== 'completed') {
+                  await updatePhase(telemetryHangar.id, 'telemetryAnalysis', {
+                    status: 'completed',
+                    endTime: new Date().toISOString(),
+                    result: status,
+                    data: {
+                      ...telemetryData,
+                      decision: 'continue-to-initial-rti',
+                      decisionMadeAt: new Date().toISOString(),
+                      decisionMadeBy: authService.getCurrentUser()?.username
+                    }
+                  });
+                }
+                
+                // Always trigger Initial RTI when continuing (unless already started)
+                if (!session?.workflow?.phases?.initialRTI?.status || session?.workflow?.phases?.initialRTI?.status === 'pending') {
+                  setTimeout(() => {
+                    startInitialRTI(telemetryHangar.id);
+                  }, 1000);
+                }
+              }}
+              onRequestOnsite={async (telemetryData) => {
+                setShowTelemetryAnalysis(false);
+                
+                // Mark telemetry as complete with data and decision
+                const session = telemetryHangar.alarmSession;
+                if (session?.workflow?.phases?.telemetryAnalysis?.status !== 'completed') {
+                  await updatePhase(telemetryHangar.id, 'telemetryAnalysis', {
+                    status: 'completed',
+                    endTime: new Date().toISOString(),
+                    result: 'warning',
+                    data: {
+                      ...telemetryData,
+                      decision: 'request-onsite-inspection',
+                      decisionMadeAt: new Date().toISOString(),
+                      decisionMadeBy: authService.getCurrentUser()?.username
+                    }
+                  });
+                }
+                
+                // Set route decision to onsite and trigger onsite TI
+                if (session) {
+                  try {
+                    // First set the route decision with proper route parameter
+                    const routeResponse = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${telemetryHangar.id}/route-decision`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authService.getToken()}`
+                      },
+                      body: JSON.stringify({
+                        route: 'onsite',  // Changed from routeDecision to route
+                        decisionMadeAt: new Date().toISOString(),
+                        decisionMadeBy: authService.getCurrentUser()?.username
+                      })
+                    });
+                    
+                    if (routeResponse.ok) {
+                      // Now generate the onsite TI
+                      const onsiteResponse = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${telemetryHangar.id}/generate-onsite-ti`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': `Bearer ${authService.getToken()}`
+                        }
+                      });
+                      
+                      if (onsiteResponse.ok) {
+                        // Reload hangars to reflect the update
+                        fetchHangars();
+                        
+                        // Update hangar status immediately for better UX
+                        setHangarStatuses(prev => prev.map(h => {
+                          if (h.id === telemetryHangar.id) {
+                            return {
+                              ...h,
+                              state: 'inspection',
+                              currentPhase: 'Technician dispatched for onsite inspection',
+                              activeInspection: {
+                                type: 'Onsite TI',
+                                progress: 0,
+                                assignedTo: 'Everdrone'
+                              }
+                            };
+                          }
+                          return h;
+                        }));
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error setting route decision:', error);
+                  }
+                }
+              }}
+              onClose={() => setShowTelemetryAnalysis(false)}
+            />
+          </div>
+        </div>
+      )}
       
     </div>
   );
