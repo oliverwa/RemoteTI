@@ -2472,6 +2472,55 @@ app.post('/api/maintenance-history/:hangarId', async (req, res) => {
   }
 });
 
+// API endpoints for template management
+app.get('/api/templates', async (req, res) => {
+  try {
+    const templatesDir = path.join(BASE_DIR, 'data', 'templates');
+    const templateFiles = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+    const templates = {};
+    
+    for (const file of templateFiles) {
+      const templatePath = path.join(templatesDir, file);
+      const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+      const key = file.replace('.json', '');
+      templates[key] = templateData;
+    }
+    
+    res.json(templates);
+  } catch (error) {
+    log('error', 'Failed to fetch templates:', error.message);
+    res.status(500).json({ error: 'Failed to fetch templates' });
+  }
+});
+
+app.put('/api/templates/:templateId', async (req, res) => {
+  try {
+    const { templateId } = req.params;
+    const templateData = req.body;
+    
+    if (!templateData || !templateData.inspectionType) {
+      return res.status(400).json({ error: 'Invalid template data' });
+    }
+    
+    const templatePath = path.join(BASE_DIR, 'data', 'templates', `${templateId}.json`);
+    
+    // Check if template exists
+    if (!fs.existsSync(templatePath)) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    // Save the updated template
+    fs.writeFileSync(templatePath, JSON.stringify(templateData, null, 2));
+    
+    log('info', `Template ${templateId} updated successfully`);
+    res.json({ success: true, message: 'Template updated successfully' });
+    
+  } catch (error) {
+    log('error', 'Failed to update template:', error.message);
+    res.status(500).json({ error: 'Failed to update template' });
+  }
+});
+
 // Serve static files from React build
 const buildPath = path.join(__dirname, 'build');
 if (fs.existsSync(buildPath)) {

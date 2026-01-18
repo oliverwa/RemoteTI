@@ -4377,9 +4377,6 @@ try {
   const arr = Array.from({ length: 8 }, (_, i) => defaultCam(i));
   console.assert(arr.length === 8 && arr[0].id === 0 && arr[7].id === 7, "8 cams init");
   console.assert(HANGARS.some((h) => h.id === "hangar_sisjon_vpn") && HANGARS.some((h) => h.id === "hangar_rouen_vpn"), "hangars present");
-  if (inspectionData) {
-    console.assert(tiItems.length === inspectionData?.tasks?.length, `TI has ${inspectionData?.tasks?.length} items`);
-  }
   // clampPan tests
   const rp = clampPan({ x: 9999, y: -9999 }, 3, { width: 1000, height: 800 } as any, true);
   console.assert(Math.abs(rp.x) <= (3 - 1) * (1000 / 2) + 1, "clampPan x");

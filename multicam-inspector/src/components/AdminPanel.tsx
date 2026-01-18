@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { X, Settings, MapPin, Plane, Users } from 'lucide-react';
+import { X, Settings, MapPin, Plane, Users, FileText } from 'lucide-react';
 import UserManagement from './UserManagement';
 import HangarsManagement from './admin/HangarsManagement';
 import DronesManagement from './admin/DronesManagement';
+import TemplateManagement from './admin/TemplateManagement';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ interface AdminPanelProps {
 
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'hangars' | 'drones' | 'users'>('users');
+  const [activeTab, setActiveTab] = useState<'hangars' | 'drones' | 'users' | 'templates'>('users');
 
 
   if (!isOpen) return null;
@@ -71,6 +72,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 <Plane className="w-4 h-4" />
                 Drones
               </button>
+              <button
+                onClick={() => setActiveTab('templates')}
+                className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
+                  activeTab === 'templates'
+                    ? 'bg-white text-blue-700'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <FileText className="w-4 h-4" />
+                Templates
+              </button>
             </div>
           </div>
         </div>
@@ -90,6 +102,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
           {/* Drones Management Tab */}
           {activeTab === 'drones' && (
             <DronesManagement />
+          )}
+
+          {/* Templates Management Tab */}
+          {activeTab === 'templates' && (
+            <TemplateManagement />
           )}
         </div>
       </div>

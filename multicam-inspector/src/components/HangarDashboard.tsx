@@ -76,20 +76,20 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffMinutes < 60) {
-      return `${diffMinutes}m`;
+      return `${diffMinutes}m ago`;
     } else if (diffHours < 24) {
-      return `${diffHours}h`;
+      return `${diffHours}h ago`;
     } else if (diffDays < 7) {
-      return `${diffDays}d`;
+      return `${diffDays}d ago`;
     } else if (diffDays < 30) {
       const weeks = Math.floor(diffDays / 7);
-      return `${weeks}w`;
+      return `${weeks}w ago`;
     } else if (diffDays < 365) {
       const months = Math.floor(diffDays / 30);
-      return `${months}mo`;
+      return `${months}mo ago`;
     } else {
       const years = Math.floor(diffDays / 365);
-      return `${years}y`;
+      return `${years}y ago`;
     }
   };
 
@@ -1074,7 +1074,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       const inspections = alarmSession.inspections || {};
       
       if (phases.clearArea?.status === 'completed') {
-        return 'Maintenance in order';
+        return 'No maintenance required';
       } else if (phases.servicePartner?.status === 'completed') {
         return 'Final Validation';
       } else if (routeDecision === 'basic' && (phases.servicePartner?.status === 'pending' || phases.servicePartner?.status === 'in-progress')) {
@@ -1095,7 +1095,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     switch(state) {
       case 'standby':
-        return 'Maintenance in order';
+        return 'No maintenance required';
       case 'alarm':
         return 'Workflow Active';
       case 'post_flight':
@@ -1543,7 +1543,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               {/* Maintenance History - Simplified grid layout */}
               {(userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && hangar.assignedDrone && hangar.state === 'standby' && (
                 <div className="mt-auto pt-3 border-t border-gray-200">
-                  <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Maintenance History</div>
+                  <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Time Since Last Maintenance</div>
                   <div className="grid grid-cols-3 gap-2">
                     <div className={`p-2 rounded-lg text-center ${
                       hangar.maintenanceHistory?.lastOnsiteTI 
@@ -1551,7 +1551,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         : 'bg-gray-50'
                     }`}>
                       <div className="text-[10px] font-medium text-gray-600">Onsite TI</div>
-                      <div className={`text-xs font-bold mt-0.5 ${
+                      <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
+                      <div className={`text-xs font-bold ${
                         hangar.maintenanceHistory?.lastOnsiteTI 
                           ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'text-red-600' : 'text-green-600'
                           : 'text-gray-400'
@@ -1567,7 +1568,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         : 'bg-gray-50'
                     }`}>
                       <div className="text-[10px] font-medium text-gray-600">Extended</div>
-                      <div className={`text-xs font-bold mt-0.5 ${
+                      <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
+                      <div className={`text-xs font-bold ${
                         hangar.maintenanceHistory?.lastExtendedTI 
                           ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'text-red-600' : 'text-green-600'
                           : 'text-gray-400'
@@ -1583,7 +1585,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         : 'bg-gray-50'
                     }`}>
                       <div className="text-[10px] font-medium text-gray-600">Service</div>
-                      <div className={`text-xs font-bold mt-0.5 ${
+                      <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
+                      <div className={`text-xs font-bold ${
                         hangar.maintenanceHistory?.lastService 
                           ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'text-red-600' : 'text-green-600'
                           : 'text-gray-400'
