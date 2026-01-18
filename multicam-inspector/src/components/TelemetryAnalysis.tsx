@@ -292,17 +292,17 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
 
   const getStatusIcon = (status: 'pass' | 'fail' | 'warning') => {
     switch (status) {
-      case 'pass': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      case 'fail': return <XCircle className="w-4 h-4 text-red-500" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+      case 'pass': return <CheckCircle className="w-5 h-5 text-green-500" />;
+      case 'fail': return <XCircle className="w-5 h-5 text-red-500" />;
+      case 'warning': return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
     }
   };
 
   const getStatusColor = (status: 'pass' | 'fail' | 'warning') => {
     switch (status) {
-      case 'pass': return 'text-green-600 bg-green-50 border-green-200';
-      case 'fail': return 'text-red-600 bg-red-50 border-red-200';
-      case 'warning': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      case 'pass': return 'bg-green-50 border-l-4 border-l-green-500';
+      case 'fail': return 'bg-red-50 border-l-4 border-l-red-500';
+      case 'warning': return 'bg-yellow-50 border-l-4 border-l-yellow-500';
     }
   };
 
@@ -320,24 +320,29 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto relative">
-      {/* Close button */}
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          title="Close"
-        >
-          <X className="w-5 h-5 text-gray-500" />
-        </button>
-      )}
-      
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-          <BarChart className="w-6 h-6 text-blue-600" />
-          Telemetry Data Analysis
-        </h2>
-        <p className="text-gray-600">Analyzing flight data for {droneId}</p>
+    <div className="bg-white p-8">
+      {/* Header with close button */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+          </div>
+          <div>
+            <h2 className="text-3xl font-semibold">Telemetry Data Analysis</h2>
+            <p className="text-gray-500 text-sm mt-1">Analyzing flight data for {droneId}</p>
+          </div>
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Close"
+          >
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
+        )}
       </div>
 
       {/* File Selection/Confirmation Stage */}
@@ -446,103 +451,95 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
 
       {/* Results Display */}
       {stage === 'results' && results && (
-        <div className="space-y-6">
-          {/* Compact Summary Cards */}
-          <div className="flex gap-3 justify-center mb-4">
-            <div className="bg-gray-50 rounded-lg px-4 py-2 text-center">
-              <p className="text-lg font-bold">{results.summary.totalChecks}</p>
-              <p className="text-xs text-gray-600">Checks</p>
+        <div>
+          {/* Summary Stats */}
+          <div className="flex gap-8 justify-center mb-8">
+            <div className="text-center">
+              <p className="text-4xl font-bold">{results.summary.totalChecks}</p>
+              <p className="text-sm text-gray-500 mt-1">Checks</p>
             </div>
-            <div className="bg-green-50 rounded-lg px-4 py-2 text-center">
-              <p className="text-lg font-bold text-green-600">{results.summary.passed}</p>
-              <p className="text-xs text-gray-600">Passed</p>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-green-500">{results.summary.passed}</p>
+              <p className="text-sm text-gray-500 mt-1">Passed</p>
             </div>
-            <div className="bg-yellow-50 rounded-lg px-4 py-2 text-center">
-              <p className="text-lg font-bold text-yellow-600">{results.summary.warnings}</p>
-              <p className="text-xs text-gray-600">Warnings</p>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-yellow-500">{results.summary.warnings}</p>
+              <p className="text-sm text-gray-500 mt-1">Warnings</p>
             </div>
-            <div className="bg-red-50 rounded-lg px-4 py-2 text-center">
-              <p className="text-lg font-bold text-red-600">{results.summary.failed}</p>
-              <p className="text-xs text-gray-600">Failed</p>
+            <div className="text-center">
+              <p className="text-4xl font-bold text-red-500">{results.summary.failed}</p>
+              <p className="text-sm text-gray-500 mt-1">Failed</p>
             </div>
           </div>
 
-          {/* Enhanced Flight Data */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h4 className="font-semibold mb-3">Flight Mission Details</h4>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Flight Time:</span>
-                  <span className="font-medium text-sm">{results.flightData.flightTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Delivery Time:</span>
-                  <span className="font-medium text-sm">{results.flightData.deliveryTime}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Status:</span>
-                  <span className={`font-medium text-sm ${
-                    results.flightData.completionStatus === 'completed' ? 'text-green-600' : 
-                    results.flightData.completionStatus === 'aborted' ? 'text-red-600' : 'text-yellow-600'
-                  }`}>
-                    {results.flightData.completionStatus.charAt(0).toUpperCase() + results.flightData.completionStatus.slice(1)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Distance:</span>
-                  <span className="font-medium text-sm">{results.flightData.totalDistance}</span>
-                </div>
+          {/* Flight Mission Details */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-6">Flight Mission Details</h3>
+            <div className="grid grid-cols-4 gap-8">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Total Flight Time:</p>
+                <p className="text-lg font-semibold">{results.flightData.flightTime}</p>
               </div>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Max Altitude:</span>
-                  <span className="font-medium text-sm">{results.flightData.maxAltitude}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Battery Used:</span>
-                  <span className="font-medium text-sm">{results.flightData.batteryUsed}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Weather:</span>
-                  <span className="font-medium text-sm text-right">{results.flightData.weatherConditions}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Abnormal Events:</span>
-                  <span className="font-medium text-sm">
-                    {results.flightData.abnormalEvents.length > 0 
-                      ? results.flightData.abnormalEvents.join(', ') 
-                      : 'None'}
-                  </span>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Max Altitude:</p>
+                <p className="text-lg font-semibold">{results.flightData.maxAltitude}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Delivery Time:</p>
+                <p className="text-lg font-semibold">{results.flightData.deliveryTime}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Battery Used:</p>
+                <p className="text-lg font-semibold">{results.flightData.batteryUsed}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Status:</p>
+                <p className={`text-lg font-semibold ${
+                  results.flightData.completionStatus === 'completed' ? 'text-green-500' : 
+                  results.flightData.completionStatus === 'aborted' ? 'text-red-500' : 'text-yellow-500'
+                }`}>
+                  {results.flightData.completionStatus.charAt(0).toUpperCase() + results.flightData.completionStatus.slice(1)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Weather:</p>
+                <p className="text-lg font-semibold">{results.flightData.weatherConditions}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Total Distance:</p>
+                <p className="text-lg font-semibold">{results.flightData.totalDistance}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Abnormal Events:</p>
+                <p className="text-lg font-semibold">
+                  {results.flightData.abnormalEvents.length > 0 
+                    ? results.flightData.abnormalEvents.join(', ') 
+                    : 'None'}
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Detailed Metrics */}
-          <div>
-            <h4 className="font-semibold mb-3">Detailed Analysis</h4>
-            <div className="space-y-2">
+          {/* Detailed Analysis */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-6">Detailed Analysis</h3>
+            <div className="space-y-3">
               {results.metrics.map((metric, idx) => (
                 <div 
                   key={idx}
-                  className={`flex items-center justify-between p-3 rounded-lg border ${getStatusColor(metric.status)}`}
+                  className={`flex items-center justify-between p-4 rounded-lg ${getStatusColor(metric.status)}`}
                 >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(metric.status)}
-                    <span className="font-medium">{metric.name}</span>
+                    <span className="font-medium text-gray-700">{metric.name}</span>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-mono">
-                      {metric.value}{metric.unit && ` ${metric.unit}`}
+                  <div className="text-right">
+                    <span className="text-2xl font-semibold">
+                      {metric.value}
                     </span>
-                    {metric.limit && (
-                      <span className="text-sm text-gray-500">
-                        {metric.limit.min !== undefined && metric.limit.max !== undefined
-                          ? `(${metric.limit.min} - ${metric.limit.max})`
-                          : metric.limit.min !== undefined
-                          ? `(min: ${metric.limit.min})`
-                          : `(max: ${metric.limit.max})`}
+                    {metric.unit && (
+                      <span className="ml-2 text-gray-500">
+                        {metric.unit}
                       </span>
                     )}
                   </div>

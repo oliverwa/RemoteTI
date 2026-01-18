@@ -393,31 +393,22 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     return (
       <>
-        {/* Status text to show in header */}
+        {/* Status text with better styling */}
         {statusText && (
-          <div className="absolute top-1/2 -translate-y-1/2 right-16">
-            <span className={`text-base font-semibold ${statusColor}`}>
-              {statusText}
-            </span>
+          <div className="flex-1 flex items-center justify-center py-4">
+            <div className="text-center">
+              <span className={`text-xl font-medium ${statusColor}`}>
+                {statusText}
+              </span>
+              {/* Preparing message inline */}
+              {canPerformBasicTI && !inspections.missionReset?.path && (
+                <div className="text-sm text-gray-500 mt-2">
+                  Preparing inspection checklist...
+                </div>
+              )}
+            </div>
           </div>
         )}
-        
-        {/* Buttons and messages below */}
-        <div className="mt-2 space-y-2">
-        
-        {/* Button moved to header */}
-        
-        {/* Preparing message */}
-        {canPerformBasicTI && !inspections.missionReset?.path && (
-          <div className="text-xs text-blue-600">
-            Preparing inspection checklist...
-          </div>
-        )}
-        
-        {/* Onsite route - message removed, shown in header as "No Action Required" */}
-        
-        {/* Progress removed for remote users */}
-        </div>
       </>
     );
   };
@@ -1083,7 +1074,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       const inspections = alarmSession.inspections || {};
       
       if (phases.clearArea?.status === 'completed') {
-        return 'Open - Ready for alarm!';
+        return 'Maintenance in order';
       } else if (phases.missionReset?.status === 'completed') {
         return 'Final Validation';
       } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
@@ -1104,7 +1095,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     switch(state) {
       case 'standby':
-        return 'Open - Ready for alarm!';
+        return 'Maintenance in order';
       case 'alarm':
         return 'Workflow Active';
       case 'post_flight':
@@ -1486,8 +1477,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               key={hangar.id}
               className={`relative bg-white rounded-lg shadow-md hover:shadow-lg transition-all border-l-8 ${
                 getBorderColor()
-              } p-5 cursor-pointer ${
-                hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[180px]' : 'min-h-[220px]'
+              } p-6 cursor-pointer ${
+                hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[160px]' : 'min-h-[220px]'
               } flex flex-col`}
               onClick={() => {
                 if (hangar.state !== 'standby' && hangar.status === 'operational') {
@@ -1496,28 +1487,32 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               }}
             >
               {/* Header */}
-              <div className="flex justify-between items-start mb-3">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900">{hangar.name}</h3>
-                  <p className="text-sm text-gray-600 mt-0.5">
-                    Drone: {hangar.assignedDrone || 'Not assigned'}
-                  </p>
-                </div>
-                {/* Status Badge */}
-                <div className="flex items-center">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    hangar.status === 'construction' ? 'bg-yellow-100 text-yellow-800' :
-                    hangar.status === 'maintenance' ? 'bg-orange-100 text-orange-800' :
-                    isMaintenanceOverdue && hangar.state === 'standby' ? 'bg-red-100 text-red-800' :
-                    hangar.state === 'standby' ? 'bg-green-100 text-green-800' :
-                    hangar.state === 'alarm' ? 'bg-blue-100 text-blue-800' :
-                    hangar.state === 'post_flight' ? 'bg-amber-100 text-amber-800' :
-                    hangar.state === 'inspection' ? 'bg-blue-100 text-blue-800' :
-                    hangar.state === 'verification' ? 'bg-violet-100 text-violet-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'service_partner', hangar.status || 'operational', !!isMaintenanceOverdue)}
-                  </span>
+              <div className="mb-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-2xl font-semibold text-gray-900">{hangar.name}</h3>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Drone: {hangar.assignedDrone || 'Not assigned'}
+                    </p>
+                  </div>
+                  {/* Status Badge - Only show for non-service partners or when not in standby */}
+                  {(userType !== 'service_partner' || hangar.state !== 'standby') && (
+                    <div className="flex items-center">
+                      <span className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
+                        hangar.status === 'construction' ? 'bg-yellow-100 text-yellow-700' :
+                        hangar.status === 'maintenance' ? 'bg-orange-100 text-orange-700' :
+                        isMaintenanceOverdue && hangar.state === 'standby' ? 'bg-red-100 text-red-700' :
+                        hangar.state === 'standby' ? 'bg-green-100 text-green-700' :
+                        hangar.state === 'alarm' ? 'bg-blue-100 text-blue-700' :
+                        hangar.state === 'post_flight' ? 'bg-amber-100 text-amber-700' :
+                        hangar.state === 'inspection' ? 'bg-blue-100 text-blue-700' :
+                        hangar.state === 'verification' ? 'bg-violet-100 text-violet-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'service_partner', hangar.status || 'operational', !!isMaintenanceOverdue)}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -1525,16 +1520,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               {userType === 'service_partner' && hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
                hangar.alarmSession?.inspections?.missionReset?.path && 
                hangar.alarmSession?.workflow?.phases?.missionReset?.status !== 'completed' && (
-                <div className="flex-1 flex items-center justify-center mt-4">
+                <div className="flex-1 flex items-center justify-center">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       const [h, s] = hangar.alarmSession.inspections.missionReset.path.split('/');
                       window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=mission-reset-inspection&userType=service_partner`;
                     }}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-lg font-bold rounded-xl transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-3 transform hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                   >
-                    <FileCheck className="w-6 h-6" />
+                    <FileCheck className="w-5 h-5" />
                     <span>
                       {hangar.alarmSession?.inspections?.missionReset?.progress && hangar.alarmSession.inspections.missionReset.progress !== '0%' 
                         ? 'Continue Mission Reset' 
@@ -1544,18 +1539,6 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
               )}
               
-              {/* Service Partner Status Text - Centered when showing standby */}
-              {userType === 'service_partner' && hangar.state === 'standby' && hangar.status === 'operational' && !(
-                hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
-                hangar.alarmSession?.inspections?.missionReset?.path && 
-                hangar.alarmSession?.workflow?.phases?.missionReset?.status !== 'completed'
-              ) && (
-                <div className="flex-1 flex items-center justify-center">
-                  <span className="text-lg font-semibold text-green-700">
-                    {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, true, hangar.status || 'operational', !!isMaintenanceOverdue)}
-                  </span>
-                </div>
-              )}
               
               {/* Maintenance History - Simplified grid layout */}
               {(userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && hangar.assignedDrone && hangar.state === 'standby' && (
@@ -1616,6 +1599,15 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               
               <div className="flex-1 flex flex-col justify-end">
                 
+                {/* Service Partner - Show centered status for standby state */}
+                {userType === 'service_partner' && hangar.state === 'standby' && hangar.status === 'operational' && (
+                  <div className="flex-1 flex items-center justify-center">
+                    <span className="text-xl font-medium text-green-600">
+                      {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, true, hangar.status || 'operational', !!isMaintenanceOverdue)}
+                    </span>
+                  </div>
+                )}
+                
                 {hangar.alarmSession && hangar.state !== 'standby' && hangar.operational ? (
                   <>
                     {userType === 'service_partner' ? (
@@ -1649,7 +1641,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                             e.stopPropagation();
                             handleTriggerAlarm(hangar.id, hangar.assignedDrone);
                           }}
-                          className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-medium rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                         >
                           <PlayCircle className="w-5 h-5" />
                           Trigger Post-Alarm Workflow

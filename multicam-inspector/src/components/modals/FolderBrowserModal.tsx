@@ -38,28 +38,44 @@ interface FolderBrowserModalProps {
 }
 
 const formatSessionName = (name: string): string => {
-  // Handle new remote inspection types (initial_remote, full_remote)
-  let cleanedName = name;
+  // List of actual drones in the system
+  const knownDrones = ['bender', 'lancelot', 'marvin'];
   
-  // Remove inspection type prefixes
-  if (name.startsWith('initial_remote_')) {
-    cleanedName = name.replace('initial_remote_', '');
-  } else if (name.startsWith('full_remote_')) {
-    cleanedName = name.replace('full_remote_', '');
-  } else {
-    // Remove standard inspection type prefix for other types
-    cleanedName = name
-      .replace(/^(remote|onsite|extended|service|basic)_/, '')
-      .replace(/_inspection/, '');
+  // Try multiple patterns to extract drone name
+  const patterns = [
+    /initial_remote_([a-zA-Z]+)_/,
+    /full_remote_([a-zA-Z]+)_/,
+    /standard_([a-zA-Z]+)_mission/,
+    /^([a-zA-Z]+)_\d{6}_\d{6}/, // Direct pattern like "bender_241201_090045"
+    /onsite_([a-zA-Z]+)_ti/,
+    /remote_([a-zA-Z]+)_/,
+    /extended_([a-zA-Z]+)_/,
+    /service_([a-zA-Z]+)_/,
+    /basic_([a-zA-Z]+)_/,
+    /_([a-zA-Z]+)_ti_/,
+    /^([a-zA-Z]+)_ti$/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = name.match(pattern);
+    if (match && match[1]) {
+      const droneName = match[1].toLowerCase();
+      // Check if it's a known drone
+      if (knownDrones.includes(droneName)) {
+        return droneName.charAt(0).toUpperCase() + droneName.slice(1);
+      }
+    }
   }
   
-  // Extract drone/location name from format like "bender_241201_090045"
-  const parts = cleanedName.split('_');
-  if (parts.length >= 1) {
-    // Capitalize first letter of location name
-    return parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+  // Fallback: try to find known drone name in any position
+  const parts = name.toLowerCase().split('_');
+  for (const part of parts) {
+    if (knownDrones.includes(part)) {
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }
   }
-  return cleanedName;
+  
+  return 'Unknown';
 };
 
 const getInspectionTypeFromName = (name: string): string => {
@@ -193,6 +209,7 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
 }) => {
   const [hoveredSession, setHoveredSession] = useState<string | null>(null);
   const [expandedHangars, setExpandedHangars] = useState<Set<string>>(new Set());
+  const [expandedDrones, setExpandedDrones] = useState<Set<string>>(new Set());
   
   const toggleHangarExpansion = (hangarId: string) => {
     const newExpanded = new Set(expandedHangars);
@@ -202,6 +219,16 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
       newExpanded.add(hangarId);
     }
     setExpandedHangars(newExpanded);
+  };
+  
+  const toggleDroneExpansion = (droneName: string) => {
+    const newExpanded = new Set(expandedDrones);
+    if (newExpanded.has(droneName)) {
+      newExpanded.delete(droneName);
+    } else {
+      newExpanded.add(droneName);
+    }
+    setExpandedDrones(newExpanded);
   };
   
   if (!isOpen) return null;
@@ -353,20 +380,29 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-xl p-5 w-[94%] max-w-7xl max-h-[90vh] mx-4 overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900">Inspection History</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Browse all inspection types and sessions by hangar</p>
+      <div className="bg-white rounded-lg shadow-xl w-[94%] max-w-7xl max-h-[90vh] mx-4 overflow-hidden flex flex-col">
+        <div className="p-8 pb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              </div>
+              <div>
+                <h2 className="text-3xl font-semibold">Inspection History</h2>
+                <p className="text-gray-500 text-sm mt-1">Browse all inspection types and sessions by drone</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <button 
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-100 rounded-lg"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
         
         {loadingFolders ? (
@@ -384,7 +420,7 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
             <div className="text-gray-500 text-sm">No inspection folders found</div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto pr-2">
+          <div className="flex-1 overflow-y-auto px-8 pb-6">
             <style dangerouslySetInnerHTML={{ __html: `
               .flex-1::-webkit-scrollbar {
                 width: 6px;
@@ -401,83 +437,219 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                 background: #9ca3af;
               }
             ` }} />
-            {hangarsList.map((hangar: HangarData) => {
-              const sortedSessions = sortSessions(hangar.sessions);
-              const isExpanded = expandedHangars.has(hangar.id);
-              const sessionsToShow = isExpanded ? sortedSessions : sortedSessions.slice(0, 5);
-              const hasMoreSessions = sortedSessions.length > 5;
+            {(() => {
+              // Organize sessions by drone
+              const droneData: Record<string, {
+                sessions: Session[],
+                hangars: Set<string>
+              }> = {};
               
-              // Count sessions by type
-              const typeCounts = sortedSessions.reduce((acc, session) => {
-                const type = getInspectionTypeFromName(session.name);
-                acc[type] = (acc[type] || 0) + 1;
-                return acc;
-              }, {} as Record<string, number>);
+              hangarsList.forEach((hangar: HangarData) => {
+                hangar.sessions.forEach((session: Session) => {
+                  const droneName = formatSessionName(session.name);
+                  // Skip if we couldn't identify the drone
+                  if (droneName === 'Unknown') {
+                    return;
+                  }
+                  if (!droneData[droneName]) {
+                    droneData[droneName] = {
+                      sessions: [],
+                      hangars: new Set()
+                    };
+                  }
+                  droneData[droneName].sessions.push({
+                    ...session,
+                    hangarId: hangar.id,
+                    hangarName: hangar.name
+                  });
+                  droneData[droneName].hangars.add(hangar.name);
+                });
+              });
               
-              const incompleteCount = sortedSessions.filter((s: Session) => 
-                s.inspectionStatus === 'in_progress' || s.inspectionStatus === 'not_started'
-              ).length;
+              // Sort drones alphabetically
+              const sortedDrones = Object.keys(droneData).sort();
               
-              return (
-                <div key={hangar.id} className="mb-6 last:mb-0">
-                  <div className="flex items-center gap-3 mb-3 px-2 py-2 bg-gray-50 rounded-lg">
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <h3 className="text-base font-semibold text-gray-800">{hangar.name}</h3>
-                    <div className="flex gap-3 text-xs text-gray-500">
-                      {Object.entries(typeCounts).map(([type, count]) => {
-                        if (type === 'unknown') return null;
-                        return (
-                          <span key={type}>
-                            {count} {type}
+              return sortedDrones.map(droneName => {
+                const drone = droneData[droneName];
+                const sortedSessions = sortSessions(drone.sessions);
+                
+                // Get latest inspection of each type
+                const latestByType: Record<string, Session> = {};
+                sortedSessions.forEach(session => {
+                  const type = getInspectionTypeFromName(session.name);
+                  if (!latestByType[type] || new Date(session.created) > new Date(latestByType[type].created)) {
+                    latestByType[type] = session;
+                  }
+                });
+                
+                // Count totals
+                const totalInspections = sortedSessions.length;
+                const incompleteCount = sortedSessions.filter(s => 
+                  s.inspectionStatus === 'in_progress' || s.inspectionStatus === 'not_started'
+                ).length;
+                
+                const isExpanded = expandedDrones.has(droneName);
+                
+                return (
+                  <div key={droneName} className="mb-8 last:mb-0">
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                          <h3 className="text-xl font-semibold text-gray-900">{droneName}</h3>
+                          <span className="text-sm text-gray-500">
+                            ({totalInspections} total inspections)
                           </span>
-                        );
-                      })}
+                          {incompleteCount > 0 && (
+                            <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-lg">
+                              {incompleteCount} incomplete
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => toggleDroneExpansion(droneName)}
+                          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          {isExpanded ? 'Show latest only' : 'View all inspections'}
+                        </button>
+                      </div>
                     </div>
-                    {incompleteCount > 0 && (
-                      <span className="ml-auto px-2 py-0.5 bg-gray-800 text-white text-xs font-medium rounded">
-                        {incompleteCount} Incomplete
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-1 pl-2">
-                    {sessionsToShow.map((session: Session) => renderSession(session, hangar.id))}
-                    {hasMoreSessions && (
-                      <button
-                        onClick={() => toggleHangarExpansion(hangar.id)}
-                        className="w-full mt-2 py-1.5 text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center gap-1"
-                      >
-                        {isExpanded ? (
-                          <>
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                            </svg>
-                            Show less
-                          </>
+                    
+                    <div className="space-y-2">
+                        {!isExpanded ? (
+                          // Show latest of each type
+                          ['initial-remote', 'full-remote', 'onsite', 'extended', 'service', 'basic'].map(type => {
+                            const session = latestByType[type];
+                            if (!session) return null;
+                            
+                            const inspectionInfo = getInspectionTypeInfo(session.name, session.inspectionType);
+                            
+                            return (
+                              <div
+                                key={`${droneName}-${type}`}
+                                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                                onClick={() => onLoadSession(session.hangarId!, session.name, session.images)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  {/* Status dot */}
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    session.inspectionStatus === 'completed' ? 'bg-green-500' :
+                                    session.inspectionStatus === 'in_progress' ? 'bg-amber-500' :
+                                    session.inspectionStatus === 'not_started' ? 'bg-red-500' :
+                                    'bg-gray-300'
+                                  }`} />
+                                  
+                                  {/* Type badge */}
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${inspectionInfo.bgColor} ${inspectionInfo.color}`}>
+                                    {inspectionInfo.label}
+                                  </span>
+                                  
+                                  {/* Hangar name */}
+                                  <span className="text-sm font-medium text-gray-700">
+                                    {session.hangarName}
+                                  </span>
+                                  
+                                  {/* Time */}
+                                  <span className="text-xs text-gray-500">
+                                    {getRelativeTime(session.created)}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                  {/* Status */}
+                                  <span className={`text-sm ${
+                                    session.inspectionStatus === 'completed' ? 'text-green-600' :
+                                    session.inspectionStatus === 'in_progress' ? 'text-amber-600' :
+                                    session.inspectionStatus === 'not_started' ? 'text-red-600' :
+                                    'text-gray-400'
+                                  }`}>
+                                    {session.inspectionStatus === 'completed' ? 'Completed' :
+                                     session.inspectionStatus === 'in_progress' ? `In Progress (${session.inspectionProgress?.percentage || 0}%)` :
+                                     session.inspectionStatus === 'not_started' ? 'Not Started' : ''}
+                                  </span>
+                                  
+                                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  </svg>
+                                </div>
+                              </div>
+                            );
+                          })
                         ) : (
+                          // Show all inspections chronologically
                           <>
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                            Show all {sortedSessions.length} sessions
+                            <div className="text-base font-semibold text-gray-700 mb-3">All Inspections</div>
+                            {sortedSessions.map((session, idx) => {
+                              const inspectionInfo = getInspectionTypeInfo(session.name, session.inspectionType);
+                              
+                              return (
+                                <div
+                                  key={`${droneName}-all-${idx}`}
+                                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                                  onClick={() => onLoadSession(session.hangarId!, session.name, session.images)}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    {/* Status dot */}
+                                    <div className={`w-2 h-2 rounded-full ${
+                                      session.inspectionStatus === 'completed' ? 'bg-green-500' :
+                                      session.inspectionStatus === 'in_progress' ? 'bg-amber-500' :
+                                      session.inspectionStatus === 'not_started' ? 'bg-red-500' :
+                                      'bg-gray-300'
+                                    }`} />
+                                    
+                                    {/* Type badge */}
+                                    <span className={`px-2 py-1 rounded text-xs font-medium ${inspectionInfo.bgColor} ${inspectionInfo.color}`}>
+                                      {inspectionInfo.label}
+                                    </span>
+                                    
+                                    {/* Hangar name */}
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {session.hangarName}
+                                    </span>
+                                    
+                                    {/* Time */}
+                                    <span className="text-xs text-gray-500">
+                                      {getRelativeTime(session.created)}
+                                    </span>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-3">
+                                    {/* Status */}
+                                    <span className={`text-sm ${
+                                      session.inspectionStatus === 'completed' ? 'text-green-600' :
+                                      session.inspectionStatus === 'in_progress' ? 'text-amber-600' :
+                                      session.inspectionStatus === 'not_started' ? 'text-red-600' :
+                                      'text-gray-400'
+                                    }`}>
+                                      {session.inspectionStatus === 'completed' ? 'Completed' :
+                                       session.inspectionStatus === 'in_progress' ? `In Progress (${session.inspectionProgress?.percentage || 0}%)` :
+                                       session.inspectionStatus === 'not_started' ? 'Not Started' : ''}
+                                    </span>
+                                    
+                                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </>
                         )}
-                      </button>
-                    )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
         )}
         
-        <div className="flex gap-3 mt-4 pt-4 border-t border-gray-200">
+        <div className="p-8 pt-6 border-t border-gray-200">
           <Button 
             variant="outline" 
             onClick={onClose}
-            className="flex-1 py-2 text-sm font-medium bg-white hover:bg-gray-50 transition-colors border-gray-300 text-gray-700 rounded-lg"
+            className="w-full py-3 text-base font-medium bg-white hover:bg-gray-50 transition-colors border-gray-300 text-gray-700 rounded-lg"
           >
             Close
           </Button>
