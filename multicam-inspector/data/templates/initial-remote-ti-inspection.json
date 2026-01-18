@@ -87,7 +87,7 @@
     {
       "id": "route_recommendation",
       "title": "ROUTE DECISION: Recommend inspection path",
-      "description": "Based on initial findings, recommend whether Mission Reset or Onsite TI is required.\n\nMission Reset: No critical issues found, standard remote inspection sufficient.\nOnsite TI: Physical inspection required due to findings or limitations.",
+      "description": "Based on initial findings, recommend whether Service Partner inspection or Onsite TI is required.\n\nService Partner: No critical issues found, standard remote inspection sufficient.\nOnsite TI: Physical inspection required due to findings or limitations.",
       "instructions": [
         "Review all initial findings",
         "Assess need for physical inspection",

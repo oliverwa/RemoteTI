@@ -119,7 +119,7 @@ function App() {
     // Skip type prefixes to find drone name
     for (let i = 0; i < sessionParts.length; i++) {
       const part = sessionParts[i].toLowerCase();
-      if (!['initial', 'remote', 'full', 'basic', 'mission', 'reset', 'onsite', 'ti'].includes(part) && 
+      if (!['initial', 'remote', 'full', 'basic', 'service', 'partner', 'onsite', 'ti'].includes(part) && 
           !/^\d+$/.test(part)) {
         drone = sessionParts[i];
         break;

@@ -192,9 +192,9 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
             inspectionType = 'service-ti-inspection';
           } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
-            inspectionType = 'mission-reset-inspection';
-          } else if (firstPart === 'mission' || nameLower.startsWith('mission_reset')) {
-            inspectionType = 'mission-reset-inspection';
+            inspectionType = 'service-partner-inspection';
+          } else if (firstPart === 'service' || nameLower.startsWith('service_partner')) {
+            inspectionType = 'service-partner-inspection';
           }
           
           // Load the session using the same mechanism as browse
@@ -257,7 +257,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
     } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
       inspectionType = 'service-ti-inspection';
     } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
-      inspectionType = 'mission-reset-inspection';
+      inspectionType = 'service-partner-inspection';
     }
     
     // Pass session data as part of the hangar parameter (will be parsed in the inspector components)

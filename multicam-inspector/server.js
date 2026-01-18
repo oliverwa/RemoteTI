@@ -1720,7 +1720,7 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
     const alarmSession = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
     
     // Check if Basic TI is completed
-    if (alarmSession.workflow?.phases?.missionReset?.status !== 'completed') {
+    if (alarmSession.workflow?.phases?.servicePartner?.status !== 'completed') {
       return res.status(400).json({ error: 'Basic TI must be completed before starting Full RTI' });
     }
     
@@ -2128,7 +2128,7 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       const dateStr = now.toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
       const timeStr = now.toISOString().slice(11, 19).replace(/:/g, ''); // HHMMSS
       const hangarShortName = hangarId.replace('hangar_', '').replace('_vpn', ''); // Extract short name
-      const sessionName = `mission_reset_${hangarShortName}_${dateStr}_${timeStr}`;
+      const sessionName = `service_partner_${hangarShortName}_${dateStr}_${timeStr}`;
       const sessionDir = path.join(BASE_DIR, 'data', 'sessions', hangarId, sessionName);
       
       if (!fs.existsSync(sessionDir)) {
@@ -2136,7 +2136,7 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       }
       
       // Determine template based on route
-      const templateName = route === 'basic-extended' ? 'extended-ti-inspection.json' : 'mission-reset-inspection.json';
+      const templateName = route === 'basic-extended' ? 'extended-ti-inspection.json' : 'service-partner-inspection.json';
       const templatePath = path.join(BASE_DIR, 'data', 'templates', templateName);
       
       // Create inspection JSON
@@ -2161,16 +2161,16 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       fs.writeFileSync(inspectionPath, JSON.stringify(inspection, null, 2));
       
       // Update alarm session with Basic TI inspection info
-      alarmSession.inspections.missionReset = {
+      alarmSession.inspections.servicePartner = {
         sessionId: sessionName,
         path: `${hangarId}/${sessionName}`,
         createdAt: new Date().toISOString(),
-        type: route === 'basic-extended' ? 'extended-ti-inspection' : 'mission-reset-inspection',
+        type: route === 'basic-extended' ? 'extended-ti-inspection' : 'service-partner-inspection',
         progress: '0%'
       };
       
       // Start Basic TI phase
-      alarmSession.workflow.phases.missionReset = {
+      alarmSession.workflow.phases.servicePartner = {
         status: 'in-progress',
         startTime: new Date().toISOString()
       };
@@ -2185,7 +2185,7 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       success: true, 
       message: 'Route decision saved',
       route: route,
-      inspection: alarmSession.inspections.missionReset
+      inspection: alarmSession.inspections.servicePartner
     });
   } catch (error) {
     log('error', 'Failed to save route decision:', error.message);
@@ -2224,8 +2224,8 @@ app.post('/api/inspection/update-progress', async (req, res) => {
     
     if (sessionPath.includes('initial_remote') || sessionPath.includes('initial_ti')) {
       inspectionType = 'initialRTI';
-    } else if (sessionPath.includes('basic_ti') || sessionPath.includes('mission_reset')) {
-      inspectionType = 'missionReset';
+    } else if (sessionPath.includes('basic_ti') || sessionPath.includes('service_partner')) {
+      inspectionType = 'servicePartner';
     } else if (sessionPath.includes('onsite_ti')) {
       inspectionType = 'onsiteTI';
     } else if (sessionPath.includes('full_remote') || sessionPath.includes('remote-ti')) {

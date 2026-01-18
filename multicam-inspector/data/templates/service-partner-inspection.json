@@ -1,8 +1,8 @@
 {
-  "inspectionType": "drone_mission_reset_inspection",
-  "name": "Mission Reset Inspection",
+  "inspectionType": "drone_service_partner_inspection",
+  "name": "Service Partner Inspection",
   "version": "1.0",
-  "description": "Mission reset checklist for non-Everdrone personnel to prepare drone for next mission",
+  "description": "Service partner checklist for non-Everdrone personnel to prepare drone for next mission",
   "metadata": {
     "author": "RemoteTI",
     "created": "2024-12-05",

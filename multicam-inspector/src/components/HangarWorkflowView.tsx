@@ -37,7 +37,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
   // Initialize decision based on hangar state
   const initDecision = () => {
     if (hangarState === 'inspection' && currentPhase?.toLowerCase().includes('remote crew')) {
-      return 'basic';  // Forges has already chosen Mission Reset route
+      return 'basic';  // Forges has already chosen Service Partner route
     }
     return null;
   };
@@ -142,7 +142,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
       if (phases.landing?.status === 'in-progress') return 'landing';
       if (phases.telemetryAnalysis?.status === 'in-progress') return 'telemetry';
       if (phases.initialRTI?.status === 'in-progress') return 'initial-rti';
-      if (phases.missionReset?.status === 'in-progress') return 'basic-ti';
+      if (phases.servicePartner?.status === 'in-progress') return 'basic-ti';
       if (phases.onsiteTI?.status === 'in-progress') return 'onsite-ti';
       if (phases.fullRTI?.status === 'in-progress') return 'full-rti';
       
@@ -442,7 +442,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                         : 'bg-white border-2 border-green-400 text-green-700 hover:bg-green-50 cursor-pointer'
                     }`}
                   >
-                    Mission Reset
+                    Service Partner
                     <div className="text-xs opacity-75 mt-0.5">Standard inspection</div>
                   </button>
                   <button 
@@ -456,7 +456,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                         : 'bg-white border-2 border-blue-400 text-blue-700 hover:bg-blue-50 cursor-pointer'
                     }`}
                   >
-                    Mission Reset + Additional
+                    Service Partner + Additional
                     <div className="text-xs opacity-75 mt-0.5">With extra tasks</div>
                   </button>
                   <button 
@@ -496,7 +496,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
               </div>
             ) : selectedDecision === 'basic' || selectedDecision === 'basic-extended' ? (
               <>
-                {/* Mission Reset Path */}
+                {/* Service Partner Path */}
                 <div ref={getActivePhase() === 'basic-ti' ? activeElementRef : undefined} className="flex flex-col items-center">
                   <div className="text-xs text-gray-500 mb-1">15:15</div>
                   <div 
@@ -510,11 +510,11 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                     }`}
                     onClick={() => {
                       // Only allow click if inspection exists
-                      if (alarmSession?.inspections?.basicTI?.path) {
-                        const sessionPath = alarmSession.inspections.missionReset.path;
+                      if (alarmSession?.inspections?.servicePartner?.path) {
+                        const sessionPath = alarmSession.inspections.servicePartner.path;
                         const [hangar, sessionName] = sessionPath.split('/');
                         // Navigate to the inspection in the same tab
-                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=mission-reset-inspection`;
+                        window.location.href = `/?action=load-session&hangar=${hangar}&session=${sessionName}&type=service-partner-inspection`;
                       }
                     }}
                   >
@@ -531,7 +531,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                       )}
                     </div>
                     <div className="text-xs font-semibold text-center">
-                      {selectedDecision === 'basic-extended' ? 'Mission Reset + Additional' : 'Mission Reset'}
+                      {selectedDecision === 'basic-extended' ? 'Service Partner + Additional' : 'Service Partner'}
                     </div>
                     <div className="text-xs text-center mt-1 text-green-600">
                       {alarmSession?.workflow?.phases?.basicTI?.status === 'completed'
@@ -576,7 +576,7 @@ const HangarWorkflowView: React.FC<HangarWorkflowViewProps> = ({
                       )
                     }`}
                     onClick={async () => {
-                      // Trigger Full RTI creation if Mission Reset is complete and Full RTI hasn't started
+                      // Trigger Full RTI creation if Service Partner is complete and Full RTI hasn't started
                       if (alarmSession?.workflow?.phases?.basicTI?.status === 'completed' && !alarmSession?.inspections?.fullRTI?.sessionId) {
                         try {
                           const response = await fetch(`${API_CONFIG.BASE_URL}/api/alarm-session/${hangarId}/generate-full-rti`, {
