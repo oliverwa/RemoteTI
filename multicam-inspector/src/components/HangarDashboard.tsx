@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
+import TelemetryDataAnalysis from './TelemetryDataAnalysis';
 import { API_CONFIG } from '../config/api.config';
 import authService from '../services/authService';
 
@@ -51,6 +52,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showTelemetryAnalysis, setShowTelemetryAnalysis] = useState(false);
+  const [showTelemetryDataAnalysis, setShowTelemetryDataAnalysis] = useState(false);
   const [telemetryHangar, setTelemetryHangar] = useState<any>(null);
   const [captureStartTimes, setCaptureStartTimes] = useState<{ [key: string]: number }>({});
   const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
@@ -1422,6 +1424,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   </Button>
                 </>
               )}
+              {userType === 'admin' && (
+                <Button
+                  onClick={() => setShowTelemetryDataAnalysis(true)}
+                  size="sm"
+                  className="bg-purple-500 hover:bg-purple-600 text-white shadow-sm flex items-center gap-2"
+                >
+                  <BarChart className="w-4 h-4" />
+                  Telemetry Analysis
+                </Button>
+              )}
               <Button
                 onClick={onLogout}
                 variant="ghost"
@@ -1673,6 +1685,12 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       <AdminPanel 
         isOpen={showAdminPanel}
         onClose={() => setShowAdminPanel(false)}
+      />
+
+      {/* Telemetry Data Analysis Modal */}
+      <TelemetryDataAnalysis
+        isOpen={showTelemetryDataAnalysis}
+        onClose={() => setShowTelemetryDataAnalysis(false)}
       />
 
       {/* Telemetry Analysis Modal */}
