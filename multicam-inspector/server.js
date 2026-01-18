@@ -65,11 +65,19 @@ app.put('/api/users/:id/password', auth.authenticateToken, auth.handleChangeUser
 
 // Hangar management routes
 const hangars = require('./server/hangars');
-app.get('/api/hangars', auth.authenticateToken, hangars.getHangars);
-app.get('/api/hangars/:id', auth.authenticateToken, hangars.getHangar);
+app.get('/api/hangars', hangars.getHangars); // Public read
+app.get('/api/hangars/:id', hangars.getHangar); // Public read
 app.post('/api/hangars', auth.authenticateToken, hangars.createHangar);
 app.put('/api/hangars/:id', auth.authenticateToken, hangars.updateHangar);
 app.delete('/api/hangars/:id', auth.authenticateToken, hangars.deleteHangar);
+
+// Drone management routes
+const drones = require('./server/drones');
+app.get('/api/drones', drones.getDrones); // Public read
+app.get('/api/drones/:id', drones.getDrone); // Public read
+app.post('/api/drones', auth.authenticateToken, drones.createDrone);
+app.put('/api/drones/:id', auth.authenticateToken, drones.updateDrone);
+app.delete('/api/drones/:id', auth.authenticateToken, drones.deleteDrone);
 
 // Logging utility
 function log(level, message, data = null) {

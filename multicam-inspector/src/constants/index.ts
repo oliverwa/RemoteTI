@@ -13,13 +13,15 @@ export const CAMERA_LAYOUT = [
 // - IP addresses (used for camera operations) 
 // - Status (operational/maintenance/construction)
 // - Camera transforms
+// - Drone assignments (managed via admin panel)
 // - All other hangar settings
 // These constants are only used if the API fails to load
+// DO NOT set assignedDrone here - it should only come from the admin panel
 export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_sisjon_vpn", 
     label: "Mölndal",
-    assignedDrone: "bender",
+    assignedDrone: undefined, // Managed via admin panel
     operational: true,
     status: "operational" as const,
     cameraTransforms: {
@@ -36,7 +38,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_rouen_vpn", 
     label: "Forges-les-Eaux",
-    assignedDrone: "maggie",
+    assignedDrone: undefined, // Managed via admin panel
     operational: true,
     status: "operational" as const,
     cameraTransforms: {
@@ -53,7 +55,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_boras_vpn", 
     label: "Borås",
-    assignedDrone: "homer",
+    assignedDrone: undefined, // Managed via admin panel
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -70,7 +72,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_skovde_vpn", 
     label: "Skövde",
-    assignedDrone: "E3-002",
+    assignedDrone: undefined, // Managed via admin panel
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -87,7 +89,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_uddevalla_vpn", 
     label: "Uddevalla",
-    assignedDrone: "E3-003",
+    assignedDrone: undefined, // Managed via admin panel
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -104,7 +106,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_farsta_vpn", 
     label: "Farsta",
-    assignedDrone: "E3-004",
+    assignedDrone: undefined, // Managed via admin panel
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -121,7 +123,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_trollhattan_vpn", 
     label: "Trollhättan",
-    assignedDrone: "E3-005",
+    assignedDrone: undefined, // Managed via admin panel
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -138,7 +140,7 @@ export const HANGARS: HangarConfig[] = [
   { 
     id: "hangar_vanersborg_vpn", 
     label: "Vänersborg",
-    assignedDrone: "E3-006",
+    assignedDrone: undefined, // Managed via admin panel
     operational: false,
     status: "construction" as const,
     cameraTransforms: {
@@ -154,21 +156,9 @@ export const HANGARS: HangarConfig[] = [
   }
 ];
 
-export const DRONE_OPTIONS = [
-  { id: "bender", label: "Bender" },
-  { id: "maggie", label: "Maggie" },
-  { id: "lisa", label: "Lisa" },
-  { id: "bart", label: "Bart" },
-  { id: "homer", label: "Homer" },
-  { id: "marge", label: "Marge" },
-  { id: "lancelot", label: "Lancelot" },
-  { id: "E3-001", label: "E3-001" },
-  { id: "E3-002", label: "E3-002" },
-  { id: "E3-003", label: "E3-003" },
-  { id: "E3-004", label: "E3-004" },
-  { id: "E3-005", label: "E3-005" },
-  { id: "E3-006", label: "E3-006" },
-];
+// DRONE_OPTIONS removed - drones are now managed entirely through the admin panel
+// The admin panel's Drones tab is the single source of truth for available drones
+// Use the API endpoint /api/drones to get the current list of drones
 
 // Utility functions
 export const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));

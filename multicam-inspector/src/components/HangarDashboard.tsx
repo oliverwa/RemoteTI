@@ -1,6 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
-import { HANGARS } from '../constants';
 import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
@@ -118,23 +117,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             });
             setVisibleHangars(hangars);
           } else {
-            // Fallback to constants
-            setVisibleHangars(userType === 'service_partner' 
-              ? HANGARS.filter(hangar => hangar.status === 'operational')
-              : HANGARS);
+            // No hangars available
+            setVisibleHangars([]);
           }
         } else {
-          // Fallback to constants
-          setVisibleHangars(userType === 'service_partner' 
-            ? HANGARS.filter(hangar => hangar.status === 'operational')
-            : HANGARS);
+          // No hangars available
+          setVisibleHangars([]);
         }
       } catch (error) {
         console.error('Error fetching hangars:', error);
-        // Fallback to constants
-        setVisibleHangars(userType === 'service_partner' 
-          ? HANGARS.filter(hangar => hangar.operational !== false)
-          : HANGARS);
+        // No hangars available
+        setVisibleHangars([]);
       } finally {
         setHangarsLoading(false);
       }

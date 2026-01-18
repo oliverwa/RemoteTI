@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from './ui/button';
-import { DRONE_OPTIONS } from '../constants';
 import { HangarConfig } from '../types';
 import { API_CONFIG } from '../config/api.config';
 import FolderBrowserModal from './modals/FolderBrowserModal';
@@ -35,41 +34,63 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
   const [loadingFolders, setLoadingFolders] = useState(false);
   const [availableFolders, setAvailableFolders] = useState<any[]>([]);
   const [hangars, setHangars] = useState<HangarConfig[]>([]);
+  const [drones, setDrones] = useState<any[]>([]);
 
-  // Fetch hangars from API with auth token
+  // Fetch hangars from API (no auth required for read)
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    
-    if (token) {
-      fetch(`${API_CONFIG.BASE_URL}/api/hangars`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+    fetch(`${API_CONFIG.BASE_URL}/api/hangars`)
         .then(res => res.json())
         .then(data => {
-          if (data.hangars) {
+          // The API returns {success: true, hangars: [...]}
+          console.log('Raw hangars API response:', data);
+          console.log('Full response keys:', Object.keys(data));
+          
+          if (data.success && data.hangars) {
+            console.log('Setting hangars from success response:', data.hangars);
+            console.log('First hangar full object:', JSON.stringify(data.hangars[0], null, 2));
             setHangars(data.hangars);
+          } else if (data.hangars) {
+            console.log('Setting hangars from direct property:', data.hangars);
+            console.log('First hangar full object:', JSON.stringify(data.hangars[0], null, 2));
+            setHangars(data.hangars);
+          } else if (Array.isArray(data)) {
+            console.log('Data is array directly:', data);
+            setHangars(data);
           } else {
-            // If no hangars in response or error, use constants
-            import('../constants').then(module => {
-              setHangars(module.HANGARS);
-            });
+            console.warn('Unexpected hangars response format:', data);
+            setHangars([]);
           }
         })
         .catch(err => {
           console.error('Failed to fetch hangars:', err);
-          // Fall back to constants if API fails
-          import('../constants').then(module => {
-            setHangars(module.HANGARS);
-          });
+          // Don't fall back to constants - show empty list
+          setHangars([]);
         });
-    } else {
-      // No token, use constants directly
-      import('../constants').then(module => {
-        setHangars(module.HANGARS);
-      });
-    }
+  }, []);
+
+  // Fetch drones from API (no auth required for read)
+  useEffect(() => {
+    console.log('Fetching drones from:', `${API_CONFIG.BASE_URL}/api/drones`);
+    fetch(`${API_CONFIG.BASE_URL}/api/drones`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          console.log('Drones API response:', data);
+          if (data.success && data.drones) {
+            setDrones(data.drones);
+            console.log('Drones loaded:', data.drones.length, data.drones);
+          } else if (data.drones) {
+            setDrones(data.drones);
+            console.log('Drones loaded (alt format):', data.drones.length, data.drones);
+          } else {
+            console.error('No drones in response');
+          }
+        })
+        .catch(err => console.error('Failed to fetch drones:', err));
   }, []);
 
   // Fetch available inspection types
@@ -246,7 +267,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
 
   const selectedHangarObj = hangars.find(h => h.id === selectedHangar);
   const assignedDroneName = selectedHangarObj?.assignedDrone 
-    ? DRONE_OPTIONS.find(d => d.id === selectedHangarObj.assignedDrone)?.label 
+    ? drones.find((d: any) => d.id === selectedHangarObj.assignedDrone)?.label 
     : null;
 
   return (
@@ -301,7 +322,9 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
               Select Hangar
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {hangars.map((h) => (
+              {hangars.map((h) => {
+                console.log(`Rendering hangar ${h.label}: assignedDrone = ${h.assignedDrone}, drones loaded = ${drones.length}`);
+                return (
                 <button
                   key={h.id}
                   onClick={() => setSelectedHangar(h.id)}
@@ -314,11 +337,16 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
                   <div className="font-medium">{h.label}</div>
                   {h.assignedDrone && (
                     <div className="text-sm text-gray-600 mt-1">
-                      Drone: {DRONE_OPTIONS.find(d => d.id === h.assignedDrone)?.label || h.assignedDrone}
+                      Drone: {drones.find((d: any) => d.id === h.assignedDrone)?.label || h.assignedDrone}
+                    </div>
+                  )}
+                  {!h.assignedDrone && (
+                    <div className="text-sm text-gray-400 mt-1 italic">
+                      No drone assigned
                     </div>
                   )}
                 </button>
-              ))}
+              )})}
             </div>
           </div>
           
@@ -363,7 +391,7 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
                   className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Select a drone...</option>
-                  {DRONE_OPTIONS.map((drone) => (
+                  {drones.map((drone: any) => (
                     <option key={drone.id} value={drone.id}>{drone.label}</option>
                   ))}
                 </select>

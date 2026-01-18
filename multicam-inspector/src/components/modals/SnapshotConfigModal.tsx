@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
-import { HANGARS, DRONE_OPTIONS } from '../../constants';
+import { API_CONFIG } from '../../config/api.config';
 
 
 // Props interface
@@ -28,10 +28,46 @@ export const SnapshotConfigModal: React.FC<SnapshotConfigModalProps> = ({
   onBrowseFolders,
 }) => {
   const [isEditingDrone, setIsEditingDrone] = useState(false);
+  const [drones, setDrones] = useState<any[]>([]);
+  const [hangars, setHangars] = useState<any[]>([]);
+
+  // Fetch drones and hangars from API
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // Fetch drones
+      fetch(`${API_CONFIG.BASE_URL}/api/drones`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.drones) {
+            setDrones(data.drones);
+          }
+        })
+        .catch(err => console.error('Failed to fetch drones:', err));
+      
+      // Fetch hangars
+      fetch(`${API_CONFIG.BASE_URL}/api/hangars`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.hangars) {
+            setHangars(data.hangars);
+          }
+        })
+        .catch(err => console.error('Failed to fetch hangars:', err));
+    }
+  }, []);
 
   // Auto-select drone when hangar changes
   useEffect(() => {
-    const selectedHangar = HANGARS.find(h => h.id === snapshotHangar);
+    const selectedHangar = hangars.find(h => h.id === snapshotHangar);
     if (selectedHangar?.assignedDrone) {
       setSnapshotDrone(selectedHangar.assignedDrone);
       setIsEditingDrone(false);
@@ -40,9 +76,9 @@ export const SnapshotConfigModal: React.FC<SnapshotConfigModalProps> = ({
 
   if (!isOpen) return null;
 
-  const selectedHangar = HANGARS.find(h => h.id === snapshotHangar);
+  const selectedHangar = hangars.find(h => h.id === snapshotHangar);
   const assignedDroneName = selectedHangar?.assignedDrone 
-    ? DRONE_OPTIONS.find(d => d.id === selectedHangar.assignedDrone)?.label 
+    ? drones.find(d => d.id === selectedHangar.assignedDrone)?.label 
     : null;
 
   const handleLoadLatest = (e: React.MouseEvent) => {
@@ -65,7 +101,7 @@ export const SnapshotConfigModal: React.FC<SnapshotConfigModalProps> = ({
           <div>
             <label className="block text-base font-medium mb-3">Select Hangar</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {HANGARS.map((h) => (
+              {hangars.map((h) => (
                 <button
                   key={h.id}
                   onClick={() => setSnapshotHangar(h.id)}
@@ -78,7 +114,7 @@ export const SnapshotConfigModal: React.FC<SnapshotConfigModalProps> = ({
                   <div className="font-medium text-lg">{h.label}</div>
                   {h.assignedDrone && (
                     <div className="text-sm text-gray-600 mt-1">
-                      Drone: {DRONE_OPTIONS.find(d => d.id === h.assignedDrone)?.label || h.assignedDrone}
+                      Drone: {drones.find(d => d.id === h.assignedDrone)?.label || h.assignedDrone}
                     </div>
                   )}
                 </button>
@@ -117,7 +153,7 @@ export const SnapshotConfigModal: React.FC<SnapshotConfigModalProps> = ({
                   value={snapshotDrone} 
                   onChange={(e) => setSnapshotDrone(e.target.value)}
                 >
-                  {DRONE_OPTIONS.map((d) => (
+                  {drones.map((d: any) => (
                     <option key={d.id} value={d.id}>
                       {d.label}
                     </option>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, Plus, Edit2, Trash2, X, Check, Power, Wrench, HardHat, AlertTriangle, Save } from 'lucide-react';
-import { HANGARS, DRONE_OPTIONS } from '../../constants';
+import { HANGARS } from '../../constants';
 import { API_CONFIG } from '../../config/api.config';
 import authService from '../../services/authService';
 
@@ -17,6 +17,7 @@ interface Hangar {
 
 const HangarsManagement: React.FC = () => {
   const [hangars, setHangars] = useState<Hangar[]>([]);
+  const [drones, setDrones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -33,7 +34,24 @@ const HangarsManagement: React.FC = () => {
 
   useEffect(() => {
     fetchHangars();
+    fetchDrones();
   }, []);
+
+  const fetchDrones = async () => {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/drones`, {
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`
+        }
+      });
+      const data = await response.json();
+      if (data.success && data.drones) {
+        setDrones(data.drones);
+      }
+    } catch (error) {
+      console.error('Failed to fetch drones:', error);
+    }
+  };
 
   const fetchHangars = async () => {
     try {
@@ -448,7 +466,7 @@ const HangarsManagement: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">No drone assigned</option>
-                    {DRONE_OPTIONS.filter(drone => {
+                    {drones.filter(drone => {
                       // Filter out drones already assigned to other hangars
                       const isAssigned = hangars.some(h => 
                         h.id !== selectedHangar?.id && h.assignedDrone === drone.id
@@ -456,7 +474,7 @@ const HangarsManagement: React.FC = () => {
                       return !isAssigned;
                     }).map(drone => (
                       <option key={drone.id} value={drone.id}>
-                        {drone.label}
+                        {drone.label || drone.id}
                       </option>
                     ))}
                   </select>
@@ -557,7 +575,7 @@ const HangarsManagement: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">No drone assigned</option>
-                    {DRONE_OPTIONS.filter(drone => {
+                    {drones.filter(drone => {
                       // Filter out drones already assigned to other hangars
                       const isAssigned = hangars.some(h => 
                         h.id !== selectedHangar?.id && h.assignedDrone === drone.id
@@ -565,7 +583,7 @@ const HangarsManagement: React.FC = () => {
                       return !isAssigned;
                     }).map(drone => (
                       <option key={drone.id} value={drone.id}>
-                        {drone.label}
+                        {drone.label || drone.id}
                       </option>
                     ))}
                   </select>

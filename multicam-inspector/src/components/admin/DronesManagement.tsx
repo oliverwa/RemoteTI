@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Plane, Plus, Edit2, Trash2, X, Check, AlertTriangle, Wrench, CheckCircle } from 'lucide-react';
-import { DRONE_OPTIONS, HANGARS } from '../../constants';
 import { API_CONFIG } from '../../config/api.config';
 import authService from '../../services/authService';
 
@@ -18,6 +17,7 @@ interface Drone {
 
 const DronesManagement: React.FC = () => {
   const [drones, setDrones] = useState<Drone[]>([]);
+  const [hangars, setHangars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -34,27 +34,44 @@ const DronesManagement: React.FC = () => {
 
   useEffect(() => {
     fetchDrones();
+    fetchHangars();
   }, []);
 
   const fetchDrones = async () => {
     try {
       setLoading(true);
-      // For now, load from constants and determine assignments
-      const droneData: Drone[] = DRONE_OPTIONS.map(d => {
-        const assignedHangar = HANGARS.find(h => h.assignedDrone === d.id);
-        return {
-          id: d.id,
-          label: d.label,
-          status: assignedHangar ? 'assigned' : 'available',
-          currentHangar: assignedHangar?.id,
-        };
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/drones`, {
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`
+        }
       });
-      setDrones(droneData);
+      const data = await response.json();
+      if (data.success && data.drones) {
+        setDrones(data.drones);
+      } else {
+        throw new Error(data.message || 'Failed to fetch drones');
+      }
     } catch (error) {
       console.error('Error fetching drones:', error);
       setError('Failed to load drones');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHangars = async () => {
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/hangars`, {
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`
+        }
+      });
+      const data = await response.json();
+      if (data.hangars) {
+        setHangars(data.hangars);
+      }
+    } catch (error) {
+      console.error('Error fetching hangars:', error);
     }
   };
 
@@ -82,23 +99,42 @@ const DronesManagement: React.FC = () => {
       // Generate a new ID
       const newId = formData.label.toLowerCase().replace(/\s+/g, '_');
       
-      const newDrone: Drone = {
+      const newDrone = {
         id: newId,
         label: formData.label,
         serialNumber: formData.serialNumber,
         model: formData.model,
         status: formData.status || 'available',
-        createdAt: new Date().toISOString(),
       };
 
-      // Add to local state
-      setDrones([...drones, newDrone]);
-      setShowAddModal(false);
-      resetForm();
+      // Send to backend
+      console.log('Creating drone:', newDrone);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/drones`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authService.getToken()}`
+        },
+        body: JSON.stringify(newDrone)
+      });
 
-      // TODO: Send to backend when API is ready
-    } catch (error) {
-      setError('Failed to create drone');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        // Refresh the list
+        await fetchDrones();
+        setShowAddModal(false);
+        resetForm();
+      } else {
+        throw new Error(data.message || 'Failed to create drone');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to create drone');
     } finally {
       setSubmitLoading(false);
     }
@@ -116,27 +152,35 @@ const DronesManagement: React.FC = () => {
         return;
       }
 
-      // Update in local state
-      setDrones(drones.map(d => 
-        d.id === selectedDrone.id
-          ? {
-              ...d,
-              label: formData.label || d.label,
-              serialNumber: formData.serialNumber,
-              model: formData.model,
-              status: formData.status || d.status,
-              updatedAt: new Date().toISOString(),
-            }
-          : d
-      ));
+      const updatedDrone = {
+        label: formData.label,
+        serialNumber: formData.serialNumber,
+        model: formData.model,
+        status: formData.status,
+      };
 
-      setShowEditModal(false);
-      resetForm();
-      setSelectedDrone(null);
+      // Send to backend
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/drones/${selectedDrone.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authService.getToken()}`
+        },
+        body: JSON.stringify(updatedDrone)
+      });
 
-      // TODO: Send to backend when API is ready
-    } catch (error) {
-      setError('Failed to update drone');
+      const data = await response.json();
+      if (data.success) {
+        // Refresh the list
+        await fetchDrones();
+        setShowEditModal(false);
+        resetForm();
+        setSelectedDrone(null);
+      } else {
+        throw new Error(data.message || 'Failed to update drone');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to update drone');
     } finally {
       setSubmitLoading(false);
     }
@@ -149,14 +193,25 @@ const DronesManagement: React.FC = () => {
       setSubmitLoading(true);
       setError('');
 
-      // Remove from local state
-      setDrones(drones.filter(d => d.id !== selectedDrone.id));
-      setShowDeleteModal(false);
-      setSelectedDrone(null);
+      // Send to backend
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/drones/${selectedDrone.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authService.getToken()}`
+        }
+      });
 
-      // TODO: Send to backend when API is ready
-    } catch (error) {
-      setError('Failed to delete drone');
+      const data = await response.json();
+      if (data.success) {
+        // Refresh the list
+        await fetchDrones();
+        setShowDeleteModal(false);
+        setSelectedDrone(null);
+      } else {
+        throw new Error(data.message || 'Failed to delete drone');
+      }
+    } catch (error: any) {
+      setError(error.message || 'Failed to delete drone');
     } finally {
       setSubmitLoading(false);
     }
@@ -291,7 +346,7 @@ const DronesManagement: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {drone.currentHangar ? (
                       <span className="font-medium text-gray-700">
-                        {HANGARS.find(h => h.id === drone.currentHangar)?.label || drone.currentHangar}
+                        {hangars.find(h => h.id === drone.currentHangar)?.label || drone.currentHangar}
                       </span>
                     ) : (
                       <span className="text-gray-400 italic">Not assigned</span>
