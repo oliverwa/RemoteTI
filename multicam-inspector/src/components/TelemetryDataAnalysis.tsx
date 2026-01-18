@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, Eye, Trash2, Activity, Camera, Tablet, Plane, Clock, Battery, Thermometer, Radio, MapPin, AlertCircle, CheckCircle, TrendingUp, AlertTriangle } from 'lucide-react';
+import { X, Upload, Eye, Trash2, Activity, Camera, Tablet, Plane, Clock, Battery, Thermometer, Radio, MapPin, AlertCircle, CheckCircle, TrendingUp, AlertTriangle, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, RadialBarChart, RadialBar, PolarAngleAxis, ScatterChart, Scatter, Cell } from 'recharts';
+import { generateMultipleSampleFlights } from '../utils/generateSampleTelemetry';
 
 interface TelemetryDataAnalysisProps {
   isOpen: boolean;
@@ -15,7 +16,7 @@ interface FlightData {
   date: string;
   duration: number;
   completionStatus: string;
-  data: any;
+  data: TelemetryData;
   timeline?: TimelineEvent[];
 }
 
@@ -26,6 +27,95 @@ interface TimelineEvent {
   category: string;
   description: string;
   value?: any;
+}
+
+interface TelemetryData {
+  mission?: {
+    alarmRecievedTimestamp?: string;
+    telemetryStartedTimestamp?: string;
+    pilotConnectedTimestamp?: string;
+    missionApprovedTimestamp?: string;
+    takeOffTimestamp?: string;
+    moveOutOfHangarTimestamp?: string;
+    ascendFromHangarTimestamp?: string;
+    hangarExitCompleteTimestamp?: string;
+    clearanceConfirmedTimestamp?: string;
+    wpStartedTimestamp?: string;
+    returnToSkybaseTimestamp?: string;
+    atLastWPTimestamp?: string;
+    totalFlightTime?: number;
+    timeToWP?: number;
+  };
+  pilot?: {
+    cameraSwitches?: Array<{
+      timestamp: string;
+      cameraName: string;
+    }>;
+    manualControl?: Array<{
+      timestamp: string;
+      action?: string;
+    }>;
+  };
+  ipadInteractions?: Array<{
+    timestamp: string;
+    action?: string;
+  }>;
+  battery?: {
+    takeOffPercentage?: number;
+    takeOffVoltage?: number;
+    wpOutStartPercentage?: number;
+    wpOutStartVoltage?: number;
+    wpHomeStartPercentage?: number;
+    wpHomeStartVoltage?: number;
+    landingPercentage?: number;
+    landingVoltage?: number;
+  };
+  performance?: {
+    averageCurrentWPOut?: number;
+    averageCurrentWPHome?: number;
+    thrustToHover?: number;
+    avgVibX?: number;
+    avgVibY?: number;
+    avgVibZ?: number;
+    maxVibX?: number;
+    maxVibY?: number;
+    maxVibZ?: number;
+  };
+  temperature?: {
+    haloTakeOffTemp?: number;
+    haloLandingTemp?: number;
+    haloMaxTemp?: number;
+    ftsTakeOffTemp?: number;
+    ftsLandingTemp?: number;
+    ftsMaxTemp?: number;
+  };
+  reception?: {
+    sim1RssiAvg?: number;
+    sim1Carrier?: string;
+    sim2RssiAvg?: number;
+    sim2Carrier?: string;
+    sim3RssiAvg?: number;
+    sim3Carrier?: string;
+    sim4RssiAvg?: number;
+    sim4Carrier?: string;
+  };
+  speeds?: {
+    averageSpeed?: number;
+    maxSpeed?: number;
+  };
+  routes?: {
+    outDistance?: number;
+    homeDistance?: number;
+  };
+  skybaseName?: string;
+  droneName?: string;
+  dashMetadata?: {
+    date?: string;
+    completionStatus?: string;
+  };
+  alarm?: {
+    subtype?: string;
+  };
 }
 
 const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, onClose }) => {
@@ -53,7 +143,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
     return current - start;
   };
 
-  const buildTimeline = (data: any): TimelineEvent[] => {
+  const buildTimeline = (data: TelemetryData): TimelineEvent[] => {
     const events: TimelineEvent[] = [];
     const startTime = data.mission?.telemetryStartedTimestamp || data.mission?.alarmRecievedTimestamp;
     
@@ -77,10 +167,11 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
       ];
 
       missionEvents.forEach(event => {
-        if (data.mission[event.key]) {
+        const eventKey = event.key as keyof typeof data.mission;
+        if (data.mission && data.mission[eventKey]) {
           events.push({
-            timestamp: data.mission[event.key],
-            time: timestampToSeconds(data.mission[event.key], startTime),
+            timestamp: data.mission[eventKey] as string,
+            time: timestampToSeconds(data.mission[eventKey] as string, startTime),
             type: 'mission',
             category: 'Flight Phase',
             description: event.desc
@@ -91,7 +182,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
 
     // Pilot camera switches
     if (data.pilot?.cameraSwitches) {
-      data.pilot.cameraSwitches.forEach((sw: any) => {
+      data.pilot.cameraSwitches.forEach((sw) => {
         events.push({
           timestamp: sw.timestamp,
           time: timestampToSeconds(sw.timestamp, startTime),
@@ -105,7 +196,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
 
     // Pilot manual control
     if (data.pilot?.manualControl) {
-      data.pilot.manualControl.forEach((mc: any) => {
+      data.pilot.manualControl.forEach((mc) => {
         events.push({
           timestamp: mc.timestamp,
           time: timestampToSeconds(mc.timestamp, startTime),
@@ -118,7 +209,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
 
     // iPad interactions
     if (data.ipadInteractions && data.ipadInteractions.length > 0) {
-      data.ipadInteractions.forEach((interaction: any) => {
+      data.ipadInteractions.forEach((interaction) => {
         events.push({
           timestamp: interaction.timestamp,
           time: timestampToSeconds(interaction.timestamp, startTime),
@@ -186,6 +277,43 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
     }
   };
 
+  const loadSampleData = () => {
+    const sampleFlights = generateMultipleSampleFlights(5);
+    
+    sampleFlights.forEach((data, index) => {
+      // Calculate duration
+      let duration = 0;
+      if (data.mission?.takeOffTimestamp && data.mission?.atLastWPTimestamp) {
+        const start = data.mission.takeOffTimestamp;
+        const end = data.mission.atLastWPTimestamp;
+        duration = timestampToSeconds(end, start);
+      } else if (data.mission?.totalFlightTime) {
+        duration = data.mission.totalFlightTime;
+      }
+
+      // Build timeline
+      const timeline = buildTimeline(data);
+
+      const flightData: FlightData = {
+        id: `sample-flight-${Date.now()}-${index}`,
+        fileName: `sample_flight_${index + 1}.json`,
+        droneName: data.droneName || 'Unknown',
+        date: data.dashMetadata?.date || new Date().toISOString().split('T')[0],
+        duration: duration,
+        completionStatus: data.dashMetadata?.completionStatus || 'normal',
+        data: data,
+        timeline: timeline
+      };
+      
+      setFlights(prev => [...prev, flightData]);
+      
+      // Auto-select first flight
+      if (index === 0) {
+        setSelectedFlight(flightData.id);
+      }
+    });
+  };
+
   const removeFlight = (flightId: string) => {
     setFlights(prev => prev.filter(f => f.id !== flightId));
     if (selectedFlight === flightId) {
@@ -202,13 +330,13 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
         // Calculate critical delivery times
         const alarmToTakeoff = data.mission?.alarmRecievedTimestamp && data.mission?.takeOffTimestamp
           ? timestampToSeconds(data.mission.takeOffTimestamp, data.mission.alarmRecievedTimestamp)
-          : null;
+          : 0;
         const alarmToWP = data.mission?.alarmRecievedTimestamp && data.mission?.wpStartedTimestamp
           ? timestampToSeconds(data.mission.wpStartedTimestamp, data.mission.alarmRecievedTimestamp)
-          : null;
+          : 0;
         const takeoffToWP = data.mission?.takeOffTimestamp && data.mission?.wpStartedTimestamp
           ? timestampToSeconds(data.mission.wpStartedTimestamp, data.mission.takeOffTimestamp)
-          : null;
+          : 0;
           
         return [
           { name: 'Response Times', alarmToTakeoff, alarmToWP, takeoffToWP, unit: 's' },
@@ -433,7 +561,12 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
       avgBatteryUsed: [] as number[],
       
       // By drone breakdown
-      byDrone: {} as any
+      byDrone: {} as Record<string, {
+        flights: number;
+        normal: number;
+        abnormal: number;
+        avgResponseTime: number[];
+      }>
     };
 
     flights.forEach(flight => {
@@ -474,7 +607,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
       }
       
       // Group by drone
-      const droneName = data.droneName || 'Unknown';
+      const droneName = flight.droneName || 'Unknown';
       if (!metrics.byDrone[droneName]) {
         metrics.byDrone[droneName] = {
           flights: 0,
@@ -509,8 +642,18 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
     };
 
     // Process drone metrics
+    const droneMetricsProcessed: Record<string, {
+      flights: number;
+      normal: number;
+      abnormal: number;
+      avgResponseTime: number;
+    }> = {};
+    
     Object.keys(metrics.byDrone).forEach(drone => {
-      metrics.byDrone[drone].avgResponseTime = avg(metrics.byDrone[drone].avgResponseTime);
+      droneMetricsProcessed[drone] = {
+        ...metrics.byDrone[drone],
+        avgResponseTime: avg(metrics.byDrone[drone].avgResponseTime)
+      };
     });
 
     return (
@@ -611,7 +754,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
             Performance by Drone
           </h3>
           <div className="space-y-3">
-            {Object.entries(metrics.byDrone).map(([drone, stats]: [string, any]) => (
+            {Object.entries(droneMetricsProcessed).map(([drone, stats]) => (
               <div key={drone} className="flex items-center justify-between p-3 bg-gray-50 rounded">
                 <div>
                   <div className="font-medium">{drone}</div>
@@ -621,7 +764,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-medium">
-                    Avg Response: {Math.floor(stats.avgResponseTime / 60)}:{(stats.avgResponseTime % 60).toFixed(0).padStart(2, '0')}
+                    Avg Response: {Math.floor(stats.avgResponseTime / 60)}:{Math.round(stats.avgResponseTime % 60).toString().padStart(2, '0')}
                   </div>
                   <div className="flex gap-2 mt-1">
                     <span className="text-xs text-green-600">{stats.normal} normal</span>
@@ -706,20 +849,20 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-700">
-                        {responseData.alarmToTakeoff ? `${Math.floor(responseData.alarmToTakeoff / 60)}:${(responseData.alarmToTakeoff % 60).toFixed(0).padStart(2, '0')}` : 'N/A'}
+                        {responseData.alarmToTakeoff > 0 ? `${Math.floor(responseData.alarmToTakeoff / 60)}:${(responseData.alarmToTakeoff % 60).toFixed(0).padStart(2, '0')}` : 'N/A'}
                       </div>
                       <div className="text-sm text-gray-600">Alarm → Takeoff</div>
                     </div>
                     <div className="text-center bg-white rounded p-2 border-2 border-blue-300">
                       <div className="text-2xl font-bold text-blue-700">
-                        {responseData.alarmToWP ? `${Math.floor(responseData.alarmToWP / 60)}:${(responseData.alarmToWP % 60).toFixed(0).padStart(2, '0')}` : 'N/A'}
+                        {responseData.alarmToWP > 0 ? `${Math.floor(responseData.alarmToWP / 60)}:${(responseData.alarmToWP % 60).toFixed(0).padStart(2, '0')}` : 'N/A'}
                       </div>
                       <div className="text-sm text-gray-600">Alarm → Delivery</div>
                       <div className="text-xs text-blue-600 font-medium">PRIMARY METRIC</div>
                     </div>
                     <div className="text-center">
                       <div className="text-2xl font-bold text-blue-700">
-                        {responseData.takeoffToWP ? `${Math.floor(responseData.takeoffToWP / 60)}:${(responseData.takeoffToWP % 60).toFixed(0).padStart(2, '0')}` : 'N/A'}
+                        {responseData.takeoffToWP > 0 ? `${Math.floor(responseData.takeoffToWP / 60)}:${(responseData.takeoffToWP % 60).toFixed(0).padStart(2, '0')}` : 'N/A'}
                       </div>
                       <div className="text-sm text-gray-600">Takeoff → Delivery</div>
                     </div>
@@ -777,7 +920,7 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
           {/* Sidebar */}
           <div className="w-80 border-r bg-gray-50 p-4 overflow-y-auto">
             {/* Upload Button */}
-            <div className="mb-4">
+            <div className="mb-4 space-y-2">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -792,6 +935,14 @@ const TelemetryDataAnalysis: React.FC<TelemetryDataAnalysisProps> = ({ isOpen, o
               >
                 <Upload className="w-4 h-4" />
                 Upload Flight Data
+              </Button>
+              <Button
+                onClick={loadSampleData}
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                Load Sample Data
               </Button>
             </div>
 

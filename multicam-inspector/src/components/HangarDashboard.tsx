@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
-import TelemetryDataAnalysis from './TelemetryDataAnalysis';
+import SimpleTelemetryAnalysis from './SimpleTelemetryAnalysis';
 import { API_CONFIG } from '../config/api.config';
 import authService from '../services/authService';
 
@@ -1688,7 +1688,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       />
 
       {/* Telemetry Data Analysis Modal */}
-      <TelemetryDataAnalysis
+      <SimpleTelemetryAnalysis
         isOpen={showTelemetryDataAnalysis}
         onClose={() => setShowTelemetryDataAnalysis(false)}
       />
