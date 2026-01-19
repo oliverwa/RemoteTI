@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, Sparkles, Clock, Battery, MapPin, Activity, AlertCircle, CheckCircle } from 'lucide-react';
+import { X, Upload, Sparkles, Clock, Battery, MapPin, Activity, AlertCircle, CheckCircle, Zap, Pause } from 'lucide-react';
 import { Button } from './ui/button';
 import MissionTimeline from './MissionTimeline';
 import MultipleTimelines from './MultipleTimelines';
@@ -23,6 +23,8 @@ interface BasicFlightData {
   alarmDistance: number; // in meters (outDistance)
   alarmType: string; // Type of alarm/mission
   completionStatus: string; // Mission completion status
+  alarmToTakeoffTime: number; // Time from alarm to takeoff in seconds
+  awaitingClearanceTime: number; // Time awaiting clearance in seconds
   
   // Raw data for inspection
   rawData: any;
@@ -33,6 +35,32 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [showRawData, setShowRawData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper function to find the latest timestamp in mission data
+  const findLatestTimestamp = (data: any): string | null => {
+    const timestamps: string[] = [];
+    
+    // Collect all possible timestamp fields from mission object
+    if (data.mission) {
+      Object.keys(data.mission).forEach(key => {
+        if (key.toLowerCase().includes('timestamp') && typeof data.mission[key] === 'string') {
+          timestamps.push(data.mission[key]);
+        }
+      });
+    }
+    
+    // Also check landing object
+    if (data.landing?.landedTimestamp) {
+      timestamps.push(data.landing.landedTimestamp);
+    }
+    
+    // Sort timestamps and return the latest one
+    if (timestamps.length > 0) {
+      return timestamps.sort().pop() || null;
+    }
+    
+    return null;
+  };
 
   // Helper function to calculate seconds between two timestamps
   const calculateDurationFromTimestamps = (takeOffTimestamp: string, landedTimestamp: string): number => {
@@ -81,7 +109,12 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
           // Calculate flight duration from timestamps if available
           let flightDuration = 0;
           const takeOff = data.mission?.takeOffTimestamp || data.takeOffTimestamp;
-          const landed = data.landing?.landedTimestamp || data.mission?.landedTimestamp || data.mission?.landingTimestamp || data.landedTimestamp || data.landingTimestamp;
+          let landed = data.landing?.landedTimestamp || data.mission?.landedTimestamp || data.mission?.landingTimestamp || data.landedTimestamp || data.landingTimestamp;
+          
+          // If no landing timestamp found, use the latest timestamp available
+          if (!landed) {
+            landed = findLatestTimestamp(data);
+          }
           
           if (takeOff && landed) {
             flightDuration = calculateDurationFromTimestamps(takeOff, landed);
@@ -90,6 +123,22 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             flightDuration = data.mission.totalFlightTime;
           } else if (data.totalFlightTime) {
             flightDuration = data.totalFlightTime;
+          }
+          
+          // Calculate alarm to takeoff time
+          let alarmToTakeoffTime = 0;
+          const alarmReceived = data.mission?.alarmRecievedTimestamp || data.alarm?.alarmReceivedFromCoordcom;
+          if (alarmReceived && takeOff) {
+            alarmToTakeoffTime = calculateDurationFromTimestamps(alarmReceived, takeOff);
+          }
+          
+          // Calculate awaiting clearance time
+          let awaitingClearanceTime = 0;
+          if (data.mission?.droneHoldForClearanceTimestamp && data.mission?.clearanceConfirmedTimestamp) {
+            awaitingClearanceTime = calculateDurationFromTimestamps(
+              data.mission.droneHoldForClearanceTimestamp,
+              data.mission.clearanceConfirmedTimestamp
+            );
           }
           
           // Extract only the most certain data points
@@ -124,6 +173,12 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
               data.dashMetadata?.completionStatus || 
               data.completionStatus ||
               'unknown',
+            
+            // Alarm to takeoff time
+            alarmToTakeoffTime: alarmToTakeoffTime,
+            
+            // Awaiting clearance time
+            awaitingClearanceTime: awaitingClearanceTime,
             
             rawData: data
           };
@@ -162,12 +217,18 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
     };
     
     // Sample 1: Normal 8-minute flight
-    const takeoff1 = new Date(now.getTime() - 3600000); // 1 hour ago
+    const alarmReceived1 = new Date(now.getTime() - 3780000); // 1h 3min ago
+    const takeoff1 = new Date(alarmReceived1.getTime() + 180000); // 3 minutes after alarm
+    const holdForClearance1 = new Date(takeoff1.getTime() + 30000); // 30 seconds after takeoff
+    const clearanceConfirmed1 = new Date(holdForClearance1.getTime() + 3000); // 3 seconds clearance wait
     const landed1 = new Date(takeoff1.getTime() + 480000); // 8 minutes later
     const sample1 = {
       droneName: 'Bender',
       mission: {
+        alarmRecievedTimestamp: formatTimestamp(alarmReceived1),
         takeOffTimestamp: formatTimestamp(takeoff1),
+        droneHoldForClearanceTimestamp: formatTimestamp(holdForClearance1),
+        clearanceConfirmedTimestamp: formatTimestamp(clearanceConfirmed1),
         landedTimestamp: formatTimestamp(landed1)
       },
       battery: {
@@ -188,12 +249,18 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
     };
     
     // Sample 2: Shorter 5-minute flight
-    const takeoff2 = new Date(now.getTime() - 7200000); // 2 hours ago
+    const alarmReceived2 = new Date(now.getTime() - 7350000); // 2h 2.5min ago
+    const takeoff2 = new Date(alarmReceived2.getTime() + 150000); // 2.5 minutes after alarm
+    const holdForClearance2 = new Date(takeoff2.getTime() + 25000); // 25 seconds after takeoff
+    const clearanceConfirmed2 = new Date(holdForClearance2.getTime() + 5000); // 5 seconds clearance wait
     const landed2 = new Date(takeoff2.getTime() + 320000); // 5.3 minutes later
     const sample2 = {
       droneName: 'Marvin',
       mission: {
+        alarmRecievedTimestamp: formatTimestamp(alarmReceived2),
         takeOffTimestamp: formatTimestamp(takeoff2),
+        droneHoldForClearanceTimestamp: formatTimestamp(holdForClearance2),
+        clearanceConfirmedTimestamp: formatTimestamp(clearanceConfirmed2),
         landedTimestamp: formatTimestamp(landed2)
       },
       battery: {
@@ -214,12 +281,18 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
     };
     
     // Sample 3: Aborted 3-minute flight
-    const takeoff3 = new Date(now.getTime() - 1800000); // 30 minutes ago
+    const alarmReceived3 = new Date(now.getTime() - 2100000); // 35 minutes ago
+    const takeoff3 = new Date(alarmReceived3.getTime() + 300000); // 5 minutes after alarm (slower response)
+    const holdForClearance3 = new Date(takeoff3.getTime() + 35000); // 35 seconds after takeoff
+    const clearanceConfirmed3 = new Date(holdForClearance3.getTime() + 10000); // 10 seconds clearance wait (longer)
     const landed3 = new Date(takeoff3.getTime() + 180000); // 3 minutes later
     const sample3 = {
       droneName: 'HAL',
       mission: {
+        alarmRecievedTimestamp: formatTimestamp(alarmReceived3),
         takeOffTimestamp: formatTimestamp(takeoff3),
+        droneHoldForClearanceTimestamp: formatTimestamp(holdForClearance3),
+        clearanceConfirmedTimestamp: formatTimestamp(clearanceConfirmed3),
         landedTimestamp: formatTimestamp(landed3)
       },
       battery: {
@@ -249,6 +322,24 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
         );
       }
       
+      // Calculate alarm to takeoff time for sample data
+      let alarmToTakeoffTime = 0;
+      if (data.mission?.alarmRecievedTimestamp && data.mission?.takeOffTimestamp) {
+        alarmToTakeoffTime = calculateDurationFromTimestamps(
+          data.mission.alarmRecievedTimestamp,
+          data.mission.takeOffTimestamp
+        );
+      }
+      
+      // Calculate awaiting clearance time for sample data
+      let awaitingClearanceTime = 0;
+      if (data.mission?.droneHoldForClearanceTimestamp && data.mission?.clearanceConfirmedTimestamp) {
+        awaitingClearanceTime = calculateDurationFromTimestamps(
+          data.mission.droneHoldForClearanceTimestamp,
+          data.mission.clearanceConfirmedTimestamp
+        );
+      }
+      
       const flightData: BasicFlightData = {
         id: `sample-${index + 1}`,
         fileName: `sample_flight_${index + 1}.json`,
@@ -265,6 +356,8 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
           data.alarm?.subtype || 'Medical Emergency',
         completionStatus: 
           data.dashMetadata?.completionStatus || 'normal',
+        alarmToTakeoffTime: alarmToTakeoffTime,
+        awaitingClearanceTime: awaitingClearanceTime,
         rawData: data
       };
       
@@ -419,7 +512,17 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* Basic Metrics - First Row */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                  <div className="bg-white rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-gray-600 mb-2">
+                      <Zap className="w-4 h-4" />
+                      <span className="text-sm">Alarm to Takeoff</span>
+                    </div>
+                    <div className="text-2xl font-bold">
+                      {formatDuration(selectedFlightData.alarmToTakeoffTime)}
+                    </div>
+                  </div>
+
                   <div className="bg-white rounded-lg border p-4">
                     <div className="flex items-center gap-2 text-gray-600 mb-2">
                       <Clock className="w-4 h-4" />
@@ -461,6 +564,16 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                       {selectedFlightData.alarmType}
                     </div>
                   </div>
+                  
+                  <div className="bg-white rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-gray-600 mb-2">
+                      <Pause className="w-4 h-4" />
+                      <span className="text-sm">Awaiting Clearance</span>
+                    </div>
+                    <div className="text-2xl font-bold">
+                      {formatDuration(selectedFlightData.awaitingClearanceTime)}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Completion Status - Full Width */}
@@ -488,7 +601,12 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 {(() => {
                   const data = selectedFlightData.rawData;
                   const takeOff = data?.mission?.takeOffTimestamp || data?.takeOffTimestamp;
-                  const landed = data?.landing?.landedTimestamp || data?.mission?.landedTimestamp || data?.mission?.landingTimestamp || data?.landedTimestamp || data?.landingTimestamp;
+                  let landed = data?.landing?.landedTimestamp || data?.mission?.landedTimestamp || data?.mission?.landingTimestamp || data?.landedTimestamp || data?.landingTimestamp;
+                  
+                  // If no landing timestamp found, use the latest timestamp available
+                  if (!landed) {
+                    landed = findLatestTimestamp(data);
+                  }
                   
                   if (takeOff && landed) {
                     return (
