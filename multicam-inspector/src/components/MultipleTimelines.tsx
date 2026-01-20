@@ -72,16 +72,37 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
     if (rawData?.mission) {
       const mission = rawData.mission;
       
-      const missionEvents = [
-        { key: 'alarmRecievedTimestamp', label: 'Alarm Received', color: 'bg-yellow-500' },
-        { key: 'missionApprovedTimestamp', label: 'Mission Approved', color: 'bg-blue-500' },
-        { key: 'wpStartedTimestamp', label: 'Waypoint Start', color: 'bg-blue-500' },
-        { key: 'atAlarmLocationTimestamp', label: 'At Alarm Location', color: 'bg-yellow-500' },
-        { key: 'startingMissionProfilesTimestamp', label: 'Mission Start', color: 'bg-orange-500' },
-        { key: 'missionProfileDoneTimestamp', label: 'Mission Complete', color: 'bg-orange-500' },
-        { key: 'returnToSkybaseTimestamp', label: 'Return to Base', color: 'bg-purple-500' },
-        { key: 'missionAbortedTimestamp', label: 'Mission Aborted', color: 'bg-red-600' }
-      ];
+      // Get ALL timestamp fields from mission object dynamically
+      const allMissionTimestamps: Array<{key: string, label: string, color: string}> = [];
+      
+      Object.keys(mission).forEach(key => {
+        if (key.toLowerCase().includes('timestamp') && typeof mission[key] === 'string') {
+          // Format the key into a readable label
+          const label = key
+            .replace(/Timestamp$/i, '')
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, str => str.toUpperCase())
+            .trim();
+          
+          // Assign colors based on event type
+          let color = 'bg-gray-500';
+          if (key.includes('alarm') || key.includes('Alarm')) color = 'bg-yellow-500';
+          else if (key.includes('takeOff') || key.includes('TakeOff')) color = 'bg-green-500';
+          else if (key.includes('land') || key.includes('Land')) color = 'bg-red-500';
+          else if (key.includes('abort') || key.includes('Abort')) color = 'bg-red-600';
+          else if (key.includes('clearance') || key.includes('Clearance')) color = 'bg-cyan-500';
+          else if (key.includes('hangar') || key.includes('Hangar')) color = 'bg-indigo-500';
+          else if (key.includes('wp') || key.includes('WP') || key.includes('waypoint')) color = 'bg-blue-500';
+          else if (key.includes('return') || key.includes('Return')) color = 'bg-purple-500';
+          else if (key.includes('mission') || key.includes('Mission')) color = 'bg-orange-500';
+          else if (key.includes('pilot') || key.includes('Pilot')) color = 'bg-teal-500';
+          else if (key.includes('telemetry') || key.includes('Telemetry')) color = 'bg-gray-400';
+          
+          allMissionTimestamps.push({ key, label, color });
+        }
+      });
+      
+      const missionEvents = allMissionTimestamps;
 
       missionEvents.forEach(event => {
         if (mission[event.key]) {
@@ -188,95 +209,119 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
     events: TimelineEvent[],
     barColor: string
   ) => (
-    <div className="mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        {icon}
-        <h4 className="font-medium text-sm text-gray-700">{title}</h4>
-        <span className="text-xs text-gray-500">({events.length} events)</span>
-      </div>
-
-      {/* Time labels */}
-      <div className="flex justify-between text-xs text-gray-500 mb-1">
-        <span>0:00</span>
-        <span>{formatTime(flightDurationSeconds / 2)}</span>
-        <span>{formatTime(flightDurationSeconds)}</span>
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          {icon}
+          <h4 className="font-medium text-sm text-gray-700">{title}</h4>
+          <span className="text-xs text-gray-400">({events.length} events)</span>
+        </div>
+        {/* Time labels */}
+        <div className="flex gap-4 text-xs text-gray-400">
+          <span>0:00</span>
+          <span>{formatTime(flightDurationSeconds / 2)}</span>
+          <span>{formatTime(flightDurationSeconds)}</span>
+        </div>
       </div>
 
       {/* Timeline bar */}
-      <div className="relative h-3 bg-gray-200 rounded-full mb-6">
-        <div className={`absolute inset-0 ${barColor} rounded-full opacity-20`}></div>
+      <div className="relative h-2 bg-gray-100 rounded-full">
+        <div className={`absolute inset-0 ${barColor} rounded-full opacity-10`}></div>
         
         {/* Event markers */}
-        {events.map((event, index) => (
-          <div
-            key={`${event.timestamp}-${index}`}
-            className="absolute top-1/2 transform -translate-y-1/2"
-            style={{ left: `${event.position}%` }}
-          >
-            <div className={`w-3 h-3 rounded-full border-2 border-white shadow-md cursor-pointer transform -translate-x-1/2 ${event.color}`}>
-              {/* Event tooltip */}
-              <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-2 border min-w-[100px] opacity-0 hover:opacity-100 transition-opacity pointer-events-none hover:pointer-events-auto z-10 whitespace-nowrap">
-                <div className="font-medium text-xs">{event.label}</div>
-                <div className="text-xs text-gray-500">
-                  {formatTime((parseTimestamp(event.timestamp) - takeoffTime) / 1000)}
+        {events.map((event, index) => {
+          const eventTime = (parseTimestamp(event.timestamp) - takeoffTime) / 1000;
+          const timeStr = formatTime(eventTime);
+          
+          return (
+            <div
+              key={`${event.timestamp}-${index}`}
+              className="absolute top-1/2 transform -translate-y-1/2 group"
+              style={{ left: `${event.position}%` }}
+            >
+              {/* Marker dot with better hover */}
+              <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm cursor-pointer transform -translate-x-1/2 transition-all group-hover:scale-150 group-hover:z-20 ${event.color}`}>
+                {/* Enhanced tooltip */}
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white rounded-lg px-3 py-2 min-w-[140px] opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-30 shadow-xl">
+                  <div className="text-xs font-semibold">{event.label}</div>
+                  <div className="text-xs text-gray-300 mt-1">{timeStr}</div>
+                  {/* Arrow pointing to dot */}
+                  <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                    <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Event list (compact) */}
-      {events.length > 0 && (
-        <div className="grid grid-cols-3 gap-1 text-xs max-h-20 overflow-y-auto">
-          {events.map((event, index) => (
-            <div key={`list-${event.timestamp}-${index}`} className="flex items-center gap-1 text-gray-600">
-              <span className="font-mono text-gray-400">
-                {formatTime((parseTimestamp(event.timestamp) - takeoffTime) / 1000)}
-              </span>
-              <span className="truncate">{event.label}</span>
-            </div>
-          ))}
+      {/* Simplified event list - only show on hover of timeline */}
+      <div className="mt-2 h-8 overflow-hidden">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
+          {events.slice(0, 5).map((event, index) => {
+            const eventTime = (parseTimestamp(event.timestamp) - takeoffTime) / 1000;
+            return (
+              <div key={`list-${event.timestamp}-${index}`} className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${event.color}`}></div>
+                <span className="font-mono text-gray-400">{formatTime(eventTime)}</span>
+                <span className="text-gray-600">{event.label}</span>
+              </div>
+            );
+          })}
+          {events.length > 5 && (
+            <span className="text-gray-400">+{events.length - 5} more</span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 
   return (
-    <div className="bg-white rounded-lg border p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold flex items-center gap-2">
-          <Clock className="w-5 h-5" />
+    <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-medium text-sm flex items-center gap-2 text-gray-700">
+          <Clock className="w-4 h-4" />
           Flight Timelines
         </h3>
-        <span className="text-sm text-gray-500">
+        <span className="text-xs text-gray-500">
           Duration: {formatTime(flightDurationSeconds)}
         </span>
       </div>
 
-      {/* Mission Timeline */}
-      {renderTimeline(
-        'Mission Events',
-        <Navigation className="w-4 h-4 text-blue-600" />,
-        missionEvents,
-        'bg-blue-500'
-      )}
+      <div className="space-y-3 bg-white rounded-lg p-3">
+        {/* Mission Timeline */}
+        {renderTimeline(
+          'Mission Events',
+          <Navigation className="w-3 h-3 text-blue-600" />,
+          missionEvents,
+          'bg-blue-500'
+        )}
 
-      {/* Camera Switches Timeline */}
-      {cameraEvents.length > 0 && renderTimeline(
-        'Camera Switches',
-        <Camera className="w-4 h-4 text-green-600" />,
-        cameraEvents,
-        'bg-green-500'
-      )}
+        {/* Camera Switches Timeline */}
+        {cameraEvents.length > 0 && (
+          <div className="border-t pt-3">
+            {renderTimeline(
+              'Camera Switches',
+              <Camera className="w-3 h-3 text-green-600" />,
+              cameraEvents,
+              'bg-green-500'
+            )}
+          </div>
+        )}
 
-      {/* iPad Interactions Timeline */}
-      {ipadEvents.length > 0 && renderTimeline(
-        'iPad Interactions',
-        <Tablet className="w-4 h-4 text-purple-600" />,
-        ipadEvents,
-        'bg-purple-500'
-      )}
+        {/* iPad Interactions Timeline */}
+        {ipadEvents.length > 0 && (
+          <div className="border-t pt-3">
+            {renderTimeline(
+              'iPad Interactions',
+              <Tablet className="w-3 h-3 text-purple-600" />,
+              ipadEvents,
+              'bg-purple-500'
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -3,6 +3,13 @@ import { X, Upload, Sparkles, Clock, Battery, MapPin, Activity, AlertCircle, Che
 import { Button } from './ui/button';
 import MissionTimeline from './MissionTimeline';
 import MultipleTimelines from './MultipleTimelines';
+import WeatherPanel from './WeatherPanel';
+import PerformancePanel from './PerformancePanel';
+import TemperaturePanel from './TemperaturePanel';
+import RouteMapPanel from './RouteMapPanel';
+import SpeedPanel from './SpeedPanel';
+import BatteryPanel from './BatteryPanel';
+import ReceptionPanel from './ReceptionPanel';
 
 interface SimpleTelemetryAnalysisProps {
   isOpen: boolean;
@@ -400,7 +407,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Activity className="w-6 h-6" />
-            Simple Telemetry Analysis
+            Telemetry Analysis
           </h2>
           <button
             onClick={onClose}
@@ -596,6 +603,54 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     {selectedFlightData.completionStatus}
                   </div>
                 </div>
+
+                {/* Speed and Battery Panels - First Row */}
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {selectedFlightData.rawData?.speeds && (
+                    <SpeedPanel speeds={selectedFlightData.rawData.speeds} />
+                  )}
+                  {selectedFlightData.rawData?.battery && (
+                    <BatteryPanel 
+                      battery={selectedFlightData.rawData.battery} 
+                      flightDuration={selectedFlightData.flightDuration}
+                    />
+                  )}
+                </div>
+
+                {/* Reception Panel */}
+                {selectedFlightData.rawData?.reception && (
+                  <div className="mb-4">
+                    <ReceptionPanel reception={selectedFlightData.rawData.reception} />
+                  </div>
+                )}
+
+                {/* Weather Panel */}
+                {selectedFlightData.rawData?.weather && (
+                  <div className="mb-4">
+                    <WeatherPanel weatherData={selectedFlightData.rawData.weather} />
+                  </div>
+                )}
+
+                {/* Performance Panel */}
+                {selectedFlightData.rawData?.performance && (
+                  <div className="mb-4">
+                    <PerformancePanel performanceData={selectedFlightData.rawData.performance} />
+                  </div>
+                )}
+
+                {/* Temperature Panel */}
+                {selectedFlightData.rawData?.temperature && (
+                  <div className="mb-4">
+                    <TemperaturePanel temperatureData={selectedFlightData.rawData.temperature} />
+                  </div>
+                )}
+
+                {/* Route Map Panel */}
+                {selectedFlightData.rawData?.routes && (
+                  <div className="mb-4">
+                    <RouteMapPanel routeData={selectedFlightData.rawData.routes} />
+                  </div>
+                )}
 
                 {/* Multiple Timelines */}
                 {(() => {
