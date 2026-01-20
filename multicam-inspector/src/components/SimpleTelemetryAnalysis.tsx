@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, Sparkles, Clock, Battery, MapPin, Activity, AlertCircle, CheckCircle, Zap, Pause } from 'lucide-react';
+import { X, Upload, Clock, Battery, MapPin, Activity, AlertCircle, CheckCircle, Zap, Pause } from 'lucide-react';
 import { Button } from './ui/button';
 import MissionTimeline from './MissionTimeline';
 import MultipleTimelines from './MultipleTimelines';
@@ -24,14 +24,18 @@ interface BasicFlightData {
   droneName: string;
   date: string;
   
-  // Essential metrics only
+  // Four Key KPIs
+  alarmToTakeoffTime: number; // Time from alarm to takeoff in seconds
+  awaitingClearanceTime: number; // Time awaiting clearance in seconds
+  wpOutCalibratedTime: number; // WP out calibrated time in seconds
+  calibratedDeliveryTime: number; // Calibrated delivery time in seconds
+  
+  // Additional metrics
   flightDuration: number; // in seconds
   batteryUsed: number; // percentage
   alarmDistance: number; // in meters (outDistance)
   alarmType: string; // Type of alarm/mission
   completionStatus: string; // Mission completion status
-  alarmToTakeoffTime: number; // Time from alarm to takeoff in seconds
-  awaitingClearanceTime: number; // Time awaiting clearance in seconds
   
   // Raw data for inspection
   rawData: any;
@@ -148,6 +152,42 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             );
           }
           
+          // Calculate WP out calibrated time
+          let wpOutCalibratedTime = 0;
+          
+          // Check alarm type - can be in dashMetadata.alarmType or alarm.incidentTypeCoordcom
+          const alarmTypeValue = data.dashMetadata?.alarmType || data.alarm?.incidentTypeCoordcom || data.alarm?.type || data.alarmType || '';
+          const isLiveView = alarmTypeValue.toLowerCase() === 'liveview';
+          const isOHCA = alarmTypeValue.toLowerCase() === 'ohca';
+          
+          console.log('WP Debug - Alarm type:', alarmTypeValue, 'isLiveView:', isLiveView, 'isOHCA:', isOHCA);
+          console.log('WP Debug - Timestamps:', {
+            wpStarted: data.mission?.wpStartedTimestamp,
+            startingMissionProfiles: data.mission?.startingMissionProfilesTimestamp,
+            aedDeliveryApproved: data.mission?.aedDeliveryApprovedAtTimestamp
+          });
+          
+          // For LiveView: startingMissionProfilesTimestamp - wpStartedTimestamp
+          if (isLiveView && data.mission?.wpStartedTimestamp && data.mission?.startingMissionProfilesTimestamp) {
+            wpOutCalibratedTime = calculateDurationFromTimestamps(
+              data.mission.wpStartedTimestamp,
+              data.mission.startingMissionProfilesTimestamp
+            );
+            console.log('WP Debug - Calculated LiveView WP Out time:', wpOutCalibratedTime);
+          } 
+          // For OHCA: aedDeliveryApprovedAtTimestamp - wpStartedTimestamp
+          else if (isOHCA && data.mission?.wpStartedTimestamp && data.mission?.aedDeliveryApprovedAtTimestamp) {
+            wpOutCalibratedTime = calculateDurationFromTimestamps(
+              data.mission.wpStartedTimestamp,
+              data.mission.aedDeliveryApprovedAtTimestamp
+            );
+            console.log('WP Debug - Calculated OHCA WP Out time:', wpOutCalibratedTime);
+          }
+          
+          // Calculate Calibrated Delivery Time (placeholder for now - to be discussed)
+          let calibratedDeliveryTime = 0;
+          // TODO: Implement calibrated delivery time calculation based on requirements
+          
           // Extract only the most certain data points
           const flightData: BasicFlightData = {
             id: `flight-${Date.now()}-${Math.random()}`,
@@ -181,11 +221,11 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
               data.completionStatus ||
               'unknown',
             
-            // Alarm to takeoff time
+            // Four Key KPIs
             alarmToTakeoffTime: alarmToTakeoffTime,
-            
-            // Awaiting clearance time
             awaitingClearanceTime: awaitingClearanceTime,
+            wpOutCalibratedTime: wpOutCalibratedTime,
+            calibratedDeliveryTime: calibratedDeliveryTime,
             
             rawData: data
           };
@@ -209,172 +249,6 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
     }
   };
 
-  const loadSampleData = () => {
-    // Generate sample telemetry data with proper structure
-    const now = new Date();
-    const formatTimestamp = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const day = date.getDate().toString().padStart(2, '0');
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      const seconds = date.getSeconds().toString().padStart(2, '0');
-      const ms = Math.floor(Math.random() * 999).toString().padStart(3, '0');
-      return `${year}${month}${day}_${hours}${minutes}${seconds}.${ms}`;
-    };
-    
-    // Sample 1: Normal 8-minute flight
-    const alarmReceived1 = new Date(now.getTime() - 3780000); // 1h 3min ago
-    const takeoff1 = new Date(alarmReceived1.getTime() + 180000); // 3 minutes after alarm
-    const holdForClearance1 = new Date(takeoff1.getTime() + 30000); // 30 seconds after takeoff
-    const clearanceConfirmed1 = new Date(holdForClearance1.getTime() + 3000); // 3 seconds clearance wait
-    const landed1 = new Date(takeoff1.getTime() + 480000); // 8 minutes later
-    const sample1 = {
-      droneName: 'Bender',
-      mission: {
-        alarmRecievedTimestamp: formatTimestamp(alarmReceived1),
-        takeOffTimestamp: formatTimestamp(takeoff1),
-        droneHoldForClearanceTimestamp: formatTimestamp(holdForClearance1),
-        clearanceConfirmedTimestamp: formatTimestamp(clearanceConfirmed1),
-        landedTimestamp: formatTimestamp(landed1)
-      },
-      battery: {
-        takeOffPercentage: 95,
-        landingPercentage: 50
-      },
-      routes: {
-        outDistance: 2600,
-        homeDistance: 2600
-      },
-      alarm: {
-        subtype: 'Medical Emergency'
-      },
-      dashMetadata: {
-        date: '2024-01-18',
-        completionStatus: 'normal'
-      }
-    };
-    
-    // Sample 2: Shorter 5-minute flight
-    const alarmReceived2 = new Date(now.getTime() - 7350000); // 2h 2.5min ago
-    const takeoff2 = new Date(alarmReceived2.getTime() + 150000); // 2.5 minutes after alarm
-    const holdForClearance2 = new Date(takeoff2.getTime() + 25000); // 25 seconds after takeoff
-    const clearanceConfirmed2 = new Date(holdForClearance2.getTime() + 5000); // 5 seconds clearance wait
-    const landed2 = new Date(takeoff2.getTime() + 320000); // 5.3 minutes later
-    const sample2 = {
-      droneName: 'Marvin',
-      mission: {
-        alarmRecievedTimestamp: formatTimestamp(alarmReceived2),
-        takeOffTimestamp: formatTimestamp(takeoff2),
-        droneHoldForClearanceTimestamp: formatTimestamp(holdForClearance2),
-        clearanceConfirmedTimestamp: formatTimestamp(clearanceConfirmed2),
-        landedTimestamp: formatTimestamp(landed2)
-      },
-      battery: {
-        takeOffPercentage: 98,
-        landingPercentage: 70
-      },
-      routes: {
-        outDistance: 1550,
-        homeDistance: 1550
-      },
-      alarm: {
-        subtype: 'Fire Alert'
-      },
-      dashMetadata: {
-        date: '2024-01-18',
-        completionStatus: 'normal'
-      }
-    };
-    
-    // Sample 3: Aborted 3-minute flight
-    const alarmReceived3 = new Date(now.getTime() - 2100000); // 35 minutes ago
-    const takeoff3 = new Date(alarmReceived3.getTime() + 300000); // 5 minutes after alarm (slower response)
-    const holdForClearance3 = new Date(takeoff3.getTime() + 35000); // 35 seconds after takeoff
-    const clearanceConfirmed3 = new Date(holdForClearance3.getTime() + 10000); // 10 seconds clearance wait (longer)
-    const landed3 = new Date(takeoff3.getTime() + 180000); // 3 minutes later
-    const sample3 = {
-      droneName: 'HAL',
-      mission: {
-        alarmRecievedTimestamp: formatTimestamp(alarmReceived3),
-        takeOffTimestamp: formatTimestamp(takeoff3),
-        droneHoldForClearanceTimestamp: formatTimestamp(holdForClearance3),
-        clearanceConfirmedTimestamp: formatTimestamp(clearanceConfirmed3),
-        landedTimestamp: formatTimestamp(landed3)
-      },
-      battery: {
-        takeOffPercentage: 92,
-        landingPercentage: 77
-      },
-      routes: {
-        outDistance: 750,
-        homeDistance: 750
-      },
-      alarm: {
-        subtype: 'Equipment Delivery'
-      },
-      dashMetadata: {
-        date: '2024-01-18',
-        completionStatus: 'abnormal'
-      }
-    };
-    
-    // Process each sample through the same logic as uploaded files
-    [sample1, sample2, sample3].forEach((data, index) => {
-      let flightDuration = 0;
-      if (data.mission?.takeOffTimestamp && data.mission?.landedTimestamp) {
-        flightDuration = calculateDurationFromTimestamps(
-          data.mission.takeOffTimestamp,
-          data.mission.landedTimestamp
-        );
-      }
-      
-      // Calculate alarm to takeoff time for sample data
-      let alarmToTakeoffTime = 0;
-      if (data.mission?.alarmRecievedTimestamp && data.mission?.takeOffTimestamp) {
-        alarmToTakeoffTime = calculateDurationFromTimestamps(
-          data.mission.alarmRecievedTimestamp,
-          data.mission.takeOffTimestamp
-        );
-      }
-      
-      // Calculate awaiting clearance time for sample data
-      let awaitingClearanceTime = 0;
-      if (data.mission?.droneHoldForClearanceTimestamp && data.mission?.clearanceConfirmedTimestamp) {
-        awaitingClearanceTime = calculateDurationFromTimestamps(
-          data.mission.droneHoldForClearanceTimestamp,
-          data.mission.clearanceConfirmedTimestamp
-        );
-      }
-      
-      const flightData: BasicFlightData = {
-        id: `sample-${index + 1}`,
-        fileName: `sample_flight_${index + 1}.json`,
-        droneName: data.droneName,
-        date: data.dashMetadata?.date || '2024-01-18',
-        flightDuration: flightDuration,
-        batteryUsed: 
-          (data.battery?.takeOffPercentage && data.battery?.landingPercentage) 
-            ? Math.round(data.battery.takeOffPercentage - data.battery.landingPercentage)
-            : 0,
-        alarmDistance: 
-          data.routes?.outDistance || 0,
-        alarmType: 
-          data.alarm?.subtype || 'Medical Emergency',
-        completionStatus: 
-          data.dashMetadata?.completionStatus || 'normal',
-        alarmToTakeoffTime: alarmToTakeoffTime,
-        awaitingClearanceTime: awaitingClearanceTime,
-        rawData: data
-      };
-      
-      setFlights(prev => [...prev, flightData]);
-      
-      if (index === 0 && flights.length === 0) {
-        setSelectedFlight(flightData.id);
-      }
-    });
-  };
 
   const removeFlight = (flightId: string) => {
     setFlights(prev => prev.filter(f => f.id !== flightId));
@@ -438,14 +312,6 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 <Upload className="w-4 h-4" />
                 Upload JSON Files
               </Button>
-              <Button
-                onClick={loadSampleData}
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Sparkles className="w-4 h-4" />
-                Load Sample Data
-              </Button>
             </div>
 
             {/* Flight List */}
@@ -493,7 +359,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
               ))}
               {flights.length === 0 && (
                 <div className="text-center text-gray-500 text-sm py-8">
-                  No flights loaded. Upload JSON files or load sample data.
+                  No flights loaded. Upload JSON files to begin analysis.
                 </div>
               )}
             </div>
@@ -518,46 +384,88 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </div>
                 </div>
 
-                {/* Basic Metrics - First Row */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
-                  <div className="bg-white rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <Zap className="w-4 h-4" />
-                      <span className="text-sm">Alarm to Takeoff</span>
+                {/* Four Key KPIs - Top Priority */}
+                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-3">KEY PERFORMANCE INDICATORS</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                        <Zap className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs font-medium">Alarm to Takeoff</span>
+                      </div>
+                      <div className="text-xl font-bold text-blue-900">
+                        {formatDuration(selectedFlightData.alarmToTakeoffTime)}
+                      </div>
                     </div>
-                    <div className="text-2xl font-bold">
-                      {formatDuration(selectedFlightData.alarmToTakeoffTime)}
+
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                        <Pause className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs font-medium">Awaiting Clearance</span>
+                      </div>
+                      <div className="text-xl font-bold text-blue-900">
+                        {selectedFlightData.awaitingClearanceTime > 0 
+                          ? formatDuration(selectedFlightData.awaitingClearanceTime)
+                          : '-'}
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                        <Activity className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs font-medium">WP Out Time</span>
+                      </div>
+                      <div className="text-xl font-bold text-blue-900">
+                        {selectedFlightData.wpOutCalibratedTime > 0 
+                          ? formatDuration(selectedFlightData.wpOutCalibratedTime)
+                          : '-'}
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-3 border border-blue-200">
+                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                        <MapPin className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs font-medium">Calibrated Delivery</span>
+                      </div>
+                      <div className="text-xl font-bold text-blue-900">
+                        {selectedFlightData.calibratedDeliveryTime > 0 
+                          ? formatDuration(selectedFlightData.calibratedDeliveryTime)
+                          : '-'}
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <div className="bg-white rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm">Flight Duration</span>
+                {/* Additional Metrics - Second Row */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                  <div className="bg-gray-50 rounded-lg border p-3">
+                    <div className="flex items-center gap-2 text-gray-500 mb-1">
+                      <Clock className="w-3 h-3" />
+                      <span className="text-xs">Flight Duration</span>
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-lg font-bold">
                       {formatDuration(selectedFlightData.flightDuration)}
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <Battery className="w-4 h-4" />
-                      <span className="text-sm">Battery Used</span>
+                  <div className="bg-gray-50 rounded-lg border p-3">
+                    <div className="flex items-center gap-2 text-gray-500 mb-1">
+                      <Battery className="w-3 h-3" />
+                      <span className="text-xs">Battery Used</span>
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-lg font-bold">
                       {selectedFlightData.batteryUsed > 0 
                         ? `${selectedFlightData.batteryUsed}%` 
                         : 'No data'}
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">Alarm Distance</span>
+                  <div className="bg-gray-50 rounded-lg border p-3">
+                    <div className="flex items-center gap-2 text-gray-500 mb-1">
+                      <MapPin className="w-3 h-3" />
+                      <span className="text-xs">Alarm Distance</span>
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-lg font-bold">
                       {formatDistance(selectedFlightData.alarmDistance)}
                     </div>
                   </div>
@@ -569,16 +477,6 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     </div>
                     <div className="text-lg font-bold">
                       {selectedFlightData.alarmType}
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-600 mb-2">
-                      <Pause className="w-4 h-4" />
-                      <span className="text-sm">Awaiting Clearance</span>
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {formatDuration(selectedFlightData.awaitingClearanceTime)}
                     </div>
                   </div>
                 </div>
