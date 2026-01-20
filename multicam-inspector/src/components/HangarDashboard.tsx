@@ -1489,12 +1489,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               key={hangar.id}
               className={`relative bg-white rounded-lg shadow-md hover:shadow-lg transition-all border-l-8 ${
                 getBorderColor()
-              } p-6 cursor-pointer ${
+              } p-6 ${
+                hangar.state === 'standby' || hangar.status !== 'operational' ? '' : 'cursor-pointer'
+              } ${
                 hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[160px]' : 'min-h-[220px]'
               } flex flex-col`}
-              onClick={() => {
-                if (hangar.state !== 'standby' && hangar.status === 'operational') {
-                  setSelectedHangar(hangar.id);
+              onClick={(e) => {
+                // Only open modal if clicking on the card itself, not buttons
+                if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.card-content')) {
+                  if (hangar.state !== 'standby' && hangar.status === 'operational') {
+                    setSelectedHangar(hangar.id);
+                  }
                 }
               }}
             >
