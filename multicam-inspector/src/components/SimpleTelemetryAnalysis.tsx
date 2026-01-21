@@ -702,80 +702,76 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* Key KPIs - Top Priority */}
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
-                  <h3 className="text-sm font-semibold text-blue-900 mb-3">KEY PERFORMANCE INDICATORS</h3>
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+                  <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">Key Performance Indicators</h3>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedDropTime > 0 ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-4`}>
-                    <div className={`rounded-lg p-3 border-2 shadow-sm ${getKPIColor('alarmToTakeoff', selectedFlightData.alarmToTakeoffTime, 'bg')}`}>
-                      <div className="flex items-center gap-2 text-gray-700 mb-1">
-                        <Zap className="w-4 h-4" />
-                        <span className="text-xs font-semibold">Alarm to Takeoff</span>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Zap className="w-4 h-4 text-slate-600" />
+                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">Alarm to Takeoff</span>
                       </div>
-                      <div className={`text-xl font-bold ${getKPIColor('alarmToTakeoff', selectedFlightData.alarmToTakeoffTime, 'text')}`}>
+                      <div className={`text-2xl font-bold ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'text-emerald-700' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'text-amber-700' : 'text-rose-700'}`}>
                         {formatDuration(selectedFlightData.alarmToTakeoffTime)}
                       </div>
                     </div>
 
-                    <div className={`rounded-lg p-3 border-2 shadow-sm ${getKPIColor('awaitingClearance', selectedFlightData.awaitingClearanceTime, 'bg')}`}>
-                      <div className="flex items-center gap-2 text-gray-700 mb-1">
-                        <Pause className="w-4 h-4" />
-                        <span className="text-xs font-semibold">Awaiting Clearance</span>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.awaitingClearanceTime <= 10 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.awaitingClearanceTime <= 20 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Pause className="w-4 h-4 text-slate-600" />
+                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">Awaiting Clearance</span>
                       </div>
-                      <div className={`text-xl font-bold ${getKPIColor('awaitingClearance', selectedFlightData.awaitingClearanceTime, 'text')}`}>
+                      <div className={`text-2xl font-bold ${selectedFlightData.awaitingClearanceTime <= 10 ? 'text-emerald-700' : selectedFlightData.awaitingClearanceTime <= 20 ? 'text-amber-700' : 'text-rose-700'}`}>
                         {selectedFlightData.awaitingClearanceTime > 0 
                           ? formatDuration(selectedFlightData.awaitingClearanceTime)
                           : '-'}
                       </div>
                     </div>
 
-                    <div className={`rounded-lg p-3 border-2 shadow-sm ${getKPIColor('wpOut', selectedFlightData.wpOutCalibratedTime, 'bg')}`}>
-                      <div className="flex items-center gap-2 text-gray-700 mb-1">
-                        <Activity className="w-4 h-4" />
-                        <span className="text-xs font-semibold">WP Out Time (2km)</span>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.wpOutCalibratedTime <= 120 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.wpOutCalibratedTime <= 180 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <Activity className="w-4 h-4 text-slate-600" />
+                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">WP Out Time (2km)</span>
                       </div>
-                      <div>
-                        <div className={`text-xl font-bold ${getKPIColor('wpOut', selectedFlightData.wpOutCalibratedTime, 'text')}`}>
-                          {selectedFlightData.wpOutCalibratedTime > 0 
-                            ? formatDuration(selectedFlightData.wpOutCalibratedTime)
-                            : '-'}
+                      <div className={`text-2xl font-bold ${selectedFlightData.wpOutCalibratedTime <= 120 ? 'text-emerald-700' : selectedFlightData.wpOutCalibratedTime <= 180 ? 'text-amber-700' : 'text-rose-700'}`}>
+                        {selectedFlightData.wpOutCalibratedTime > 0 
+                          ? formatDuration(selectedFlightData.wpOutCalibratedTime)
+                          : '-'}
+                      </div>
+                      {selectedFlightData.wpOutActualTime > 0 && (
+                        <div className="text-[10px] text-slate-500 mt-1">
+                          ({formatDuration(selectedFlightData.wpOutActualTime)} actual)
                         </div>
-                        {selectedFlightData.wpOutActualTime > 0 && (
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            ({formatDuration(selectedFlightData.wpOutActualTime)} actual)
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
 
                     {/* AED Drop Time - Only for OHCA */}
                     {selectedFlightData.aedDropTime > 0 && (
-                      <div className="rounded-lg p-3 border-2 shadow-sm bg-gradient-to-br from-purple-50 to-purple-100 border-purple-400">
-                        <div className="flex items-center gap-2 text-gray-700 mb-1">
-                          <Heart className="w-4 h-4" />
-                          <span className="text-xs font-semibold">AED Drop Time</span>
+                      <div className="rounded-xl p-4 border shadow-sm bg-violet-50 border-violet-200 flex flex-col items-center justify-center text-center">
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Heart className="w-4 h-4 text-violet-600" />
+                          <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">AED Drop Time</span>
                         </div>
-                        <div className="text-xl font-bold text-purple-600">
+                        <div className="text-2xl font-bold text-violet-700">
                           {formatDuration(selectedFlightData.aedDropTime)}
                         </div>
                       </div>
                     )}
 
-                    <div className={`rounded-lg p-3 border-2 shadow-sm ${getKPIColor('delivery', selectedFlightData.calibratedDeliveryTime, 'bg')}`}>
-                      <div className="flex items-center gap-2 text-gray-700 mb-1">
-                        <MapPin className="w-4 h-4" />
-                        <span className="text-xs font-semibold">Calibrated Delivery</span>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.calibratedDeliveryTime <= 170 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.calibratedDeliveryTime <= 210 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <MapPin className="w-4 h-4 text-slate-600" />
+                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">Calibrated Delivery</span>
                       </div>
-                      <div>
-                        <div className={`text-xl font-bold ${getKPIColor('delivery', selectedFlightData.calibratedDeliveryTime, 'text')}`}>
-                          {selectedFlightData.calibratedDeliveryTime > 0 
-                            ? formatDuration(selectedFlightData.calibratedDeliveryTime)
-                            : '-'}
+                      <div className={`text-2xl font-bold ${selectedFlightData.calibratedDeliveryTime <= 170 ? 'text-emerald-700' : selectedFlightData.calibratedDeliveryTime <= 210 ? 'text-amber-700' : 'text-rose-700'}`}>
+                        {selectedFlightData.calibratedDeliveryTime > 0 
+                          ? formatDuration(selectedFlightData.calibratedDeliveryTime)
+                          : '-'}
+                      </div>
+                      {selectedFlightData.calibratedDeliveryTime > 0 && (
+                        <div className="text-[10px] text-slate-500 mt-1" title="Alarm to Takeoff + Awaiting Clearance + WP Out (2km)">
+                          (Total calibrated)
                         </div>
-                        {selectedFlightData.calibratedDeliveryTime > 0 && (
-                          <div className="text-xs text-gray-500 mt-0.5" title="Alarm to Takeoff + Awaiting Clearance + WP Out (2km)">
-                            (Total calibrated time)
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

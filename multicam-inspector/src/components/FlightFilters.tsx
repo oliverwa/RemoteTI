@@ -54,11 +54,11 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
   };
   
   return (
-    <div className="bg-gray-50 border rounded-lg p-4 space-y-4">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-5 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-gray-600" />
-          <h3 className="font-semibold text-sm text-gray-700">Filters</h3>
+          <h3 className="font-semibold text-base text-slate-800">Filters</h3>
           {activeFiltersCount > 0 && (
             <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">
               {activeFiltersCount} active
@@ -76,17 +76,17 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Alarm Type Filter */}
         <div>
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-600 mb-1">
-            <AlertCircle className="w-3 h-3" />
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 mb-2">
+            <AlertCircle className="w-3.5 h-3.5" />
             Alarm Type
           </label>
           <select
             value={filters.alarmType}
             onChange={(e) => handleFilterChange('alarmType', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           >
             <option value="">All types</option>
             {alarmTypes.map(type => (
@@ -99,14 +99,14 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
         
         {/* Drone Filter */}
         <div>
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-600 mb-1">
-            <Plane className="w-3 h-3" />
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 mb-2">
+            <Plane className="w-3.5 h-3.5" />
             Drone
           </label>
           <select
             value={filters.droneName}
             onChange={(e) => handleFilterChange('droneName', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           >
             <option value="">All drones</option>
             {droneNames.map(name => (
@@ -117,8 +117,8 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
         
         {/* Date From Filter */}
         <div>
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-600 mb-1">
-            <Calendar className="w-3 h-3" />
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 mb-2">
+            <Calendar className="w-3.5 h-3.5" />
             From Date
           </label>
           <input
@@ -127,14 +127,14 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
             onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
             min={minDate}
             max={maxDate}
-            className="w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           />
         </div>
         
         {/* Date To Filter */}
         <div>
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-600 mb-1">
-            <Calendar className="w-3 h-3" />
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 mb-2">
+            <Calendar className="w-3.5 h-3.5" />
             To Date
           </label>
           <input
@@ -143,20 +143,20 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
             onChange={(e) => handleFilterChange('dateTo', e.target.value)}
             min={minDate}
             max={maxDate}
-            className="w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           />
         </div>
         
         {/* Completion Status Filter */}
         <div>
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-600 mb-1">
-            <CheckCircle className="w-3 h-3" />
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600 mb-2">
+            <CheckCircle className="w-3.5 h-3.5" />
             Status
           </label>
           <select
             value={filters.completionStatus}
             onChange={(e) => handleFilterChange('completionStatus', e.target.value)}
-            className="w-full px-2 py-1.5 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
           >
             <option value="">All statuses</option>
             {completionStatuses.map(status => (
@@ -172,65 +172,65 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
       
       {/* Filter Summary */}
       {activeFiltersCount > 0 && (
-        <div className="pt-2 border-t">
-          <div className="flex flex-wrap gap-2">
+        <div className="pt-4 border-t border-slate-200">
+          <div className="flex flex-wrap gap-2.5">
             {filters.alarmType && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <AlertCircle className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium">
+                <AlertCircle className="w-3.5 h-3.5" />
                 {filters.alarmType}
                 <button
                   onClick={() => handleFilterChange('alarmType', '')}
-                  className="hover:text-blue-900"
+                  className="ml-1 hover:text-blue-900 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
             {filters.droneName && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <Plane className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium">
+                <Plane className="w-3.5 h-3.5" />
                 {filters.droneName}
                 <button
                   onClick={() => handleFilterChange('droneName', '')}
-                  className="hover:text-blue-900"
+                  className="ml-1 hover:text-blue-900 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
             {filters.dateFrom && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <Calendar className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium">
+                <Calendar className="w-3.5 h-3.5" />
                 From: {filters.dateFrom}
                 <button
                   onClick={() => handleFilterChange('dateFrom', '')}
-                  className="hover:text-blue-900"
+                  className="ml-1 hover:text-blue-900 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
             {filters.dateTo && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <Calendar className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium">
+                <Calendar className="w-3.5 h-3.5" />
                 To: {filters.dateTo}
                 <button
                   onClick={() => handleFilterChange('dateTo', '')}
-                  className="hover:text-blue-900"
+                  className="ml-1 hover:text-blue-900 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}
             {filters.completionStatus && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">
-                <CheckCircle className="w-3 h-3" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-medium">
+                <CheckCircle className="w-3.5 h-3.5" />
                 {filters.completionStatus}
                 <button
                   onClick={() => handleFilterChange('completionStatus', '')}
-                  className="hover:text-blue-900"
+                  className="ml-1 hover:text-blue-900 transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </span>
             )}

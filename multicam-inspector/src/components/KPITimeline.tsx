@@ -56,12 +56,12 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
   return (
     <div className="relative">
       {/* Timeline bar */}
-      <div className="relative h-6 bg-gray-100 rounded overflow-hidden border border-gray-300">
+      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 shadow-inner">
           
         {/* Phase 1: Alarm to Takeoff */}
         {alarm > 0 && (
           <div
-            className="absolute top-0 left-0 h-full bg-blue-500"
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-sm"
             style={{ width: `${Math.min(alarmToTakeoffPercent, 100)}%` }}
             title={`Alarm to Takeoff: ${formatTime(alarm)}`}
           />
@@ -70,7 +70,7 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
         {/* Phase 2: Awaiting Clearance */}
         {awaiting > 0 && (
           <div
-            className="absolute top-0 h-full bg-yellow-500"
+            className="absolute top-0 h-full bg-gradient-to-r from-amber-400 to-amber-500 shadow-sm"
             style={{ 
               left: `${Math.min(awaitingClearanceStart, 100)}%`,
               width: `${Math.min(awaitingClearancePercent, Math.max(0, 100 - awaitingClearanceStart))}%` 
@@ -82,7 +82,7 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
         {/* Phase 3: WP Out Time */}
         {wpOut > 0 && (
           <div
-            className="absolute top-0 h-full bg-green-500"
+            className="absolute top-0 h-full bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-sm"
             style={{ 
               left: `${Math.min(wpOutStart, 100)}%`,
               width: `${Math.min(wpOutPercent, Math.max(0, 100 - wpOutStart))}%` 
@@ -94,7 +94,7 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
         {/* Phase 4: AED Drop Time (OHCA only) */}
         {aed > 0 && (
           <div
-            className="absolute top-0 h-full bg-purple-500"
+            className="absolute top-0 h-full bg-gradient-to-r from-violet-500 to-violet-600 shadow-sm"
             style={{ 
               left: `${Math.min(aedDropStart, 100)}%`,
               width: `${Math.min(aedDropPercent, Math.max(0, 100 - aedDropStart))}%` 
@@ -105,7 +105,7 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
           
         {/* Goal line at 2:30 */}
         <div
-          className="absolute top-0 h-full w-0.5 bg-red-600 shadow-lg z-10"
+          className="absolute top-0 h-full w-1 bg-rose-500 shadow-md z-10"
           style={{ left: `${goalPercent}%` }}
           title="Goal: 2:30"
         />
@@ -113,8 +113,8 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
       
       {/* Time markers and total on the right */}
       <div className="absolute -right-1 top-0 h-full flex items-center">
-        <div className="text-xs text-gray-600 ml-2">
-          <span className={totalTime <= GOAL_TIME ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+        <div className="text-sm font-bold ml-3">
+          <span className={totalTime <= GOAL_TIME ? 'text-emerald-600' : 'text-rose-600'}>
             {formatTime(totalTime)}
           </span>
         </div>
