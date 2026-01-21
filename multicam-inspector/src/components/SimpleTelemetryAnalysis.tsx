@@ -504,46 +504,59 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center gap-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Activity className="w-6 h-6" />
-              Telemetry Analysis
-            </h2>
-            {/* View mode toggle */}
-            {flights.length > 0 && (
-              <div className="flex items-center bg-gray-100 rounded-lg p-1">
-                <button
-                  onClick={() => setViewMode('summary')}
-                  className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-sm font-medium transition-all ${
-                    viewMode === 'summary' 
-                      ? 'bg-white text-blue-600 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  Summary
-                </button>
-                <button
-                  onClick={() => setViewMode('detail')}
-                  className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-sm font-medium transition-all ${
-                    viewMode === 'detail' 
-                      ? 'bg-white text-blue-600 shadow-sm' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  Details
-                </button>
-              </div>
-            )}
+        <div className="border-b">
+          <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Activity className="w-6 h-6" />
+                Telemetry Analysis
+              </h2>
+              {/* View mode toggle */}
+              {flights.length > 0 && (
+                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('summary')}
+                    className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-sm font-medium transition-all ${
+                      viewMode === 'summary' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    Summary
+                  </button>
+                  <button
+                    onClick={() => setViewMode('detail')}
+                    className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-sm font-medium transition-all ${
+                      viewMode === 'detail' 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <FileText className="w-4 h-4" />
+                    Details
+                  </button>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {/* Inline Filters */}
+          {flights.length > 0 && (
+            <div className="px-6 pb-3">
+              <FlightFilters
+                flights={flights}
+                filters={filters}
+                onFilterChange={setFilters}
+                onClearFilters={clearFilters}
+              />
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -569,17 +582,6 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
               </Button>
             </div>
 
-            {/* Filters - Only show if flights exist */}
-            {flights.length > 0 && (
-              <div className="mb-4">
-                <FlightFilters
-                  flights={flights}
-                  filters={filters}
-                  onFilterChange={setFilters}
-                  onClearFilters={clearFilters}
-                />
-              </div>
-            )}
             
             {/* Flight List */}
             <div className="space-y-2">
@@ -672,17 +674,6 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
 
           {/* Main Content - Flight Details or Summary */}
           <div className="flex-1 p-6 overflow-y-auto">
-            {/* Show filters at the top of summary view */}
-            {viewMode === 'summary' && flights.length > 0 && (
-              <div className="mb-4">
-                <FlightFilters
-                  flights={flights}
-                  filters={filters}
-                  onFilterChange={setFilters}
-                  onClearFilters={clearFilters}
-                />
-              </div>
-            )}
             
             {viewMode === 'summary' ? (
               <FlightsSummaryView 
