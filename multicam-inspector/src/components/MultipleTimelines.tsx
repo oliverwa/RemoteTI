@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Camera, Tablet, Navigation } from 'lucide-react';
+import { Clock, Camera, Tablet, Navigation, User, AlertTriangle, Terminal } from 'lucide-react';
 
 interface TimelineEvent {
   timestamp: string;
@@ -124,10 +124,11 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
     return events.sort((a, b) => a.position - b.position);
   };
 
-  // Build camera switches timeline
-  const buildCameraTimeline = (): TimelineEvent[] => {
+  // Build pilot timeline (camera switches and manual control)
+  const buildPilotTimeline = (): TimelineEvent[] => {
     const events: TimelineEvent[] = [];
     
+    // Add camera switches
     if (rawData?.pilot?.cameraSwitches && Array.isArray(rawData.pilot.cameraSwitches)) {
       rawData.pilot.cameraSwitches.forEach((sw: any, index: number) => {
         if (sw.timestamp) {
@@ -140,9 +141,34 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
               timestamp: sw.timestamp,
               label: `Camera: ${cameraName}`,
               position,
-              color: cameraName === 'IR' ? 'bg-red-400' : 
-                     cameraName === 'DOWN' ? 'bg-blue-400' : 
-                     cameraName === 'FRONT' ? 'bg-green-400' : 'bg-gray-400'
+              color: cameraName === 'IR' ? 'bg-red-500' : 
+                     cameraName === 'DOWN' ? 'bg-blue-500' : 
+                     cameraName === 'FRONT' ? 'bg-emerald-500' : 
+                     cameraName === 'COLOR' ? 'bg-amber-500' : 'bg-gray-500'
+            });
+          }
+        }
+      });
+    }
+    
+    // Add manual control events
+    if (rawData?.pilot?.manualControl && Array.isArray(rawData.pilot.manualControl)) {
+      rawData.pilot.manualControl.forEach((control: any, index: number) => {
+        if (control.timestamp) {
+          const eventTime = parseTimestamp(control.timestamp);
+          const position = ((eventTime - takeoffTime) / flightDuration) * 100;
+          
+          if (position >= 0 && position <= 100) {
+            const reason = control.reason || 'Unknown';
+            const label = reason === 'operator_requested' ? 'Manual Control: Operator Request' :
+                         reason === 'emergency' ? 'Manual Control: Emergency' :
+                         reason === 'safety' ? 'Manual Control: Safety' :
+                         `Manual Control: ${reason}`;
+            events.push({
+              timestamp: control.timestamp,
+              label,
+              position,
+              color: 'bg-purple-600' // Purple for manual control events
             });
           }
         }
@@ -198,16 +224,54 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
     return events.sort((a, b) => a.position - b.position);
   };
 
+  // Build console messages timeline
+  const buildConsoleTimeline = (): TimelineEvent[] => {
+    const events: TimelineEvent[] = [];
+    
+    if (rawData?.consoleMessages && Array.isArray(rawData.consoleMessages)) {
+      rawData.consoleMessages.forEach((msg: any, index: number) => {
+        if (msg.timestamp) {
+          const eventTime = parseTimestamp(msg.timestamp);
+          const position = ((eventTime - takeoffTime) / flightDuration) * 100;
+          
+          if (position >= 0 && position <= 100) {
+            const level = msg.level || 'INFO';
+            const message = msg.message || 'Console message';
+            
+            // Truncate long messages for label, full message in tooltip
+            const truncatedMessage = message.length > 30 
+              ? message.substring(0, 30).replace(/\n/g, ' ') + '...' 
+              : message.replace(/\n/g, ' ');
+            
+            events.push({
+              timestamp: msg.timestamp,
+              label: truncatedMessage,
+              position,
+              color: level === 'SEVERE' ? 'bg-red-600' : 
+                     level === 'WARNING' ? 'bg-yellow-500' : 
+                     level === 'ERROR' ? 'bg-orange-600' :
+                     'bg-gray-500'
+            });
+          }
+        }
+      });
+    }
+
+    return events.sort((a, b) => a.position - b.position);
+  };
+
   const missionEvents = buildMissionTimeline();
-  const cameraEvents = buildCameraTimeline();
+  const pilotEvents = buildPilotTimeline();
   const ipadEvents = buildIPadTimeline();
+  const consoleEvents = buildConsoleTimeline();
 
   // Render a single timeline
   const renderTimeline = (
     title: string,
     icon: React.ReactNode,
     events: TimelineEvent[],
-    barColor: string
+    barColor: string,
+    showLegend: boolean = false
   ) => (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
@@ -241,13 +305,13 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
             >
               {/* Marker dot with better hover */}
               <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm cursor-pointer transform -translate-x-1/2 transition-all group-hover:scale-150 group-hover:z-20 ${event.color}`}>
-                {/* Enhanced tooltip */}
-                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white rounded-lg px-3 py-2 min-w-[140px] opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-30 shadow-xl">
-                  <div className="text-xs font-semibold">{event.label}</div>
-                  <div className="text-xs text-gray-300 mt-1">{timeStr}</div>
-                  {/* Arrow pointing to dot */}
+                {/* Compact tooltip */}
+                <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white rounded px-1.5 py-0.5 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-30 shadow-lg text-[10px]">
+                  <div className="font-medium">{event.label}</div>
+                  <div className="text-gray-400">{timeStr}</div>
+                  {/* Small arrow */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                    <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-gray-900"></div>
+                    <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[3px] border-t-gray-900"></div>
                   </div>
                 </div>
               </div>
@@ -256,24 +320,6 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
         })}
       </div>
 
-      {/* Simplified event list - only show on hover of timeline */}
-      <div className="mt-2 h-8 overflow-hidden">
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
-          {events.slice(0, 5).map((event, index) => {
-            const eventTime = (parseTimestamp(event.timestamp) - takeoffTime) / 1000;
-            return (
-              <div key={`list-${event.timestamp}-${index}`} className="flex items-center gap-1">
-                <div className={`w-2 h-2 rounded-full ${event.color}`}></div>
-                <span className="font-mono text-gray-400">{formatTime(eventTime)}</span>
-                <span className="text-gray-600">{event.label}</span>
-              </div>
-            );
-          })}
-          {events.length > 5 && (
-            <span className="text-gray-400">+{events.length - 5} more</span>
-          )}
-        </div>
-      </div>
     </div>
   );
 
@@ -298,15 +344,39 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
           'bg-blue-500'
         )}
 
-        {/* Camera Switches Timeline */}
-        {cameraEvents.length > 0 && (
+        {/* Pilot Timeline (Camera Switches and Manual Control) */}
+        {pilotEvents.length > 0 && (
           <div className="border-t pt-3">
             {renderTimeline(
-              'Camera Switches',
-              <Camera className="w-3 h-3 text-green-600" />,
-              cameraEvents,
-              'bg-green-500'
+              'Pilot Timeline',
+              <User className="w-3 h-3 text-purple-600" />,
+              pilotEvents,
+              'bg-purple-500',
+              true // Show legend for pilot timeline
             )}
+            {/* Legend for Pilot Timeline */}
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-700">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-purple-600 border border-gray-300"></div>
+                <span className="font-medium">Manual Control</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-amber-500 border border-gray-300"></div>
+                <span className="font-medium">COLOR Camera</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-red-500 border border-gray-300"></div>
+                <span className="font-medium">IR Camera</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-blue-500 border border-gray-300"></div>
+                <span className="font-medium">DOWN Camera</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 border border-gray-300"></div>
+                <span className="font-medium">FRONT Camera</span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -319,6 +389,38 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
               ipadEvents,
               'bg-purple-500'
             )}
+          </div>
+        )}
+        
+        {/* Console Messages Timeline */}
+        {consoleEvents.length > 0 && (
+          <div className="border-t pt-3">
+            {renderTimeline(
+              'Console Messages',
+              <Terminal className="w-3 h-3 text-gray-600" />,
+              consoleEvents,
+              'bg-gray-500',
+              true // Show legend
+            )}
+            {/* Legend for Console Messages */}
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-700">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-yellow-500 border border-gray-300"></div>
+                <span className="font-medium">WARNING</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-red-600 border border-gray-300"></div>
+                <span className="font-medium">SEVERE</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded-full bg-orange-600 border border-gray-300"></div>
+                <span className="font-medium">ERROR</span>
+              </div>
+              <div className="text-xs text-gray-500 ml-2">
+                <AlertTriangle className="w-3 h-3 inline mr-1" />
+                Hover for full message
+              </div>
+            </div>
           </div>
         )}
       </div>

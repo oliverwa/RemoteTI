@@ -12,6 +12,7 @@ import BatteryPanel from './BatteryPanel';
 import ReceptionPanel from './ReceptionPanel';
 import KPITimeline from './KPITimeline';
 import FlightsSummaryView from './FlightsSummaryView';
+import FlightFilters from './FlightFilters';
 
 interface SimpleTelemetryAnalysisProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ interface BasicFlightData {
   wpOutCalibratedTime: number; // WP out calibrated time in seconds (normalized to 2km)
   wpOutActualTime: number; // WP out actual time in seconds (for display in parentheses)
   aedDropTime: number; // AED drop time (OHCA only) - time at location to AED delivery
+  aedReleaseAGL: number; // AED release altitude above ground level (OHCA only) - in meters
   calibratedDeliveryTime: number; // Calibrated delivery time in seconds
   
   // Additional metrics
@@ -51,6 +53,13 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
   const [selectedFlight, setSelectedFlight] = useState<string | null>(null);
   const [showRawData, setShowRawData] = useState(false);
   const [viewMode, setViewMode] = useState<'summary' | 'detail'>('detail');
+  const [filters, setFilters] = useState({
+    alarmType: '',
+    droneName: '',
+    dateFrom: '',
+    dateTo: '',
+    completionStatus: ''
+  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Helper function to find the latest timestamp in mission data
@@ -234,18 +243,28 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             wpOutCalibratedTime = wpOutActualTime;
           }
           
-          // Calculate AED Drop Time for OHCA alarms
+          // Calculate AED Drop Time and AED Release AGL for OHCA alarms
           let aedDropTime = 0;
-          if (isOHCA && data.mission?.atAlarmLocationTimestamp && data.mission?.aedDeliveryApprovedAtTimestamp) {
-            aedDropTime = calculateDurationFromTimestamps(
-              data.mission.atAlarmLocationTimestamp,
-              data.mission.aedDeliveryApprovedAtTimestamp
-            );
-            console.log('AED Drop Time Calculation:', {
-              atLocation: data.mission.atAlarmLocationTimestamp,
-              aedDelivered: data.mission.aedDeliveryApprovedAtTimestamp,
-              aedDropTime: aedDropTime
-            });
+          let aedReleaseAGL = 0;
+          if (isOHCA) {
+            // AED Drop Time calculation
+            if (data.mission?.atAlarmLocationTimestamp && data.mission?.aedDeliveryApprovedAtTimestamp) {
+              aedDropTime = calculateDurationFromTimestamps(
+                data.mission.atAlarmLocationTimestamp,
+                data.mission.aedDeliveryApprovedAtTimestamp
+              );
+              console.log('AED Drop Time Calculation:', {
+                atLocation: data.mission.atAlarmLocationTimestamp,
+                aedDelivered: data.mission.aedDeliveryApprovedAtTimestamp,
+                aedDropTime: aedDropTime
+              });
+            }
+            
+            // AED Release AGL (altitude above ground level in meters)
+            if (data.mission?.aedReleaseAGL) {
+              aedReleaseAGL = Math.round(data.mission.aedReleaseAGL);
+              console.log('AED Release AGL:', aedReleaseAGL, 'meters');
+            }
           }
           
           // Calculate Calibrated Delivery Time 
@@ -319,6 +338,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             wpOutCalibratedTime: wpOutCalibratedTime,
             wpOutActualTime: wpOutActualTime,
             aedDropTime: aedDropTime,
+            aedReleaseAGL: aedReleaseAGL,
             calibratedDeliveryTime: calibratedDeliveryTime,
             
             rawData: data
@@ -438,6 +458,46 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
 
   const selectedFlightData = flights.find(f => f.id === selectedFlight);
 
+  // Apply filters to flights
+  const filteredFlights = flights.filter(flight => {
+    // Alarm type filter
+    if (filters.alarmType && flight.alarmType !== filters.alarmType) {
+      return false;
+    }
+    
+    // Drone name filter
+    if (filters.droneName && flight.droneName !== filters.droneName) {
+      return false;
+    }
+    
+    // Date from filter
+    if (filters.dateFrom && flight.date < filters.dateFrom) {
+      return false;
+    }
+    
+    // Date to filter
+    if (filters.dateTo && flight.date > filters.dateTo) {
+      return false;
+    }
+    
+    // Completion status filter
+    if (filters.completionStatus && flight.completionStatus !== filters.completionStatus) {
+      return false;
+    }
+    
+    return true;
+  });
+  
+  const clearFilters = () => {
+    setFilters({
+      alarmType: '',
+      droneName: '',
+      dateFrom: '',
+      dateTo: '',
+      completionStatus: ''
+    });
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -509,12 +569,24 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
               </Button>
             </div>
 
+            {/* Filters - Only show if flights exist */}
+            {flights.length > 0 && (
+              <div className="mb-4">
+                <FlightFilters
+                  flights={flights}
+                  filters={filters}
+                  onFilterChange={setFilters}
+                  onClearFilters={clearFilters}
+                />
+              </div>
+            )}
+            
             {/* Flight List */}
             <div className="space-y-2">
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                Loaded Flights ({flights.length})
+                Flights ({filteredFlights.length} of {flights.length})
               </h3>
-              {flights.map(flight => (
+              {filteredFlights.map(flight => (
                 <div 
                   key={flight.id} 
                   className={`bg-white rounded-md p-2 border cursor-pointer transition-all ${
@@ -600,9 +672,21 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
 
           {/* Main Content - Flight Details or Summary */}
           <div className="flex-1 p-6 overflow-y-auto">
+            {/* Show filters at the top of summary view */}
+            {viewMode === 'summary' && flights.length > 0 && (
+              <div className="mb-4">
+                <FlightFilters
+                  flights={flights}
+                  filters={filters}
+                  onFilterChange={setFilters}
+                  onClearFilters={clearFilters}
+                />
+              </div>
+            )}
+            
             {viewMode === 'summary' ? (
               <FlightsSummaryView 
-                flights={flights}
+                flights={filteredFlights}
                 selectedFlight={selectedFlight}
                 onSelectFlight={(flightId) => {
                   setSelectedFlight(flightId);
@@ -707,7 +791,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* Additional Metrics - Second Row */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-3 mb-4`}>
                   <div className="bg-gray-50 rounded-lg border p-3">
                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                       <Clock className="w-3 h-3" />
@@ -739,6 +823,19 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                       {formatDistance(selectedFlightData.alarmDistance)}
                     </div>
                   </div>
+
+                  {/* AED Release AGL - Only for OHCA */}
+                  {selectedFlightData.aedReleaseAGL > 0 && (
+                    <div className="bg-purple-50 rounded-lg border border-purple-300 p-3">
+                      <div className="flex items-center gap-2 text-gray-500 mb-1">
+                        <Heart className="w-3 h-3 text-purple-600" />
+                        <span className="text-xs">AED Release Alt</span>
+                      </div>
+                      <div className="text-lg font-bold text-purple-600">
+                        {selectedFlightData.aedReleaseAGL}m
+                      </div>
+                    </div>
+                  )}
 
                   <div className="bg-gray-50 rounded-lg border p-3">
                     <div className="flex items-center gap-2 text-gray-500 mb-1">
