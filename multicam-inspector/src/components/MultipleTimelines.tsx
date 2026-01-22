@@ -306,9 +306,9 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
               {/* Marker dot with better hover */}
               <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm cursor-pointer transform -translate-x-1/2 transition-all group-hover:scale-150 group-hover:z-20 ${event.color}`}>
                 {/* Compact tooltip */}
-                <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white rounded px-1.5 py-1 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-30 shadow-lg text-2xs">
-                  <div className="font-medium">{event.label}</div>
-                  <div className="text-gray-400 text-3xs">{timeStr}</div>
+                <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white rounded px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg text-2xs" style={{ zIndex: 9999, minWidth: 'max-content' }}>
+                  <div className="font-medium whitespace-nowrap">{event.label}</div>
+                  <div className="text-gray-400 text-3xs whitespace-nowrap">{timeStr}</div>
                   {/* Small arrow */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
                     <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[3px] border-t-gray-900"></div>

@@ -299,6 +299,92 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             }
           }
           
+          // Calculate speed metrics based on route distance and flight time
+          let calculatedSpeeds = null;
+          let speedCalculationMethod = {
+            out: 'none',
+            home: 'none'
+          };
+          
+          const outDistance = data.routes?.outDistance || data.outDistance || 0;
+          const homeDistance = data.routes?.homeDistance || data.homeDistance || 0;
+          const totalDistance = outDistance + homeDistance;
+          
+          let outSpeed = null;
+          let homeSpeed = null;
+          let averageSpeed = null;
+          
+          // Calculate outbound speed using correct timestamps
+          if (data.mission?.wpStartedTimestamp && data.mission?.atAlarmLocationTimestamp && outDistance > 0) {
+            const outDuration = calculateDurationFromTimestamps(
+              data.mission.wpStartedTimestamp,
+              data.mission.atAlarmLocationTimestamp
+            );
+            if (outDuration > 0) {
+              outSpeed = outDistance / outDuration;
+              speedCalculationMethod.out = 'calculated';
+            }
+          }
+          
+          // Fallback to GPS-based outbound speed if calculation failed
+          if (!outSpeed && data.speeds?.averageSpeedDuringWPOut) {
+            outSpeed = data.speeds.averageSpeedDuringWPOut;
+            speedCalculationMethod.out = 'gps';
+          }
+          
+          // Calculate home speed using correct timestamps
+          if (data.mission?.atLastWPTimestamp && data.mission?.returnToSkybaseTimestamp && homeDistance > 0) {
+            const homeDuration = calculateDurationFromTimestamps(
+              data.mission.atLastWPTimestamp,
+              data.mission.returnToSkybaseTimestamp
+            );
+            if (homeDuration > 0) {
+              homeSpeed = homeDistance / homeDuration;
+              speedCalculationMethod.home = 'calculated';
+            }
+          }
+          
+          // Fallback to GPS-based home speed if calculation failed
+          if (!homeSpeed && data.speeds?.averageSpeedDuringWPHome) {
+            homeSpeed = data.speeds.averageSpeedDuringWPHome;
+            speedCalculationMethod.home = 'gps';
+          }
+          
+          // Calculate overall average speed
+          if (flightDuration > 0 && totalDistance > 0) {
+            averageSpeed = totalDistance / flightDuration;
+          } else if (data.speeds?.averageSpeed) {
+            averageSpeed = data.speeds.averageSpeed;
+          }
+          
+          calculatedSpeeds = {
+            // Primary speeds (use calculated or fallback)
+            averageSpeed: averageSpeed,
+            averageSpeedDuringWPOut: outSpeed,
+            averageSpeedDuringWPHome: homeSpeed,
+            
+            // For backward compatibility
+            outboundSpeed: outSpeed,
+            
+            // Max speeds from GPS if available
+            maxSpeed: data.speeds?.maxSpeed || Math.max(outSpeed || 0, homeSpeed || 0) * 1.2,
+            maxDescentSpeed: data.speeds?.maxDescentSpeed,
+            maxAscentSpeed: data.speeds?.maxAscentSpeed,
+            
+            // Distance information
+            totalDistance: totalDistance,
+            outDistance: outDistance,
+            homeDistance: homeDistance,
+            
+            // Calculation method tracking
+            calculationMethod: speedCalculationMethod,
+            
+            // Keep original GPS data if available for comparison
+            gpsAverageSpeed: data.speeds?.averageSpeed,
+            gpsOutSpeed: data.speeds?.averageSpeedDuringWPOut,
+            gpsHomeSpeed: data.speeds?.averageSpeedDuringWPHome
+          };
+          
           // Extract only the most certain data points
           const flightData: BasicFlightData = {
             id: `flight-${Date.now()}-${Math.random()}`,
@@ -341,7 +427,10 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             aedReleaseAGL: aedReleaseAGL,
             calibratedDeliveryTime: calibratedDeliveryTime,
             
-            rawData: data
+            rawData: {
+              ...data,
+              speeds: calculatedSpeeds || data.speeds // Use our calculated speeds if available
+            }
           };
           
           setFlights(prev => [...prev, flightData]);
@@ -904,7 +993,12 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 {/* Route Map Panel */}
                 {selectedFlightData.rawData?.routes && (
                   <div className="mb-4">
-                    <RouteMapPanel routeData={selectedFlightData.rawData.routes} />
+                    <RouteMapPanel 
+                      routeData={selectedFlightData.rawData.routes} 
+                      telemetryPoints={selectedFlightData.rawData.telemetryPoints}
+                      missionTimestamps={selectedFlightData.rawData.mission}
+                      weatherData={selectedFlightData.rawData.weather}
+                    />
                   </div>
                 )}
 
