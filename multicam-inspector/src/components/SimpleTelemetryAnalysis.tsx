@@ -998,6 +998,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                       telemetryPoints={selectedFlightData.rawData.telemetryPoints}
                       missionTimestamps={selectedFlightData.rawData.mission}
                       weatherData={selectedFlightData.rawData.weather}
+                      aedReleaseAGL={selectedFlightData.rawData.mission?.aedReleaseAGL}
                     />
                   </div>
                 )}

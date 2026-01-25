@@ -28,6 +28,8 @@ interface TelemetryPoint {
   aglHeight: number;
   horizontalSpeed: number;
   verticalSpeed: number;
+  terrainElevationAmsl?: number;
+  altitudeAmsl?: number;
 }
 
 interface MissionTimestamps {
@@ -50,9 +52,10 @@ interface RouteMapPanelProps {
   telemetryPoints?: TelemetryPoint[];
   missionTimestamps?: MissionTimestamps;
   weatherData?: WeatherData;
+  aedReleaseAGL?: number;
 }
 
-const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoints, missionTimestamps, weatherData }) => {
+const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoints, missionTimestamps, weatherData, aedReleaseAGL }) => {
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
@@ -654,6 +657,9 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                         <span className="text-xs font-medium text-gray-700">AGL Height</span>
                       </div>
                       <p className="text-lg font-bold text-blue-700">{currentPoint.aglHeight.toFixed(1)}m</p>
+                      {currentPoint.altitudeAmsl && (
+                        <p className="text-xs text-gray-500 mt-0.5">AMSL: {currentPoint.altitudeAmsl.toFixed(0)}m</p>
+                      )}
                     </div>
                     
                     <div className={`bg-gradient-to-br from-${getSpeedColor(currentPoint.horizontalSpeed).substring(1, 4)}-50 to-white rounded-lg p-2 border border-${getSpeedColor(currentPoint.horizontalSpeed).substring(1, 4)}-200`}>
@@ -675,6 +681,302 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                       <p className={`text-lg font-bold ${currentPoint.verticalSpeed > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {currentPoint.verticalSpeed > 0 ? '+' : ''}{currentPoint.verticalSpeed.toFixed(2)} m/s
                       </p>
+                    </div>
+                  </div>
+                )}
+                
+                {/* AGL and Speed Timeline Chart */}
+                {telemetryPoints.length > 0 && (
+                  <div className="bg-white rounded-lg p-3 border border-gray-200 mt-3">
+                    <h4 className="text-xs font-semibold text-gray-700 mb-3">Flight Metrics Timeline</h4>
+                    
+                    {/* Altitude and Terrain Timeline */}
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600 flex items-center gap-1">
+                          <TrendingUp className="w-3 h-3 text-blue-600" />
+                          Altitude & Terrain (AMSL)
+                        </span>
+                        <div className="flex gap-3 text-xs">
+                          {telemetryPoints.some(p => p.altitudeAmsl) && (
+                            <span className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
+                              <span className="text-gray-500">Altitude</span>
+                            </span>
+                          )}
+                          {telemetryPoints.some(p => p.terrainElevationAmsl) && (
+                            <span className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-amber-600 rounded-sm"></div>
+                              <span className="text-gray-500">Terrain</span>
+                            </span>
+                          )}
+                          {aedReleaseAGL && telemetryPoints.some(p => p.terrainElevationAmsl) && (
+                            <span className="flex items-center gap-1">
+                              <div className="w-2 h-0.5 bg-purple-500"></div>
+                              <span className="text-gray-500">AED Release</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="relative h-24 bg-gray-50 rounded overflow-hidden">
+                        <svg className="w-full h-full">
+                          {/* Grid lines */}
+                          {[0, 25, 50, 75, 100].map(pct => (
+                            <line
+                              key={`agl-grid-${pct}`}
+                              x1="0"
+                              x2="100%"
+                              y1={`${100 - pct}%`}
+                              y2={`${100 - pct}%`}
+                              stroke="#e5e7eb"
+                              strokeWidth="1"
+                            />
+                          ))}
+                          
+                          {/* Calculate max values for scaling */}
+                          {(() => {
+                            const hasAltitudeData = telemetryPoints.some(p => p.altitudeAmsl);
+                            const hasTerrainData = telemetryPoints.some(p => p.terrainElevationAmsl);
+                            
+                            // Get all altitude and terrain values
+                            const altitudeValues = telemetryPoints.map(p => p.altitudeAmsl || 0);
+                            const terrainValues = telemetryPoints.map(p => p.terrainElevationAmsl || 0);
+                            
+                            // Find min and max for proper scaling
+                            const allValues = [...altitudeValues, ...terrainValues].filter(v => v > 0);
+                            const minValue = allValues.length > 0 ? Math.min(...allValues) - 10 : 0;
+                            const maxValue = allValues.length > 0 ? Math.max(...allValues) + 10 : 100;
+                            const range = maxValue - minValue;
+                            
+                            return (
+                              <>
+                                {/* Terrain elevation profile - filled area */}
+                                {hasTerrainData && (
+                                  <g>
+                                    <defs>
+                                      <linearGradient id="terrainGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stopColor="#d97706" stopOpacity="0.3"/>
+                                        <stop offset="100%" stopColor="#d97706" stopOpacity="0.05"/>
+                                      </linearGradient>
+                                    </defs>
+                                    <path
+                                      d={telemetryPoints.reduce((path, point, index) => {
+                                        const x = (index / (telemetryPoints.length - 1)) * 100;
+                                        const terrainHeight = point.terrainElevationAmsl || minValue;
+                                        const y = 100 - ((terrainHeight - minValue) / range) * 90;
+                                        
+                                        if (index === 0) {
+                                          return `M ${x} 100 L ${x} ${y}`;
+                                        }
+                                        return `${path} L ${x} ${y}`;
+                                      }, '') + ' L 100 100 Z'}
+                                      fill="url(#terrainGradient)"
+                                      opacity="0.5"
+                                    />
+                                    
+                                    {/* Terrain elevation line */}
+                                    {telemetryPoints.map((point, index) => {
+                                      if (index === 0) return null;
+                                      const prevPoint = telemetryPoints[index - 1];
+                                      const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                                      const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                                      const y1 = 100 - ((prevPoint.terrainElevationAmsl || minValue) - minValue) / range * 90;
+                                      const y2 = 100 - ((point.terrainElevationAmsl || minValue) - minValue) / range * 90;
+                                      
+                                      return (
+                                        <line
+                                          key={`terrain-${index}`}
+                                          x1={`${x1}%`}
+                                          x2={`${x2}%`}
+                                          y1={`${y1}%`}
+                                          y2={`${y2}%`}
+                                          stroke="#d97706"
+                                          strokeWidth="1.5"
+                                        />
+                                      );
+                                    })}
+                                  </g>
+                                )}
+                                
+                                {/* AED Release Height Line - positioned relative to terrain */}
+                                {aedReleaseAGL && hasTerrainData && (
+                                  <>
+                                    {telemetryPoints.map((point, index) => {
+                                      if (index === 0) return null;
+                                      const prevPoint = telemetryPoints[index - 1];
+                                      const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                                      const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                                      const aedHeight1 = (prevPoint.terrainElevationAmsl || minValue) + aedReleaseAGL;
+                                      const aedHeight2 = (point.terrainElevationAmsl || minValue) + aedReleaseAGL;
+                                      const y1 = 100 - ((aedHeight1 - minValue) / range) * 90;
+                                      const y2 = 100 - ((aedHeight2 - minValue) / range) * 90;
+                                      
+                                      return (
+                                        <line
+                                          key={`aed-${index}`}
+                                          x1={`${x1}%`}
+                                          x2={`${x2}%`}
+                                          y1={`${y1}%`}
+                                          y2={`${y2}%`}
+                                          stroke="#9333ea"
+                                          strokeWidth="1.5"
+                                          strokeDasharray="4,4"
+                                          opacity="0.7"
+                                        />
+                                      );
+                                    })}
+                                  </>
+                                )}
+                                
+                                {/* Altitude AMSL Path */}
+                                {hasAltitudeData && telemetryPoints.map((point, index) => {
+                                  if (index === 0) return null;
+                                  const prevPoint = telemetryPoints[index - 1];
+                                  const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                                  const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                                  
+                                  const y1 = 100 - ((prevPoint.altitudeAmsl || minValue) - minValue) / range * 90;
+                                  const y2 = 100 - ((point.altitudeAmsl || minValue) - minValue) / range * 90;
+                                  
+                                  return (
+                                    <line
+                                      key={`altitude-${index}`}
+                                      x1={`${x1}%`}
+                                      x2={`${x2}%`}
+                                      y1={`${y1}%`}
+                                      y2={`${y2}%`}
+                                      stroke="#3b82f6"
+                                      strokeWidth="2"
+                                    />
+                                  );
+                                })}
+                                
+                                {/* Current position indicator */}
+                                {currentPointIndex > 0 && currentPointIndex < telemetryPoints.length && (
+                                  <>
+                                    {/* Vertical line at current position */}
+                                    <line
+                                      x1={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                      x2={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                      y1="0"
+                                      y2="100%"
+                                      stroke="#6b7280"
+                                      strokeWidth="1"
+                                      strokeDasharray="2,2"
+                                      opacity="0.5"
+                                    />
+                                    {/* Altitude indicator */}
+                                    {hasAltitudeData && (
+                                      <circle
+                                        cx={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                        cy={`${100 - ((telemetryPoints[currentPointIndex].altitudeAmsl || minValue) - minValue) / range * 90}%`}
+                                        r="4"
+                                        fill="#3b82f6"
+                                        stroke="white"
+                                        strokeWidth="2"
+                                      />
+                                    )}
+                                    {/* Terrain indicator */}
+                                    {hasTerrainData && (
+                                      <circle
+                                        cx={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                        cy={`${100 - ((telemetryPoints[currentPointIndex].terrainElevationAmsl || minValue) - minValue) / range * 90}%`}
+                                        r="3"
+                                        fill="#d97706"
+                                        stroke="white"
+                                        strokeWidth="1.5"
+                                      />
+                                    )}
+                                  </>
+                                )}
+                                
+                                {/* Height labels */}
+                                <text x="2" y="10" className="text-[9px] fill-gray-500">
+                                  {maxValue.toFixed(0)}m
+                                </text>
+                                <text x="2" y="95" className="text-[9px] fill-gray-500">
+                                  {minValue.toFixed(0)}m
+                                </text>
+                                {/* Current AGL display */}
+                                {currentPointIndex > 0 && currentPointIndex < telemetryPoints.length && (
+                                  <text 
+                                    x="98%" 
+                                    y="10" 
+                                    className="text-[10px] fill-blue-600 font-semibold"
+                                    textAnchor="end"
+                                  >
+                                    AGL: {telemetryPoints[currentPointIndex].aglHeight.toFixed(0)}m
+                                  </text>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    {/* Speed Timeline */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-600 flex items-center gap-1">
+                          <Gauge className="w-3 h-3 text-orange-600" />
+                          Speed (km/h)
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Max: {(Math.max(...telemetryPoints.map(p => p.horizontalSpeed)) * 3.6).toFixed(1)} km/h
+                        </span>
+                      </div>
+                      <div className="relative h-16 bg-gray-50 rounded overflow-hidden">
+                        <svg className="w-full h-full">
+                          {/* Grid lines */}
+                          {[0, 25, 50, 75, 100].map(pct => (
+                            <line
+                              key={`speed-grid-${pct}`}
+                              x1="0"
+                              x2="100%"
+                              y1={`${100 - pct}%`}
+                              y2={`${100 - pct}%`}
+                              stroke="#e5e7eb"
+                              strokeWidth="1"
+                            />
+                          ))}
+                          
+                          {/* Speed Path with color gradient */}
+                          {telemetryPoints.map((point, index) => {
+                            if (index === 0) return null;
+                            const prevPoint = telemetryPoints[index - 1];
+                            const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                            const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                            const maxSpeed = Math.max(...telemetryPoints.map(p => p.horizontalSpeed));
+                            const y1 = 100 - (prevPoint.horizontalSpeed / maxSpeed) * 90;
+                            const y2 = 100 - (point.horizontalSpeed / maxSpeed) * 90;
+                            
+                            return (
+                              <line
+                                key={`speed-${index}`}
+                                x1={`${x1}%`}
+                                x2={`${x2}%`}
+                                y1={`${y1}%`}
+                                y2={`${y2}%`}
+                                stroke={getSpeedColor(point.horizontalSpeed)}
+                                strokeWidth="2"
+                              />
+                            );
+                          })}
+                          
+                          {/* Current position indicator */}
+                          {currentPointIndex > 0 && (
+                            <circle
+                              cx={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                              cy={`${100 - (telemetryPoints[currentPointIndex].horizontalSpeed / Math.max(...telemetryPoints.map(p => p.horizontalSpeed))) * 90}%`}
+                              r="4"
+                              fill={getSpeedColor(telemetryPoints[currentPointIndex].horizontalSpeed)}
+                              stroke="white"
+                              strokeWidth="2"
+                            />
+                          )}
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 )}
