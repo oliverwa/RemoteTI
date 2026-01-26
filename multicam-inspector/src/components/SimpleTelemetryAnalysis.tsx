@@ -948,6 +948,18 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </div>
                 </div>
 
+                {/* Route Map Panel - Moved to after KPI metrics */}
+                {selectedFlightData.rawData?.routes && (
+                  <div className="mb-4">
+                    <RouteMapPanel 
+                      routeData={selectedFlightData.rawData.routes} 
+                      telemetryPoints={selectedFlightData.rawData.telemetryPoints}
+                      missionTimestamps={selectedFlightData.rawData.mission}
+                      weatherData={selectedFlightData.rawData.weather}
+                      aedReleaseAGL={selectedFlightData.rawData.mission?.aedReleaseAGL}
+                    />
+                  </div>
+                )}
 
                 {/* Speed and Battery Panels - First Row */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -990,18 +1002,6 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </div>
                 )}
 
-                {/* Route Map Panel */}
-                {selectedFlightData.rawData?.routes && (
-                  <div className="mb-4">
-                    <RouteMapPanel 
-                      routeData={selectedFlightData.rawData.routes} 
-                      telemetryPoints={selectedFlightData.rawData.telemetryPoints}
-                      missionTimestamps={selectedFlightData.rawData.mission}
-                      weatherData={selectedFlightData.rawData.weather}
-                      aedReleaseAGL={selectedFlightData.rawData.mission?.aedReleaseAGL}
-                    />
-                  </div>
-                )}
 
                 {/* Multiple Timelines */}
                 {(() => {

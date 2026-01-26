@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { Map, Navigation2, Home, Play, Pause, RotateCw, Gauge, TrendingUp, Wind } from 'lucide-react';
+import { Map, Navigation2, Home, Play, Pause, RotateCw, Gauge, TrendingUp, Wind, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface AdditionalRoute {
   routeType: string;
@@ -30,6 +30,8 @@ interface TelemetryPoint {
   verticalSpeed: number;
   terrainElevationAmsl?: number;
   altitudeAmsl?: number;
+  batteryPercentage?: number;
+  batteryVoltage?: number;
 }
 
 interface MissionTimestamps {
@@ -59,6 +61,9 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [routeColorMode, setRouteColorMode] = useState<'speed' | 'altitude' | 'battery'>('speed');
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   
   // Parse timestamp to get seconds from start
   const parseTimestamp = (ts: string): number => {
@@ -78,6 +83,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
     
     return new Date(year, month, day, hours, minutes, seconds, milliseconds).getTime();
   };
+
 
   // Calculate bounds and scaling for the route visualization
   const { bounds, scale, center } = useMemo(() => {
@@ -225,6 +231,34 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
     return '#dc2626'; // Red for extreme
   };
 
+  // Get color based on altitude
+  const getAltitudeColor = (altitude: number): string => {
+    if (altitude < 30) return '#22c55e'; // green - low
+    if (altitude < 60) return '#fbbf24'; // yellow - medium
+    return '#dc2626'; // red - high
+  };
+
+  // Get color based on battery
+  const getBatteryColor = (battery: number | undefined): string => {
+    if (!battery) return '#6b7280'; // gray if no data
+    if (battery > 60) return '#22c55e'; // green
+    if (battery > 30) return '#fbbf24'; // yellow
+    return '#dc2626'; // red
+  };
+
+  // Get color for route based on selected mode
+  const getRouteColor = (point: TelemetryPoint): string => {
+    switch (routeColorMode) {
+      case 'altitude':
+        return getAltitudeColor(point.aglHeight);
+      case 'battery':
+        return getBatteryColor(point.batteryPercentage);
+      case 'speed':
+      default:
+        return getSpeedColor(point.horizontalSpeed);
+    }
+  };
+
   // Format distance
   const formatDistance = (meters?: number): string => {
     if (!meters) return 'N/A';
@@ -324,11 +358,69 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
       <div className="bg-white rounded-lg p-3 space-y-3">
         {/* Route Map Visualization */}
         {(hasOutRoute || hasHomeRoute || hasTelemetry) && bounds ? (
-          <div className="bg-gray-50 rounded-lg p-2">
+          <div className="bg-gray-50 rounded-lg p-2 relative overflow-hidden">
+            {/* Zoom controls */}
+            <div className="absolute top-2 right-2 z-10 flex gap-1 bg-white rounded-lg shadow-md p-1">
+              <button
+                onClick={() => setZoomLevel(prev => Math.min(prev * 1.5, 10))}
+                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                title="Zoom in"
+              >
+                <ZoomIn className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={() => setZoomLevel(prev => Math.max(prev / 1.5, 0.5))}
+                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                title="Zoom out"
+              >
+                <ZoomOut className="w-4 h-4 text-gray-700" />
+              </button>
+              <button
+                onClick={() => {
+                  setZoomLevel(1);
+                  setPanOffset({ x: 0, y: 0 });
+                }}
+                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                title="Reset zoom"
+              >
+                <Maximize2 className="w-4 h-4 text-gray-700" />
+              </button>
+              <div className="px-2 py-1.5 text-xs font-medium text-gray-600">
+                {Math.round(zoomLevel * 100)}%
+              </div>
+            </div>
+            
             <svg 
               viewBox="0 0 400 400" 
               className="w-full h-64 md:h-80"
-              style={{ maxHeight: '400px' }}
+              style={{ maxHeight: '400px', cursor: zoomLevel > 1 ? 'move' : 'default' }}
+              onMouseDown={(e) => {
+                if (zoomLevel <= 1) return;
+                const svg = e.currentTarget;
+                const rect = svg.getBoundingClientRect();
+                const startX = e.clientX - panOffset.x * zoomLevel;
+                const startY = e.clientY - panOffset.y * zoomLevel;
+                
+                const handleMouseMove = (e: MouseEvent) => {
+                  const dx = (e.clientX - startX) / zoomLevel;
+                  const dy = (e.clientY - startY) / zoomLevel;
+                  
+                  // Limit panning to keep content visible
+                  const maxPan = (400 * (zoomLevel - 1)) / (2 * zoomLevel);
+                  setPanOffset({
+                    x: Math.max(-maxPan, Math.min(maxPan, dx)),
+                    y: Math.max(-maxPan, Math.min(maxPan, dy))
+                  });
+                };
+                
+                const handleMouseUp = () => {
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }}
             >
               {/* Grid and Wind Animation Patterns */}
               <defs>
@@ -352,10 +444,15 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                   </>
                 )}
               </defs>
+              
+              {/* Background grid */}
               <rect width="400" height="400" fill="url(#grid)" />
               
-              {/* Animated Wind Visualization with Flowing Particles */}
-              {weatherData && weatherData.windPrognosis && (
+              {/* Main content with zoom transform */}
+              <g transform={`translate(${200 + panOffset.x}, ${200 + panOffset.y}) scale(${zoomLevel}) translate(-200, -200)`}>
+                
+                {/* Animated Wind Visualization with Flowing Particles */}
+                {weatherData && weatherData.windPrognosis && (
                 <g className="wind-animation" opacity="0.7">
                   {/* Generate wind particles with tails - Fill entire screen */}
                   {Array.from({ length: Math.max(80, Math.floor((weatherData.windPrognosis || 0) * 10)) }, (_, i) => {
@@ -438,14 +535,13 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 </g>
               )}
               
-              {/* Telemetry trace with speed coloring - Enhanced visibility */}
+              {/* Telemetry trace with dynamic coloring - Enhanced visibility */}
               {hasTelemetry && telemetryPoints.slice(0, currentPointIndex + 1).map((point, index) => {
                 if (index === 0) return null;
                 const prevPoint = telemetryPoints[index - 1];
                 const p1 = coordToSvgPoint([prevPoint.lat, prevPoint.lon]);
                 const p2 = coordToSvgPoint([point.lat, point.lon]);
-                const speed = point.horizontalSpeed;
-                const color = getSpeedColor(speed);
+                const color = getRouteColor(point);
                 
                 return (
                   <g key={`trace-${index}`}>
@@ -593,6 +689,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 <rect x="312" y="-8" width="15" height="8" fill="#dc2626"/>
                 <text x="330" y="0" fontSize="9" fontWeight="500" fill="#374151">&gt;70km/h</text>
               </g>
+              </g> {/* Close transform group for zoom/pan */}
             </svg>
             
             {/* Flight controls and telemetry display */}
@@ -646,6 +743,62 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                     <option value="5">5x</option>
                     <option value="10">10x</option>
                   </select>
+                </div>
+
+                {/* Route color mode selector */}
+                <div className="mb-3 p-2 bg-gray-50 rounded-lg">
+                  <label className="text-xs font-medium text-gray-700 mb-1 block">Route Coloring</label>
+                  <div className="flex gap-2">
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="routeColor"
+                        value="speed"
+                        checked={routeColorMode === 'speed'}
+                        onChange={(e) => setRouteColorMode('speed')}
+                        className="w-3 h-3"
+                      />
+                      <span className="text-xs">Speed</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="routeColor"
+                        value="altitude"
+                        checked={routeColorMode === 'altitude'}
+                        onChange={(e) => setRouteColorMode('altitude')}
+                        className="w-3 h-3"
+                      />
+                      <span className="text-xs">Altitude</span>
+                    </label>
+                    {telemetryPoints.some(p => p.batteryPercentage !== undefined) && (
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="routeColor"
+                          value="battery"
+                          checked={routeColorMode === 'battery'}
+                          onChange={(e) => setRouteColorMode('battery')}
+                          className="w-3 h-3"
+                        />
+                        <span className="text-xs">Battery</span>
+                      </label>
+                    )}
+                  </div>
+                  <div className="flex justify-between mt-2 text-[10px] text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
+                      {routeColorMode === 'speed' ? 'Slow' : routeColorMode === 'altitude' ? 'Low' : 'High'}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-sm"></div>
+                      {routeColorMode === 'speed' ? 'Medium' : routeColorMode === 'altitude' ? 'Medium' : 'Medium'}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-sm"></div>
+                      {routeColorMode === 'speed' ? 'Fast' : routeColorMode === 'altitude' ? 'High' : 'Low'}
+                    </span>
+                  </div>
                 </div>
                 
                 {/* Current telemetry data */}
@@ -771,30 +924,10 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                                         return `${path} L ${x} ${y}`;
                                       }, '') + ' L 100 100 Z'}
                                       fill="url(#terrainGradient)"
+                                      stroke="#d97706"
+                                      strokeWidth="1"
                                       opacity="0.5"
                                     />
-                                    
-                                    {/* Terrain elevation line */}
-                                    {telemetryPoints.map((point, index) => {
-                                      if (index === 0) return null;
-                                      const prevPoint = telemetryPoints[index - 1];
-                                      const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
-                                      const x2 = (index / (telemetryPoints.length - 1)) * 100;
-                                      const y1 = 100 - ((prevPoint.terrainElevationAmsl || minValue) - minValue) / range * 90;
-                                      const y2 = 100 - ((point.terrainElevationAmsl || minValue) - minValue) / range * 90;
-                                      
-                                      return (
-                                        <line
-                                          key={`terrain-${index}`}
-                                          x1={`${x1}%`}
-                                          x2={`${x2}%`}
-                                          y1={`${y1}%`}
-                                          y2={`${y2}%`}
-                                          stroke="#d97706"
-                                          strokeWidth="1.5"
-                                        />
-                                      );
-                                    })}
                                   </g>
                                 )}
                                 
