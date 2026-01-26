@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { Map, Navigation2, Home, Play, Pause, RotateCw, Gauge, TrendingUp, Wind, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { Map, Navigation2, Home, Play, Pause, RotateCw, Gauge, TrendingUp, Wind, Battery } from 'lucide-react';
 
 interface AdditionalRoute {
   routeType: string;
@@ -62,8 +62,6 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [routeColorMode, setRouteColorMode] = useState<'speed' | 'altitude' | 'battery'>('speed');
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   
   // Parse timestamp to get seconds from start
   const parseTimestamp = (ts: string): number => {
@@ -359,68 +357,11 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
         {/* Route Map Visualization */}
         {(hasOutRoute || hasHomeRoute || hasTelemetry) && bounds ? (
           <div className="bg-gray-50 rounded-lg p-2 relative overflow-hidden">
-            {/* Zoom controls */}
-            <div className="absolute top-2 right-2 z-10 flex gap-1 bg-white rounded-lg shadow-md p-1">
-              <button
-                onClick={() => setZoomLevel(prev => Math.min(prev * 1.5, 10))}
-                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
-                title="Zoom in"
-              >
-                <ZoomIn className="w-4 h-4 text-gray-700" />
-              </button>
-              <button
-                onClick={() => setZoomLevel(prev => Math.max(prev / 1.5, 0.5))}
-                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
-                title="Zoom out"
-              >
-                <ZoomOut className="w-4 h-4 text-gray-700" />
-              </button>
-              <button
-                onClick={() => {
-                  setZoomLevel(1);
-                  setPanOffset({ x: 0, y: 0 });
-                }}
-                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
-                title="Reset zoom"
-              >
-                <Maximize2 className="w-4 h-4 text-gray-700" />
-              </button>
-              <div className="px-2 py-1.5 text-xs font-medium text-gray-600">
-                {Math.round(zoomLevel * 100)}%
-              </div>
-            </div>
             
             <svg 
               viewBox="0 0 400 400" 
-              className="w-full h-64 md:h-80"
-              style={{ maxHeight: '400px', cursor: zoomLevel > 1 ? 'move' : 'default' }}
-              onMouseDown={(e) => {
-                if (zoomLevel <= 1) return;
-                const svg = e.currentTarget;
-                const rect = svg.getBoundingClientRect();
-                const startX = e.clientX - panOffset.x * zoomLevel;
-                const startY = e.clientY - panOffset.y * zoomLevel;
-                
-                const handleMouseMove = (e: MouseEvent) => {
-                  const dx = (e.clientX - startX) / zoomLevel;
-                  const dy = (e.clientY - startY) / zoomLevel;
-                  
-                  // Limit panning to keep content visible
-                  const maxPan = (400 * (zoomLevel - 1)) / (2 * zoomLevel);
-                  setPanOffset({
-                    x: Math.max(-maxPan, Math.min(maxPan, dx)),
-                    y: Math.max(-maxPan, Math.min(maxPan, dy))
-                  });
-                };
-                
-                const handleMouseUp = () => {
-                  document.removeEventListener('mousemove', handleMouseMove);
-                  document.removeEventListener('mouseup', handleMouseUp);
-                };
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-              }}
+              className="w-full h-full"
+              style={{ maxHeight: '450px', minHeight: '320px' }}
             >
               {/* Grid and Wind Animation Patterns */}
               <defs>
@@ -448,8 +389,8 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
               {/* Background grid */}
               <rect width="400" height="400" fill="url(#grid)" />
               
-              {/* Main content with zoom transform */}
-              <g transform={`translate(${200 + panOffset.x}, ${200 + panOffset.y}) scale(${zoomLevel}) translate(-200, -200)`}>
+              {/* Main content */}
+              <g>
                 
                 {/* Animated Wind Visualization with Flowing Particles */}
                 {weatherData && weatherData.windPrognosis && (
@@ -673,22 +614,6 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                   </g>
                 </g>
               )}
-              
-              {/* Legend - Updated with inverted colors */}
-              <g transform="translate(10, 380)">
-                <rect x="0" y="-15" width="380" height="30" fill="white" opacity="0.95"/>
-                <text x="5" y="-2" fontSize="10" fontWeight="600" fill="#374151">Speed:</text>
-                <rect x="42" y="-8" width="15" height="8" fill="#22c55e"/>
-                <text x="60" y="0" fontSize="9" fontWeight="500" fill="#374151">&lt;20km/h</text>
-                <rect x="102" y="-8" width="15" height="8" fill="#84cc16"/>
-                <text x="120" y="0" fontSize="9" fontWeight="500" fill="#374151">20-40km/h</text>
-                <rect x="172" y="-8" width="15" height="8" fill="#fbbf24"/>
-                <text x="190" y="0" fontSize="9" fontWeight="500" fill="#374151">40-60km/h</text>
-                <rect x="242" y="-8" width="15" height="8" fill="#fb923c"/>
-                <text x="260" y="0" fontSize="9" fontWeight="500" fill="#374151">60-70km/h</text>
-                <rect x="312" y="-8" width="15" height="8" fill="#dc2626"/>
-                <text x="330" y="0" fontSize="9" fontWeight="500" fill="#374151">&gt;70km/h</text>
-              </g>
               </g> {/* Close transform group for zoom/pan */}
             </svg>
             
@@ -785,25 +710,11 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                       </label>
                     )}
                   </div>
-                  <div className="flex justify-between mt-2 text-[10px] text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-green-500 rounded-sm"></div>
-                      {routeColorMode === 'speed' ? 'Slow' : routeColorMode === 'altitude' ? 'Low' : 'High'}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-yellow-500 rounded-sm"></div>
-                      {routeColorMode === 'speed' ? 'Medium' : routeColorMode === 'altitude' ? 'Medium' : 'Medium'}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-red-500 rounded-sm"></div>
-                      {routeColorMode === 'speed' ? 'Fast' : routeColorMode === 'altitude' ? 'High' : 'Low'}
-                    </span>
-                  </div>
                 </div>
                 
                 {/* Current telemetry data */}
                 {currentPoint && (
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className={`grid ${currentPoint.batteryPercentage !== undefined ? 'grid-cols-4' : 'grid-cols-3'} gap-2`}>
                     <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-2 border border-blue-200">
                       <div className="flex items-center gap-1 mb-1">
                         <TrendingUp className="w-3 h-3 text-blue-600" />
@@ -835,43 +746,66 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                         {currentPoint.verticalSpeed > 0 ? '+' : ''}{currentPoint.verticalSpeed.toFixed(2)} m/s
                       </p>
                     </div>
+                    
+                    {currentPoint.batteryPercentage !== undefined && (
+                      <div className="bg-gradient-to-br from-green-50 to-white rounded-lg p-2 border border-green-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Battery className="w-3 h-3 text-green-600" />
+                          <span className="text-xs font-medium text-gray-700">Battery</span>
+                        </div>
+                        <p className={`text-lg font-bold ${
+                          currentPoint.batteryPercentage > 30 ? 'text-green-600' : 
+                          currentPoint.batteryPercentage > 15 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {currentPoint.batteryPercentage.toFixed(0)}%
+                        </p>
+                        {currentPoint.batteryVoltage !== undefined && (
+                          <p className="text-xs text-gray-500 mt-0.5">{currentPoint.batteryVoltage.toFixed(1)}V</p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 
-                {/* AGL and Speed Timeline Chart */}
+                {/* Flight Metrics Dashboard */}
                 {telemetryPoints.length > 0 && (
-                  <div className="bg-white rounded-lg p-3 border border-gray-200 mt-3">
-                    <h4 className="text-xs font-semibold text-gray-700 mb-3">Flight Metrics Timeline</h4>
-                    
-                    {/* Altitude and Terrain Timeline */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-gray-600 flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3 text-blue-600" />
-                          Altitude & Terrain (AMSL)
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-3 p-3">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                        <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                        Flight Metrics
+                      </h4>
+                      {currentPointIndex > 0 && currentPointIndex < telemetryPoints.length && (
+                        <span className="text-xs text-gray-500">
+                          {((currentPointIndex / (telemetryPoints.length - 1)) * 100).toFixed(0)}% Complete
                         </span>
-                        <div className="flex gap-3 text-xs">
-                          {telemetryPoints.some(p => p.altitudeAmsl) && (
-                            <span className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-blue-500 rounded-sm"></div>
-                              <span className="text-gray-500">Altitude</span>
-                            </span>
-                          )}
-                          {telemetryPoints.some(p => p.terrainElevationAmsl) && (
-                            <span className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-amber-600 rounded-sm"></div>
-                              <span className="text-gray-500">Terrain</span>
-                            </span>
-                          )}
-                          {aedReleaseAGL && telemetryPoints.some(p => p.terrainElevationAmsl) && (
-                            <span className="flex items-center gap-1">
-                              <div className="w-2 h-0.5 bg-purple-500"></div>
-                              <span className="text-gray-500">AED Release</span>
-                            </span>
-                          )}
+                      )}
+                    </div>
+                    
+                    {/* Altitude & Terrain Timeline */}
+                    <div className="space-y-3">
+                      <div className="bg-gradient-to-r from-blue-50 to-sky-50 rounded-lg p-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
+                            Altitude (AMSL)
+                          </span>
+                          <div className="flex gap-3 text-xs">
+                            {telemetryPoints.some(p => p.altitudeAmsl) && (
+                              <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <span className="text-gray-600">Altitude</span>
+                              </span>
+                            )}
+                            {telemetryPoints.some(p => p.terrainElevationAmsl) && (
+                              <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
+                                <span className="text-gray-600">Terrain</span>
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="relative h-24 bg-gray-50 rounded overflow-hidden">
+                        <div className="relative h-20 bg-white rounded-md overflow-hidden border border-gray-200">
                         <svg className="w-full h-full">
                           {/* Grid lines */}
                           {[0, 25, 50, 75, 100].map(pct => (
@@ -882,7 +816,8 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                               y1={`${100 - pct}%`}
                               y2={`${100 - pct}%`}
                               stroke="#e5e7eb"
-                              strokeWidth="1"
+                              strokeWidth="0.5"
+                              opacity="0.5"
                             />
                           ))}
                           
@@ -903,63 +838,29 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                             
                             return (
                               <>
-                                {/* Terrain elevation profile - filled area */}
-                                {hasTerrainData && (
-                                  <g>
-                                    <defs>
-                                      <linearGradient id="terrainGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stopColor="#d97706" stopOpacity="0.3"/>
-                                        <stop offset="100%" stopColor="#d97706" stopOpacity="0.05"/>
-                                      </linearGradient>
-                                    </defs>
-                                    <path
-                                      d={telemetryPoints.reduce((path, point, index) => {
-                                        const x = (index / (telemetryPoints.length - 1)) * 100;
-                                        const terrainHeight = point.terrainElevationAmsl || minValue;
-                                        const y = 100 - ((terrainHeight - minValue) / range) * 90;
-                                        
-                                        if (index === 0) {
-                                          return `M ${x} 100 L ${x} ${y}`;
-                                        }
-                                        return `${path} L ${x} ${y}`;
-                                      }, '') + ' L 100 100 Z'}
-                                      fill="url(#terrainGradient)"
+                                {/* Terrain AMSL Path - as a line */}
+                                {hasTerrainData && telemetryPoints.map((point, index) => {
+                                  if (index === 0) return null;
+                                  const prevPoint = telemetryPoints[index - 1];
+                                  const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                                  const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                                  
+                                  const y1 = 100 - ((prevPoint.terrainElevationAmsl || minValue) - minValue) / range * 90;
+                                  const y2 = 100 - ((point.terrainElevationAmsl || minValue) - minValue) / range * 90;
+                                  
+                                  return (
+                                    <line
+                                      key={`terrain-${index}`}
+                                      x1={`${x1}%`}
+                                      x2={`${x2}%`}
+                                      y1={`${y1}%`}
+                                      y2={`${y2}%`}
                                       stroke="#d97706"
-                                      strokeWidth="1"
-                                      opacity="0.5"
+                                      strokeWidth="1.5"
+                                      opacity="0.7"
                                     />
-                                  </g>
-                                )}
-                                
-                                {/* AED Release Height Line - positioned relative to terrain */}
-                                {aedReleaseAGL && hasTerrainData && (
-                                  <>
-                                    {telemetryPoints.map((point, index) => {
-                                      if (index === 0) return null;
-                                      const prevPoint = telemetryPoints[index - 1];
-                                      const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
-                                      const x2 = (index / (telemetryPoints.length - 1)) * 100;
-                                      const aedHeight1 = (prevPoint.terrainElevationAmsl || minValue) + aedReleaseAGL;
-                                      const aedHeight2 = (point.terrainElevationAmsl || minValue) + aedReleaseAGL;
-                                      const y1 = 100 - ((aedHeight1 - minValue) / range) * 90;
-                                      const y2 = 100 - ((aedHeight2 - minValue) / range) * 90;
-                                      
-                                      return (
-                                        <line
-                                          key={`aed-${index}`}
-                                          x1={`${x1}%`}
-                                          x2={`${x2}%`}
-                                          y1={`${y1}%`}
-                                          y2={`${y2}%`}
-                                          stroke="#9333ea"
-                                          strokeWidth="1.5"
-                                          strokeDasharray="4,4"
-                                          opacity="0.7"
-                                        />
-                                      );
-                                    })}
-                                  </>
-                                )}
+                                  );
+                                })}
                                 
                                 {/* Altitude AMSL Path */}
                                 {hasAltitudeData && telemetryPoints.map((point, index) => {
@@ -1049,17 +950,17 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                     </div>
                     
                     {/* Speed Timeline */}
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-gray-600 flex items-center gap-1">
-                          <Gauge className="w-3 h-3 text-orange-600" />
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                          <Gauge className="w-3.5 h-3.5 text-orange-600" />
                           Speed (km/h)
                         </span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-600">
                           Max: {(Math.max(...telemetryPoints.map(p => p.horizontalSpeed)) * 3.6).toFixed(1)} km/h
                         </span>
                       </div>
-                      <div className="relative h-16 bg-gray-50 rounded overflow-hidden">
+                      <div className="relative h-20 bg-white rounded-md overflow-hidden border border-gray-200">
                         <svg className="w-full h-full">
                           {/* Grid lines */}
                           {[0, 25, 50, 75, 100].map(pct => (
@@ -1070,7 +971,8 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                               y1={`${100 - pct}%`}
                               y2={`${100 - pct}%`}
                               stroke="#e5e7eb"
-                              strokeWidth="1"
+                              strokeWidth="0.5"
+                              opacity="0.5"
                             />
                           ))}
                           
@@ -1111,6 +1013,230 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                         </svg>
                       </div>
                     </div>
+
+                    {/* Battery and Voltage Timeline */}
+                    {telemetryPoints.some(p => p.batteryPercentage !== undefined || p.batteryVoltage !== undefined) && (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                            <Battery className="w-3.5 h-3.5 text-green-600" />
+                            Battery & Voltage
+                          </span>
+                          <div className="flex gap-3 text-xs">
+                            {telemetryPoints.some(p => p.batteryPercentage) && (
+                              <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="text-gray-600">Battery %</span>
+                              </span>
+                            )}
+                            {telemetryPoints.some(p => p.batteryVoltage) && (
+                              <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <span className="text-gray-600">Voltage</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="relative h-20 bg-white rounded-md overflow-hidden border border-gray-200">
+                          <svg className="w-full h-full">
+                            {/* Grid lines */}
+                            {[0, 25, 50, 75, 100].map(pct => (
+                              <line
+                                key={`battery-grid-${pct}`}
+                                x1="0"
+                                x2="100%"
+                                y1={`${100 - pct}%`}
+                                y2={`${100 - pct}%`}
+                                stroke="#e5e7eb"
+                                strokeWidth="1"
+                              />
+                            ))}
+                            
+                            {(() => {
+                              const hasBatteryData = telemetryPoints.some(p => p.batteryPercentage);
+                              const hasVoltageData = telemetryPoints.some(p => p.batteryVoltage);
+                              
+                              // Get voltage range for scaling
+                              const voltageValues = telemetryPoints.map(p => p.batteryVoltage || 0).filter(v => v > 0);
+                              const minVoltage = voltageValues.length > 0 ? Math.min(...voltageValues) - 1 : 0;
+                              const maxVoltage = voltageValues.length > 0 ? Math.max(...voltageValues) + 1 : 30;
+                              const voltageRange = maxVoltage - minVoltage;
+                              
+                              return (
+                                <>
+                                  {/* Battery percentage path */}
+                                  {hasBatteryData && telemetryPoints.map((point, index) => {
+                                    if (index === 0) return null;
+                                    const prevPoint = telemetryPoints[index - 1];
+                                    const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                                    const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                                    
+                                    const y1 = 100 - (prevPoint.batteryPercentage || 0) * 0.9;
+                                    const y2 = 100 - (point.batteryPercentage || 0) * 0.9;
+                                    
+                                    const color = point.batteryPercentage && point.batteryPercentage > 30 ? '#22c55e' : 
+                                                 point.batteryPercentage && point.batteryPercentage > 15 ? '#fbbf24' : '#dc2626';
+                                    
+                                    return (
+                                      <line
+                                        key={`battery-${index}`}
+                                        x1={`${x1}%`}
+                                        x2={`${x2}%`}
+                                        y1={`${y1}%`}
+                                        y2={`${y2}%`}
+                                        stroke={color}
+                                        strokeWidth="2"
+                                      />
+                                    );
+                                  })}
+                                  
+                                  {/* Voltage path */}
+                                  {hasVoltageData && telemetryPoints.map((point, index) => {
+                                    if (index === 0) return null;
+                                    const prevPoint = telemetryPoints[index - 1];
+                                    const x1 = ((index - 1) / (telemetryPoints.length - 1)) * 100;
+                                    const x2 = (index / (telemetryPoints.length - 1)) * 100;
+                                    
+                                    const y1 = 100 - ((prevPoint.batteryVoltage || minVoltage) - minVoltage) / voltageRange * 90;
+                                    const y2 = 100 - ((point.batteryVoltage || minVoltage) - minVoltage) / voltageRange * 90;
+                                    
+                                    return (
+                                      <line
+                                        key={`voltage-${index}`}
+                                        x1={`${x1}%`}
+                                        x2={`${x2}%`}
+                                        y1={`${y1}%`}
+                                        y2={`${y2}%`}
+                                        stroke="#9333ea"
+                                        strokeWidth="1.5"
+                                        opacity="0.8"
+                                      />
+                                    );
+                                  })}
+                                  
+                                  {/* Current position indicator */}
+                                  {currentPointIndex > 0 && currentPointIndex < telemetryPoints.length && (
+                                    <>
+                                      {/* Vertical line */}
+                                      <line
+                                        x1={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                        x2={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                        y1="0"
+                                        y2="100%"
+                                        stroke="#6b7280"
+                                        strokeWidth="1"
+                                        strokeDasharray="2,2"
+                                        opacity="0.5"
+                                      />
+                                      {/* Battery indicator */}
+                                      {hasBatteryData && telemetryPoints[currentPointIndex]?.batteryPercentage && (
+                                        <circle
+                                          cx={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                          cy={`${100 - (telemetryPoints[currentPointIndex]?.batteryPercentage || 0) * 0.9}%`}
+                                          r="3"
+                                          fill="#22c55e"
+                                          stroke="white"
+                                          strokeWidth="1.5"
+                                        />
+                                      )}
+                                      {/* Voltage indicator */}
+                                      {hasVoltageData && telemetryPoints[currentPointIndex]?.batteryVoltage && (
+                                        <circle
+                                          cx={`${(currentPointIndex / (telemetryPoints.length - 1)) * 100}%`}
+                                          cy={`${100 - ((telemetryPoints[currentPointIndex]?.batteryVoltage || minVoltage) - minVoltage) / voltageRange * 90}%`}
+                                          r="3"
+                                          fill="#9333ea"
+                                          stroke="white"
+                                          strokeWidth="1.5"
+                                        />
+                                      )}
+                                    </>
+                                  )}
+                                  
+                                  {/* Labels */}
+                                  <text x="2" y="10" className="text-[9px] fill-gray-500">
+                                    100%
+                                  </text>
+                                  <text x="2" y="95" className="text-[9px] fill-gray-500">
+                                    0%
+                                  </text>
+                                  {hasVoltageData && (
+                                    <>
+                                      <text x="98%" y="10" className="text-[9px] fill-purple-500" textAnchor="end">
+                                        {maxVoltage.toFixed(0)}V
+                                      </text>
+                                      <text x="98%" y="95" className="text-[9px] fill-purple-500" textAnchor="end">
+                                        {minVoltage.toFixed(0)}V
+                                      </text>
+                                    </>
+                                  )}
+                                  {/* Current values display */}
+                                  {currentPointIndex > 0 && currentPointIndex < telemetryPoints.length && (
+                                    <>
+                                      {telemetryPoints[currentPointIndex]?.batteryPercentage && (
+                                        <text 
+                                          x="50%" 
+                                          y="10" 
+                                          className="text-[10px] fill-green-600 font-semibold"
+                                          textAnchor="middle"
+                                        >
+                                          {telemetryPoints[currentPointIndex]?.batteryPercentage?.toFixed(0)}%
+                                        </text>
+                                      )}
+                                      {telemetryPoints[currentPointIndex]?.batteryVoltage && (
+                                        <text 
+                                          x="50%" 
+                                          y="95" 
+                                          className="text-[10px] fill-purple-600 font-semibold"
+                                          textAnchor="middle"
+                                        >
+                                          {telemetryPoints[currentPointIndex]?.batteryVoltage?.toFixed(1)}V
+                                        </text>
+                                      )}
+                                    </>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+
+                    </div>
+                    
+                    {/* Current Metrics Summary */}
+                    {telemetryPoints.length > 0 && currentPointIndex >= 0 && currentPointIndex < telemetryPoints.length && telemetryPoints[currentPointIndex] && (
+                      <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100">
+                        {telemetryPoints[currentPointIndex]?.batteryPercentage !== undefined && (
+                          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 border border-gray-100">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-wide">Battery</div>
+                            <div className={`text-lg font-bold mt-0.5 ${
+                              (telemetryPoints[currentPointIndex]?.batteryPercentage || 0) > 30 ? 'text-green-600' :
+                              (telemetryPoints[currentPointIndex]?.batteryPercentage || 0) > 15 ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
+                              {telemetryPoints[currentPointIndex]?.batteryPercentage?.toFixed(0)}%
+                            </div>
+                          </div>
+                        )}
+                        {telemetryPoints[currentPointIndex]?.batteryVoltage !== undefined && (
+                          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 border border-gray-100">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-wide">Voltage</div>
+                            <div className="text-lg font-bold text-purple-600 mt-0.5">
+                              {telemetryPoints[currentPointIndex]?.batteryVoltage?.toFixed(1)}V
+                            </div>
+                          </div>
+                        )}
+                        {telemetryPoints[currentPointIndex]?.altitudeAmsl !== undefined && (
+                          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 border border-gray-100">
+                            <div className="text-[10px] text-gray-500 uppercase tracking-wide">Alt AMSL</div>
+                            <div className="text-lg font-bold text-blue-600 mt-0.5">
+                              {telemetryPoints[currentPointIndex]?.altitudeAmsl?.toFixed(0)}m
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
