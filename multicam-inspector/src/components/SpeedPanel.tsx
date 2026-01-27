@@ -27,10 +27,10 @@ interface SpeedPanelProps {
 const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
   if (!speeds) {
     return (
-      <div className="bg-white rounded-lg border p-4">
+      <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
-          <Gauge className="h-5 w-5 text-blue-600" />
-          <h3 className="font-medium text-gray-900">Speed Metrics</h3>
+          <Gauge className="h-5 w-5 text-gray-400" />
+          <h3 className="font-semibold text-gray-900">Speed Performance</h3>
         </div>
         <p className="text-sm text-gray-500">No speed data available</p>
       </div>
@@ -60,10 +60,15 @@ const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
 
 
   return (
-    <div className="bg-white rounded-lg border p-4">
-      <div className="flex items-center gap-2 mb-4">
-        <Gauge className="h-5 w-5 text-blue-600" />
-        <h3 className="font-medium text-gray-900">Flight Performance Metrics</h3>
+    <div className="bg-gradient-to-br from-orange-50 to-white rounded-lg border border-orange-200 p-4 shadow-sm">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Gauge className="h-5 w-5 text-orange-600" />
+          <h3 className="font-semibold text-gray-900">Speed Performance</h3>
+        </div>
+        <span className="text-xs px-2 py-1 bg-orange-100 text-orange-700 rounded-full font-medium">
+          PRIMARY METRIC
+        </span>
       </div>
 
       <div className="space-y-4">

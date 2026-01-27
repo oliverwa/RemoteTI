@@ -146,10 +146,10 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
 
   if (!metrics) {
     return (
-      <div className="bg-white rounded-lg border p-4">
+      <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
           <Battery className="h-5 w-5 text-gray-400" />
-          <h3 className="font-medium text-gray-900">Battery Metrics</h3>
+          <h3 className="font-semibold text-gray-900">Battery Performance</h3>
         </div>
         <p className="text-sm text-gray-500">No battery data available</p>
       </div>
@@ -166,11 +166,11 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
   const healthStatus = getHealthStatus();
 
   return (
-    <div className="bg-white rounded-lg border p-4">
+    <div className="bg-gradient-to-br from-green-50 to-white rounded-lg border border-green-200 p-4 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Battery className="h-5 w-5 text-green-600" />
-          <h3 className="font-medium text-gray-900">Battery Analytics</h3>
+          <h3 className="font-semibold text-gray-900">Battery Performance</h3>
         </div>
         <span className={`text-xs px-2 py-1 rounded-full font-medium ${
           healthStatus.color === 'green' ? 'bg-green-100 text-green-700' :

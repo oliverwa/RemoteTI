@@ -781,9 +781,13 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   <p className="text-sm text-gray-500 mt-1">Date: {selectedFlightData.date} · File: {selectedFlightData.fileName}</p>
                 </div>
 
-                {/* Key KPIs - Top Priority */}
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
-                  <h3 className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-4">Key Performance Indicators</h3>
+                {/* PRIMARY METRICS SECTION - Mission Critical KPIs */}
+                <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-5 mb-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Activity className="w-5 h-5 text-blue-600" />
+                    <h3 className="text-sm font-semibold text-blue-900">Mission Performance Indicators</h3>
+                    <span className="ml-auto text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">PRIMARY</span>
+                  </div>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedDropTime > 0 ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-4`}>
                     <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
                       <div className="flex items-center gap-1.5 mb-2">
@@ -866,8 +870,13 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   />
                 </div>
 
-                {/* Additional Metrics - Second Row */}
-                <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-3 mb-4`}>
+                {/* FLIGHT STATISTICS SECTION */}
+                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock className="w-4 h-4 text-gray-600" />
+                    <h3 className="text-sm font-semibold text-gray-800">Flight Statistics</h3>
+                  </div>
+                  <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-3`}>
                   <div className="bg-gray-50 rounded-lg border p-3">
                     <div className="flex items-center gap-2 text-gray-500 mb-1">
                       <Clock className="w-3 h-3" />
@@ -946,9 +955,10 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                       {selectedFlightData.completionStatus || 'Unknown'}
                     </div>
                   </div>
+                  </div>
                 </div>
 
-                {/* Route Map Panel - Moved to after KPI metrics */}
+                {/* CRITICAL OPERATIONAL METRICS */}
                 {selectedFlightData.rawData?.routes && (
                   <div className="mb-4">
                     <RouteMapPanel 
@@ -961,8 +971,8 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </div>
                 )}
 
-                {/* Speed and Battery Panels */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                {/* SPEED AND BATTERY ANALYSIS - Critical Metrics */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
                   {(() => {
                     // Calculate consistent values for both components
                     const totalDistance = selectedFlightData.rawData.speeds?.totalDistance || 
