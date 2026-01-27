@@ -8,7 +8,7 @@ import PerformancePanel from './PerformancePanel';
 import TemperaturePanel from './TemperaturePanel';
 import RouteMapPanel from './RouteMapPanel';
 import SpeedPanel from './SpeedPanel';
-import BatteryPanel from './BatteryPanel';
+import BatteryMetrics from './BatteryMetrics';
 import ReceptionPanel from './ReceptionPanel';
 import KPITimeline from './KPITimeline';
 import FlightsSummaryView from './FlightsSummaryView';
@@ -961,17 +961,53 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </div>
                 )}
 
-                {/* Speed and Battery Panels - First Row */}
+                {/* Speed and Battery Panels */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                  {selectedFlightData.rawData?.speeds && (
-                    <SpeedPanel speeds={selectedFlightData.rawData.speeds} />
-                  )}
-                  {selectedFlightData.rawData?.battery && (
-                    <BatteryPanel 
-                      battery={selectedFlightData.rawData.battery} 
-                      flightDuration={selectedFlightData.flightDuration}
-                    />
-                  )}
+                  {(() => {
+                    // Calculate consistent values for both components
+                    const totalDistance = selectedFlightData.rawData.speeds?.totalDistance || 
+                                         selectedFlightData.rawData.totalDistance ||
+                                         ((selectedFlightData.rawData.routes?.outDistance || 0) + 
+                                          (selectedFlightData.rawData.routes?.homeDistance || 0)) ||
+                                         ((selectedFlightData.rawData.outDistance || 0) + 
+                                          (selectedFlightData.rawData.homeDistance || 0));
+                    
+                    const outDistance = selectedFlightData.rawData.speeds?.outDistance || 
+                                       selectedFlightData.rawData.routes?.outDistance ||
+                                       selectedFlightData.rawData.outDistance || 0;
+                    
+                    const homeDistance = selectedFlightData.rawData.speeds?.homeDistance || 
+                                        selectedFlightData.rawData.routes?.homeDistance ||
+                                        selectedFlightData.rawData.homeDistance || 0;
+                    
+                    // Ensure speeds object has the correct totalDistance
+                    const enhancedSpeeds = selectedFlightData.rawData?.speeds ? {
+                      ...selectedFlightData.rawData.speeds,
+                      totalDistance,
+                      outDistance,
+                      homeDistance
+                    } : null;
+                    
+                    return (
+                      <>
+                        {enhancedSpeeds && (
+                          <SpeedPanel 
+                            speeds={enhancedSpeeds} 
+                            flightDuration={selectedFlightData.flightDuration}
+                          />
+                        )}
+                        {selectedFlightData.rawData?.battery && (
+                          <BatteryMetrics
+                            battery={selectedFlightData.rawData.battery}
+                            flightDuration={selectedFlightData.flightDuration}
+                            totalDistance={totalDistance}
+                            outDistance={outDistance}
+                            homeDistance={homeDistance}
+                          />
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Reception Panel */}

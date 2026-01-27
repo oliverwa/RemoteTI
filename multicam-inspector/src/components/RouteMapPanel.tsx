@@ -368,22 +368,6 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
                   <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e5e7eb" strokeWidth="0.5"/>
                 </pattern>
-                
-                {/* Wind particle with tail gradient */}
-                {weatherData && weatherData.windPrognosis && (
-                  <>
-                    <linearGradient id="windGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#64748b" stopOpacity="0"/>
-                      <stop offset="50%" stopColor="#64748b" stopOpacity="0.2"/>
-                      <stop offset="90%" stopColor="#64748b" stopOpacity="0.4"/>
-                      <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.6"/>
-                    </linearGradient>
-                    
-                    <filter id="windBlur">
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="0.5"/>
-                    </filter>
-                  </>
-                )}
               </defs>
               
               {/* Background grid */}
@@ -392,89 +376,6 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
               {/* Main content */}
               <g>
                 
-                {/* Animated Wind Visualization with Flowing Particles */}
-                {weatherData && weatherData.windPrognosis && (
-                <g className="wind-animation" opacity="0.7">
-                  {/* Generate wind particles with tails - Fill entire screen */}
-                  {Array.from({ length: Math.max(80, Math.floor((weatherData.windPrognosis || 0) * 10)) }, (_, i) => {
-                    const windAngle = (weatherData.winddirPrognosis || 0) - 90; // Convert from meteorological to math angle
-                    const speed = weatherData.windPrognosis || 0;
-                    // Same animation duration for all particles
-                    const animationDuration = Math.max(3, 8 - speed * 0.4);
-                    
-                    // Random Y position but fixed for each particle
-                    const yPos = Math.random() * 400;
-                    
-                    // Stagger start positions to create continuous flow from off-screen
-                    const particleOffset = (i / Math.max(80, Math.floor((weatherData.windPrognosis || 0) * 10))) * 800;
-                    const startX = -100 - particleOffset; // All start off-screen to the left
-                    const tailLength = 20 + speed * 2; // Consistent tail length based on speed
-                    
-                    return (
-                      <g key={`wind-${i}`} transform={`rotate(${windAngle}, 200, 200)`}>
-                        {/* Wind particle with tail */}
-                        <g>
-                          {/* Tail - horizontal line */}
-                          <rect
-                            x={startX}
-                            y={yPos}
-                            width={tailLength}
-                            height="0.8"
-                            fill="#94a3b8"
-                            opacity="0.4"
-                          >
-                            <animateTransform
-                              attributeName="transform"
-                              type="translate"
-                              from="0 0"
-                              to="900 0"
-                              dur={`${animationDuration}s`}
-                              repeatCount="indefinite"
-                            />
-                          </rect>
-                          
-                          {/* No head particle - just the line */}
-                        </g>
-                      </g>
-                    );
-                  })}
-                  
-                  {/* Additional turbulent particles for gusty conditions */}
-                  {weatherData.gustPrognosis && weatherData.gustPrognosis > 5 && 
-                    Array.from({ length: Math.max(20, Math.ceil(weatherData.gustPrognosis * 3)) }, (_, i) => {
-                      const windAngle = (weatherData.winddirPrognosis || 0) - 90 + (Math.random() - 0.5) * 15; // Slight turbulence
-                      const animationDuration = Math.max(2.5, 7 - (weatherData.gustPrognosis || 0) * 0.3);
-                      const yPos = Math.random() * 400; // Random Y position
-                      const gustOffset = (i / Math.max(20, Math.ceil((weatherData.gustPrognosis || 0) * 3))) * 600;
-                      const startX = -150 - gustOffset; // Staggered off-screen starts
-                      const tailLength = 25 + (weatherData.gustPrognosis || 0) * 2;
-                      
-                      return (
-                        <g key={`gust-${i}`} transform={`rotate(${windAngle}, 200, 200)`}>
-                          {/* Gusty line - slightly thicker */}
-                          <rect
-                            x={startX}
-                            y={yPos}
-                            width={tailLength}
-                            height="1"
-                            fill="#a8b2c3"
-                            opacity="0.5"
-                          >
-                            <animateTransform
-                              attributeName="transform"
-                              type="translate"
-                              from="0 0"
-                              to="900 0"
-                              dur={`${animationDuration}s`}
-                              repeatCount="indefinite"
-                            />
-                          </rect>
-                        </g>
-                      );
-                    })
-                  }
-                </g>
-              )}
               
               {/* Telemetry trace with dynamic coloring - Enhanced visibility */}
               {hasTelemetry && telemetryPoints.slice(0, currentPointIndex + 1).map((point, index) => {
@@ -597,6 +498,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 </>
               )}
               
+              
               {/* Drone symbol */}
               {currentPoint && (
                 <g transform={`translate(${coordToSvgPoint([currentPoint.lat, currentPoint.lon]).x}, ${coordToSvgPoint([currentPoint.lat, currentPoint.lon]).y})`}>
@@ -616,6 +518,82 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
               )}
               </g> {/* Close transform group for zoom/pan */}
             </svg>
+            
+            {/* Current Metrics Summary */}
+            {currentPoint && currentPointIndex >= 0 && currentPointIndex < telemetryPoints.length && (
+              <div className="grid grid-cols-6 gap-2 mt-3">
+                <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-2 border border-blue-200">
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">AGL Height</div>
+                  <div className="text-sm font-bold text-blue-700 mt-0.5">
+                    {currentPoint.aglHeight.toFixed(1)}m
+                    {currentPoint.altitudeAmsl && (
+                      <span className="text-[9px] text-gray-500 ml-1">({currentPoint.altitudeAmsl.toFixed(0)}m AMSL)</span>
+                    )}
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-2 border border-orange-200">
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">H Speed</div>
+                  <div className="text-sm font-bold text-orange-600 mt-0.5">
+                    {(currentPoint.horizontalSpeed * 3.6).toFixed(0)} km/h
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg p-2 border border-purple-200">
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">V Speed</div>
+                  <div className={`text-sm font-bold mt-0.5 ${currentPoint.verticalSpeed > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {currentPoint.verticalSpeed > 0 ? '+' : ''}{currentPoint.verticalSpeed.toFixed(2)} m/s
+                  </div>
+                </div>
+                {currentPoint.batteryPercentage !== undefined && (
+                  <div className="bg-gradient-to-br from-green-50 to-white rounded-lg p-2 border border-green-200">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Battery</div>
+                    <div className={`text-sm font-bold mt-0.5 ${
+                      currentPoint.batteryPercentage > 30 ? 'text-green-600' :
+                      currentPoint.batteryPercentage > 15 ? 'text-yellow-600' : 'text-red-600'
+                    }`}>
+                      {currentPoint.batteryPercentage.toFixed(0)}%
+                    </div>
+                  </div>
+                )}
+                {currentPoint.batteryVoltage !== undefined && (
+                  <div className="bg-gradient-to-br from-indigo-50 to-white rounded-lg p-2 border border-indigo-200">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Voltage</div>
+                    <div className="text-sm font-bold text-indigo-600 mt-0.5">
+                      {currentPoint.batteryVoltage?.toFixed(1)}V
+                    </div>
+                  </div>
+                )}
+                {weatherData && weatherData.windPrognosis && (
+                  <div className="bg-gradient-to-br from-cyan-50 to-white rounded-lg p-2 border border-cyan-200">
+                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Wind</div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-bold text-cyan-700">
+                        {weatherData.windPrognosis.toFixed(1)} m/s
+                      </div>
+                      <svg width="20" height="20" viewBox="0 0 20 20" className="ml-1">
+                        <g transform={`translate(10, 10) rotate(${(weatherData.winddirPrognosis || 0) + 180})`}>
+                          <path 
+                            d="M 0,-8 L -3,-2 L -1,-2 L -1,6 L 1,6 L 1,-2 L 3,-2 Z" 
+                            fill={(() => {
+                              const windRatio = Math.min((weatherData.windPrognosis || 0) / 9, 1);
+                              const r = Math.round(34 + (220 - 34) * windRatio);
+                              const g = Math.round(197 + (53 - 197) * windRatio);
+                              const b = Math.round(94 + (38 - 94) * windRatio);
+                              return `rgb(${r}, ${g}, ${b})`;
+                            })()}
+                            opacity="0.8"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    {weatherData.gustPrognosis && weatherData.gustPrognosis > weatherData.windPrognosis && (
+                      <div className="text-[9px] text-orange-600 font-medium mt-0.5">
+                        Gusts: {weatherData.gustPrognosis.toFixed(1)} m/s
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             
             {/* Flight controls and telemetry display */}
             {hasTelemetry && (
@@ -712,60 +690,6 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                   </div>
                 </div>
                 
-                {/* Current telemetry data */}
-                {currentPoint && (
-                  <div className={`grid ${currentPoint.batteryPercentage !== undefined ? 'grid-cols-4' : 'grid-cols-3'} gap-2`}>
-                    <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-2 border border-blue-200">
-                      <div className="flex items-center gap-1 mb-1">
-                        <TrendingUp className="w-3 h-3 text-blue-600" />
-                        <span className="text-xs font-medium text-gray-700">AGL Height</span>
-                      </div>
-                      <p className="text-lg font-bold text-blue-700">{currentPoint.aglHeight.toFixed(1)}m</p>
-                      {currentPoint.altitudeAmsl && (
-                        <p className="text-xs text-gray-500 mt-0.5">AMSL: {currentPoint.altitudeAmsl.toFixed(0)}m</p>
-                      )}
-                    </div>
-                    
-                    <div className={`bg-gradient-to-br from-${getSpeedColor(currentPoint.horizontalSpeed).substring(1, 4)}-50 to-white rounded-lg p-2 border border-${getSpeedColor(currentPoint.horizontalSpeed).substring(1, 4)}-200`}>
-                      <div className="flex items-center gap-1 mb-1">
-                        <Gauge className="w-3 h-3" style={{ color: getSpeedColor(currentPoint.horizontalSpeed) }} />
-                        <span className="text-xs font-medium text-gray-700">H Speed</span>
-                      </div>
-                      <p className="text-lg font-bold" style={{ color: getSpeedColor(currentPoint.horizontalSpeed) }}>
-                        {(currentPoint.horizontalSpeed * 3.6).toFixed(1)} km/h
-                      </p>
-                    </div>
-                    
-                    <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg p-2 border border-purple-200">
-                      <div className="flex items-center gap-1 mb-1">
-                        <TrendingUp className={`w-3 h-3 ${currentPoint.verticalSpeed > 0 ? 'text-green-600' : 'text-red-600'}`} 
-                          style={{ transform: currentPoint.verticalSpeed < 0 ? 'rotate(180deg)' : 'none' }} />
-                        <span className="text-xs font-medium text-gray-700">V Speed</span>
-                      </div>
-                      <p className={`text-lg font-bold ${currentPoint.verticalSpeed > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {currentPoint.verticalSpeed > 0 ? '+' : ''}{currentPoint.verticalSpeed.toFixed(2)} m/s
-                      </p>
-                    </div>
-                    
-                    {currentPoint.batteryPercentage !== undefined && (
-                      <div className="bg-gradient-to-br from-green-50 to-white rounded-lg p-2 border border-green-200">
-                        <div className="flex items-center gap-1 mb-1">
-                          <Battery className="w-3 h-3 text-green-600" />
-                          <span className="text-xs font-medium text-gray-700">Battery</span>
-                        </div>
-                        <p className={`text-lg font-bold ${
-                          currentPoint.batteryPercentage > 30 ? 'text-green-600' : 
-                          currentPoint.batteryPercentage > 15 ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                          {currentPoint.batteryPercentage.toFixed(0)}%
-                        </p>
-                        {currentPoint.batteryVoltage !== undefined && (
-                          <p className="text-xs text-gray-500 mt-0.5">{currentPoint.batteryVoltage.toFixed(1)}V</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
                 
                 {/* Flight Metrics Dashboard */}
                 {telemetryPoints.length > 0 && (
@@ -1204,39 +1128,6 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                     )}
 
                     </div>
-                    
-                    {/* Current Metrics Summary */}
-                    {telemetryPoints.length > 0 && currentPointIndex >= 0 && currentPointIndex < telemetryPoints.length && telemetryPoints[currentPointIndex] && (
-                      <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-gray-100">
-                        {telemetryPoints[currentPointIndex]?.batteryPercentage !== undefined && (
-                          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 border border-gray-100">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wide">Battery</div>
-                            <div className={`text-lg font-bold mt-0.5 ${
-                              (telemetryPoints[currentPointIndex]?.batteryPercentage || 0) > 30 ? 'text-green-600' :
-                              (telemetryPoints[currentPointIndex]?.batteryPercentage || 0) > 15 ? 'text-yellow-600' : 'text-red-600'
-                            }`}>
-                              {telemetryPoints[currentPointIndex]?.batteryPercentage?.toFixed(0)}%
-                            </div>
-                          </div>
-                        )}
-                        {telemetryPoints[currentPointIndex]?.batteryVoltage !== undefined && (
-                          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 border border-gray-100">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wide">Voltage</div>
-                            <div className="text-lg font-bold text-purple-600 mt-0.5">
-                              {telemetryPoints[currentPointIndex]?.batteryVoltage?.toFixed(1)}V
-                            </div>
-                          </div>
-                        )}
-                        {telemetryPoints[currentPointIndex]?.altitudeAmsl !== undefined && (
-                          <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-2 border border-gray-100">
-                            <div className="text-[10px] text-gray-500 uppercase tracking-wide">Alt AMSL</div>
-                            <div className="text-lg font-bold text-blue-600 mt-0.5">
-                              {telemetryPoints[currentPointIndex]?.altitudeAmsl?.toFixed(0)}m
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
