@@ -82,6 +82,52 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
     return new Date(year, month, day, hours, minutes, seconds, milliseconds).getTime();
   };
 
+  // Calculate distance between two GPS points using Haversine formula
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371000; // Earth's radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in meters
+  };
+
+  // Calculate actual distance from GPS telemetry
+  const { actualGpsDistance, routeOnlyDistance } = React.useMemo(() => {
+    if (!telemetryPoints || telemetryPoints.length < 2) {
+      return { actualGpsDistance: 0, routeOnlyDistance: 0 };
+    }
+    
+    let totalDistance = 0;
+    
+    for (let i = 1; i < telemetryPoints.length; i++) {
+      const prev = telemetryPoints[i - 1];
+      const curr = telemetryPoints[i];
+      
+      if (prev.lat && prev.lon && curr.lat && curr.lon) {
+        const dist = calculateDistance(
+          prev.lat, prev.lon,
+          curr.lat, curr.lon
+        );
+        
+        totalDistance += dist;
+      }
+    }
+    
+    // For now, we'll just show total actual vs planned
+    // A more sophisticated approach would identify mission phases using timestamps or proximity to waypoints
+    return {
+      actualGpsDistance: totalDistance / 1000, // Convert to kilometers
+      routeOnlyDistance: totalDistance / 1000 // For now, same as total
+    };
+  }, [telemetryPoints]);
+
 
   // Calculate bounds and scaling for the route visualization
   const { bounds, scale, center } = useMemo(() => {
@@ -377,10 +423,11 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
               <g>
                 
               
-              {/* Telemetry trace with dynamic coloring - Enhanced visibility */}
+              {/* Telemetry trace following ACTUAL GPS path with dynamic coloring */}
               {hasTelemetry && telemetryPoints.slice(0, currentPointIndex + 1).map((point, index) => {
                 if (index === 0) return null;
                 const prevPoint = telemetryPoints[index - 1];
+                // Use actual GPS coordinates from telemetry
                 const p1 = coordToSvgPoint([prevPoint.lat, prevPoint.lon]);
                 const p2 = coordToSvgPoint([point.lat, point.lon]);
                 const color = getRouteColor(point);
@@ -478,6 +525,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                   </g>
                 );
               })}
+              
               
               {/* Start/End markers */}
               {hasOutRoute && (
@@ -1139,6 +1187,43 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
           </div>
         )}
 
+        {/* Actual GPS Flight Path Stats */}
+        {actualGpsDistance > 0 && (
+          <div className="bg-purple-50 rounded-lg p-3 mb-3 border border-purple-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Navigation2 className="w-4 h-4 text-purple-600" />
+              <h4 className="text-sm font-semibold text-purple-900">Actual GPS Flight Path</h4>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <span className="text-xs text-gray-600">Actual Distance</span>
+                <p className="text-lg font-bold text-purple-900">{actualGpsDistance.toFixed(2)} km</p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-600">Planned Distance</span>
+                <p className="text-lg font-bold text-gray-700">
+                  {formatDistance((routeData?.outDistance || 0) + (routeData?.homeDistance || 0))}
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-600">Deviation</span>
+                <p className={`text-lg font-bold ${
+                  Math.abs((actualGpsDistance / (((routeData?.outDistance || 0) + (routeData?.homeDistance || 0)) / 1000) - 1) * 100) > 10
+                    ? 'text-orange-600' 
+                    : 'text-green-600'
+                }`}>
+                  {actualGpsDistance > (((routeData?.outDistance || 0) + (routeData?.homeDistance || 0)) / 1000) ? '+' : ''}
+                  {((actualGpsDistance / (((routeData?.outDistance || 0) + (routeData?.homeDistance || 0)) / 1000) - 1) * 100).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+            <div className="mt-2 pt-2 border-t border-purple-100 text-xs text-gray-600">
+              <p>Note: Actual distance includes all flight movements (outbound, on-site operations, and return).</p>
+              <p>Deviation shows how the total actual distance compares to the planned route distance.</p>
+            </div>
+          </div>
+        )}
+        
         {/* Route Statistics */}
         <div className="grid grid-cols-2 gap-3">
           {/* Outbound Route */}
