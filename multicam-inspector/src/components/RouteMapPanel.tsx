@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { Map, Navigation2, Home, Play, Pause, RotateCw, Gauge, TrendingUp, Wind, Battery } from 'lucide-react';
+import { Map, Navigation2, Home, Play, Pause, RotateCw, Gauge, TrendingUp, Wind, Battery, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface AdditionalRoute {
   routeType: string;
@@ -55,13 +55,20 @@ interface RouteMapPanelProps {
   missionTimestamps?: MissionTimestamps;
   weatherData?: WeatherData;
   aedReleaseAGL?: number;
+  completionStatus?: string;
 }
 
-const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoints, missionTimestamps, weatherData, aedReleaseAGL }) => {
+const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoints, missionTimestamps, weatherData, aedReleaseAGL, completionStatus }) => {
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [routeColorMode, setRouteColorMode] = useState<'speed' | 'altitude' | 'battery'>('speed');
+  
+  // Zoom and pan state
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   
   // Parse timestamp to get seconds from start
   const parseTimestamp = (ts: string): number => {
@@ -98,9 +105,12 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
     return R * c; // Distance in meters
   };
 
-  // Calculate actual distance from GPS telemetry
+  // Calculate actual distance from GPS telemetry (only for completed flights)
   const { actualGpsDistance, routeOnlyDistance } = React.useMemo(() => {
-    if (!telemetryPoints || telemetryPoints.length < 2) {
+    // Only calculate for completed flights (normal or complete status)
+    const isCompleted = completionStatus === 'normal' || completionStatus === 'complete';
+    
+    if (!isCompleted || !telemetryPoints || telemetryPoints.length < 2) {
       return { actualGpsDistance: 0, routeOnlyDistance: 0 };
     }
     
@@ -126,7 +136,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
       actualGpsDistance: totalDistance / 1000, // Convert to kilometers
       routeOnlyDistance: totalDistance / 1000 // For now, same as total
     };
-  }, [telemetryPoints]);
+  }, [telemetryPoints, completionStatus]);
 
 
   // Calculate bounds and scaling for the route visualization
@@ -403,11 +413,57 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
         {/* Route Map Visualization */}
         {(hasOutRoute || hasHomeRoute || hasTelemetry) && bounds ? (
           <div className="bg-gray-50 rounded-lg p-2 relative overflow-hidden">
+            {/* Zoom Controls */}
+            <div className="absolute top-2 right-2 z-10 bg-white rounded-lg shadow-md p-1 flex flex-col gap-1">
+              <button
+                onClick={() => setZoom(prev => Math.min(5, prev * 1.2))}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Zoom In"
+              >
+                <ZoomIn className="w-4 h-4" />
+              </button>
+              <div className="text-xs text-center font-medium text-gray-600 py-1">
+                {Math.round(zoom * 100)}%
+              </div>
+              <button
+                onClick={() => setZoom(prev => Math.max(0.5, prev / 1.2))}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Zoom Out"
+              >
+                <ZoomOut className="w-4 h-4" />
+              </button>
+              <div className="border-t pt-1">
+                <button
+                  onClick={() => {
+                    setZoom(1);
+                    setPan({ x: 0, y: 0 });
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded transition-colors"
+                  title="Reset View"
+                >
+                  <Maximize2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
             
             <svg 
-              viewBox="0 0 400 400" 
-              className="w-full h-full"
-              style={{ maxHeight: '450px', minHeight: '320px' }}
+              viewBox={`${pan.x} ${pan.y} ${400/zoom} ${400/zoom}`}
+              className="w-full h-full cursor-move"
+              style={{ maxHeight: '600px', minHeight: '400px' }}
+              onMouseDown={(e) => {
+                setIsDragging(true);
+                setDragStart({ x: e.clientX + pan.x, y: e.clientY + pan.y });
+              }}
+              onMouseMove={(e) => {
+                if (isDragging) {
+                  setPan({
+                    x: dragStart.x - e.clientX,
+                    y: dragStart.y - e.clientY
+                  });
+                }
+              }}
+              onMouseUp={() => setIsDragging(false)}
+              onMouseLeave={() => setIsDragging(false)}
             >
               {/* Grid and Wind Animation Patterns */}
               <defs>
@@ -423,8 +479,8 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
               <g>
                 
               
-              {/* Telemetry trace following ACTUAL GPS path with dynamic coloring */}
-              {hasTelemetry && telemetryPoints.slice(0, currentPointIndex + 1).map((point, index) => {
+              {/* Telemetry trace following ACTUAL GPS path with dynamic coloring - only for completed flights */}
+              {hasTelemetry && (completionStatus === 'normal' || completionStatus === 'complete') && telemetryPoints.slice(0, currentPointIndex + 1).map((point, index) => {
                 if (index === 0) return null;
                 const prevPoint = telemetryPoints[index - 1];
                 // Use actual GPS coordinates from telemetry

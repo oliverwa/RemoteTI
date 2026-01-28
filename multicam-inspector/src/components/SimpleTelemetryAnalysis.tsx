@@ -590,8 +590,8 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-[95vw] h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="border-b">
           <div className="flex items-center justify-between px-6 py-4">
@@ -649,7 +649,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
         </div>
 
         {/* Content */}
-        <div className="flex h-[calc(90vh-88px)]">
+        <div className="flex flex-1 overflow-hidden">
           {/* Sidebar - Flight List */}
           <div className="w-80 border-r bg-gray-50 p-4 overflow-y-auto">
             {/* Upload Controls */}
@@ -782,11 +782,11 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* PRIMARY METRICS SECTION - Mission Critical KPIs */}
-                <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-5 mb-6 shadow-sm">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Activity className="w-5 h-5 text-blue-600" />
-                    <h3 className="text-sm font-semibold text-blue-900">Mission Performance Indicators</h3>
-                    <span className="ml-auto text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">PRIMARY</span>
+                <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-5">
+                    <Activity className="w-6 h-6 text-blue-600" />
+                    <h3 className="text-lg font-semibold text-blue-900">Mission Performance Indicators</h3>
+                    <span className="ml-auto text-sm px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full font-medium">PRIMARY</span>
                   </div>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedDropTime > 0 ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-4`}>
                     <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
@@ -871,63 +871,63 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* FLIGHT STATISTICS SECTION */}
-                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4 mb-6 shadow-sm">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Clock className="w-4 h-4 text-gray-600" />
-                    <h3 className="text-sm font-semibold text-gray-800">Flight Statistics</h3>
+                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-5 mb-6 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock className="w-5 h-5 text-gray-600" />
+                    <h3 className="text-base font-semibold text-gray-800">Flight Statistics</h3>
                   </div>
-                  <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-3`}>
-                  <div className="bg-gray-50 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-gray-500 mb-1">
-                      <Clock className="w-3 h-3" />
-                      <span className="text-xs">Flight Duration</span>
+                  <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-4`}>
+                  <div className="bg-gray-50 rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm">Flight Duration</span>
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="text-2xl font-bold">
                       {formatDuration(selectedFlightData.flightDuration)}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-gray-500 mb-1">
-                      <Battery className="w-3 h-3" />
-                      <span className="text-xs">Battery Used</span>
+                  <div className="bg-gray-50 rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                      <Battery className="w-4 h-4" />
+                      <span className="text-sm">Battery Used</span>
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="text-2xl font-bold">
                       {selectedFlightData.batteryUsed > 0 
                         ? `${selectedFlightData.batteryUsed}%` 
                         : 'No data'}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-gray-500 mb-1">
-                      <MapPin className="w-3 h-3" />
-                      <span className="text-xs">Alarm Distance</span>
+                  <div className="bg-gray-50 rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="text-sm">Alarm Distance</span>
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="text-2xl font-bold">
                       {formatDistance(selectedFlightData.alarmDistance)}
                     </div>
                   </div>
 
                   {/* AED Release AGL - Only for OHCA */}
                   {selectedFlightData.aedReleaseAGL > 0 && (
-                    <div className="bg-purple-50 rounded-lg border border-purple-300 p-3">
-                      <div className="flex items-center gap-2 text-gray-500 mb-1">
-                        <Heart className="w-3 h-3 text-purple-600" />
-                        <span className="text-xs">AED Release Alt</span>
+                    <div className="bg-purple-50 rounded-lg border border-purple-300 p-4">
+                      <div className="flex items-center gap-2 text-gray-500 mb-2">
+                        <Heart className="w-4 h-4 text-purple-600" />
+                        <span className="text-sm">AED Release Alt</span>
                       </div>
-                      <div className="text-lg font-bold text-purple-600">
+                      <div className="text-2xl font-bold text-purple-600">
                         {selectedFlightData.aedReleaseAGL}m
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-gray-50 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-gray-500 mb-1">
-                      <AlertCircle className="w-3 h-3" />
-                      <span className="text-xs">Alarm Type</span>
+                  <div className="bg-gray-50 rounded-lg border p-4">
+                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm">Alarm Type</span>
                     </div>
-                    <div className="text-lg font-bold capitalize">
+                    <div className="text-2xl font-bold capitalize">
                       {selectedFlightData.alarmType}
                     </div>
                   </div>
@@ -967,6 +967,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                       missionTimestamps={selectedFlightData.rawData.mission}
                       weatherData={selectedFlightData.rawData.weather}
                       aedReleaseAGL={selectedFlightData.rawData.mission?.aedReleaseAGL}
+                      completionStatus={selectedFlightData.completionStatus}
                     />
                   </div>
                 )}
