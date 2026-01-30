@@ -23,7 +23,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "battery_installation",
@@ -39,7 +40,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "battery_verification",
@@ -55,7 +57,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "medkit_removal",
@@ -71,7 +74,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "medkit_installation",
@@ -87,7 +91,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "medkit_verification",
@@ -103,7 +108,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "structural_cracks",
@@ -119,7 +125,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "propeller_rotation",
@@ -135,7 +142,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "fasteners_check",
@@ -151,7 +159,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "propeller_damage",
@@ -167,7 +176,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "cable_inspection",
@@ -183,7 +193,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "connection_check",
@@ -199,7 +210,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "propeller_attachments",
@@ -215,7 +227,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     }
   ]
 }

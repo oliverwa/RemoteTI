@@ -24,7 +24,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "full_electrical_system_test",
@@ -41,7 +42,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "performance_calibration_verification",
@@ -58,7 +60,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "environmental_stress_testing",
@@ -75,7 +78,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "lifecycle_component_assessment",
@@ -92,7 +96,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     }
   ],
   "completionStatus": {

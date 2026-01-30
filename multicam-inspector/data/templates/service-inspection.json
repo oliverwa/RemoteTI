@@ -24,7 +24,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "lubrication_service",
@@ -41,7 +42,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "firmware_updates",
@@ -58,7 +60,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "deep_cleaning",
@@ -75,7 +78,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "compliance_documentation",
@@ -92,7 +96,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     }
   ],
   "completionStatus": {

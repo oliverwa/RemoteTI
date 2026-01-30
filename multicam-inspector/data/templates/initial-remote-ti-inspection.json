@@ -22,7 +22,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "alarm_sector_inspection",
@@ -37,7 +38,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "drone_general_condition",
@@ -52,7 +54,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "parachute_quick_check",
@@ -67,7 +70,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "battery_status",
@@ -82,7 +86,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "route_recommendation",
@@ -97,7 +102,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     }
   ]
 }

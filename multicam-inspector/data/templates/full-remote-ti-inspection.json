@@ -22,7 +22,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "parachute_yellow_lid",
@@ -110,7 +111,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "parachute_tube_mount",
@@ -180,7 +182,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "motor_arms_inspection",
@@ -232,7 +235,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "drone_core_inspection",
@@ -284,7 +288,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "landing_gear_inspection",
@@ -336,7 +341,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "downlights_inspection",
@@ -388,7 +394,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "wasp_attachment",
@@ -440,7 +447,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "propellers_inspection",
@@ -551,7 +559,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "motors_visual_inspection",
@@ -659,7 +668,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "cables_connectors_inspection",
@@ -684,7 +694,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "antennas_4g_inspection",
@@ -737,7 +748,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "realsense_lenses_inspection",
@@ -790,7 +802,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "rangefinder_inspection",
@@ -815,7 +828,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "opticalflow_inspection",
@@ -840,7 +854,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "drone_markings_inspection",
@@ -910,7 +925,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "aed_visual_inspection",
@@ -981,7 +997,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "winch_spool_inspection",
@@ -1041,7 +1058,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "parachute_line_inspection",
@@ -1090,7 +1108,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "propellers_deployment",
@@ -1116,7 +1135,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "drone_lid_closure",
@@ -1179,7 +1199,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "ethernet_port_cap",
@@ -1214,7 +1235,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "drone_alignment",
@@ -1249,7 +1271,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "umbilical_connection",
@@ -1302,7 +1325,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "aed_alarm_pin",
@@ -1337,7 +1361,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "final_visual_check",
@@ -1353,7 +1378,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     },
     {
       "id": "documentation_completion",
@@ -1369,7 +1395,8 @@
       "completion": {
         "completedBy": null,
         "completedAt": null
-      }
+      },
+      "note": ""
     }
   ],
   "completionStatus": {

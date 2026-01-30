@@ -10,6 +10,8 @@ interface Task {
   category: string;
   description: string;
   presetType?: string;
+  note?: string;  // Optional note field
+  status?: 'pass' | 'fail' | 'pending' | 'na';  // Task status
   completion: {
     completedBy: string | null;
     completedAt: string | null;
@@ -127,16 +129,29 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           }
         }
         
-        // Always use Pi backend for consistency
-        const apiUrl = `${API_CONFIG.BASE_URL}/api/inspection-data/${selectedInspection}`;
-        
-        console.log('Loading inspection data from:', apiUrl);
-        
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          throw new Error(`Failed to load inspection data: ${response.status}`);
+        // Load inspection data - either from saved session or template
+        let data;
+        if (action === 'load-session' && sessionFolderPath) {
+          // For existing sessions, load the saved data directly
+          const apiUrl = `${API_CONFIG.BASE_URL}/api/inspection/${sessionFolderPath}/data`;
+          console.log('Loading saved inspection data from:', apiUrl);
+          
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to load saved inspection data: ${response.status}`);
+          }
+          data = await response.json();
+        } else {
+          // For new sessions, load the template
+          const apiUrl = `${API_CONFIG.BASE_URL}/api/inspection-data/${selectedInspection}`;
+          console.log('Loading inspection template from:', apiUrl);
+          
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error(`Failed to load inspection template: ${response.status}`);
+          }
+          data = await response.json();
         }
-        const data = await response.json();
         console.log('Loaded inspection data:', data);
         
         // Handle both response structures (with or without 'inspection' wrapper)
@@ -150,6 +165,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           category: task.category || 'General',
           description: task.description || '',
           presetType: task.presetType || '',
+          // Load note field from saved data
+          note: task.note || '',  
+          status: task.status || 'pending',  // Include status field
           completion: task.completion || {
             completedBy: null,
             completedAt: null
@@ -174,55 +192,27 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         const initialStatuses: { [key: string]: 'pass' | 'fail' | 'pending' } = {};
         const initialNotes: { [key: string]: string } = {};
         
-        // First set all tasks to pending
+        // Initialize task statuses and notes from the loaded data
         mappedTasks.forEach((task: Task) => {
-          initialStatuses[task.taskNumber] = 'pending';
-        });
-        
-        // If loading an existing session, load the saved progress
-        if (action === 'load-session' && sessionFolderPath) {
-          try {
-            const existingInspectionResponse = await fetch(
-              `${API_CONFIG.BASE_URL}/api/inspection/${sessionFolderPath}/data`
-            );
-            if (existingInspectionResponse.ok) {
-              const existingData = await existingInspectionResponse.json();
-              console.log('Loading existing inspection progress:', existingData);
-              
-              // Update task statuses and notes from saved data
-              if (existingData.tasks) {
-                existingData.tasks.forEach((savedTask: any) => {
-                  const taskId = savedTask.id || savedTask.taskNumber;
-                  
-                  // Find corresponding task in the template
-                  const templateTask = mappedTasks.find((t: Task) => t.id === taskId || t.taskNumber === taskId);
-                  if (templateTask) {
-                    // Update completion status
-                    if (savedTask.completion?.completedAt) {
-                      templateTask.completion = savedTask.completion;
-                      // Determine pass/fail based on saved data
-                      initialStatuses[templateTask.taskNumber] = savedTask.status || 'pass';
-                    }
-                    
-                    // Load notes if available
-                    if (savedTask.notes) {
-                      initialNotes[templateTask.taskNumber] = savedTask.notes;
-                    }
-                  }
-                });
-                
-                // Update formatted data with loaded completion info
-                formattedData.tasks = mappedTasks;
-                if (existingData.completionStatus) {
-                  formattedData.completionStatus = existingData.completionStatus;
-                }
-                setInspectionData(formattedData);
-              }
-            }
-          } catch (err) {
-            console.log('No existing inspection progress found');
+          // Check if task has a saved status (for existing sessions)
+          const taskWithStatus = task as any;
+          if (taskWithStatus.status) {
+            initialStatuses[task.taskNumber] = taskWithStatus.status;
+          } else if (task.completion?.completedAt) {
+            // If no status but task is completed, default to 'pass'
+            initialStatuses[task.taskNumber] = 'pass';
+          } else {
+            initialStatuses[task.taskNumber] = 'pending';
           }
-        }
+          
+          // Load notes from the task
+          if (task.note) {
+            initialNotes[task.taskNumber] = task.note;
+            console.log(`Loaded note for task ${task.taskNumber}: "${task.note}"`);
+          } else {
+            console.log(`No note found for task ${task.taskNumber}`);
+          }
+        });
         
         setTaskStatuses(initialStatuses);
         setNotes(initialNotes);
@@ -280,6 +270,12 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!inspectionData) return;
+      
+      // Don't trigger shortcuts when typing in input fields or textareas
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') {
+        return;
+      }
       
       // Handle P and F keys separately to avoid circular dependency
       if (event.key === 'p' || event.key === 'P') {
@@ -345,23 +341,29 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         
         // Update backend if we have session info
         if (sessionFolder && task.id) {
+          const noteToSend = notes[taskNumber] || '';
           console.log('Sending task update to backend:', {
             sessionFolder,
             taskId: task.id,
             status,
+            note: noteToSend,
             url: `${API_CONFIG.BASE_URL}/api/inspection/${sessionFolder}/task/${task.id}/status`
           });
+          
+          const requestBody = {
+            status: status,
+            completedBy: currentUser,
+            note: noteToSend
+          };
+          console.log('Request body being sent:', requestBody);
+          
           try {
             const response = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${sessionFolder}/task/${task.id}/status`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                status: status,
-                completedBy: currentUser,
-                comment: notes[taskNumber] || ''
-              })
+              body: JSON.stringify(requestBody)
             });
             
             if (response.ok) {
@@ -706,7 +708,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                           body: JSON.stringify({
                             status: taskStatuses[currentTask.taskNumber],
                             completedBy: currentUser,
-                            comment: newNote
+                            note: newNote
                           })
                         });
                       } catch (error) {

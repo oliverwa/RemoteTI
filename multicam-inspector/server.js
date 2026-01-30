@@ -1517,9 +1517,11 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
   try {
     const sessionFolder = req.params[0];  // First capture group
     const taskId = req.params[1];  // Second capture group
-    const { status, completedBy, comment } = req.body;
+    const { status, completedBy, note } = req.body;
     
     log('info', `Updating task ${taskId} status to ${status} for session ${sessionFolder}`);
+    log('info', `Note received: "${note}"`);
+    log('info', `Request body:`, req.body);
     
     // Build the full path to the inspection JSON
     const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
@@ -1553,10 +1555,13 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
     
     // Find and update the task
     log('info', `Looking for task with ID: ${taskId}`);
+    log('info', `Total tasks in inspection: ${inspectionData.tasks.length}`);
+    log('info', `First 5 task IDs: ${inspectionData.tasks.slice(0, 5).map(t => t.id).join(', ')}`);
+    
     const task = inspectionData.tasks.find(t => t.id === taskId);
     if (!task) {
       log('error', `Task not found. Available task IDs: ${inspectionData.tasks.map(t => t.id).join(', ')}`);
-      return res.status(404).json({ error: 'Task not found' });
+      return res.status(404).json({ error: 'Task not found', availableIds: inspectionData.tasks.map(t => t.id) });
     }
     
     // Update task completion data
@@ -1565,9 +1570,18 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
       completedBy: completedBy || 'Unknown',
       completedAt: new Date().toISOString()
     };
-    if (comment) {
-      task.comment = comment;
-    }
+    
+    // Always update the note field (even if empty string)
+    task.note = note || '';
+    log('info', `Setting task.note to: "${task.note}" (received: "${note}")`)
+    
+    // Log the task after update
+    log('info', `Task after update:`, {
+      id: task.id,
+      status: task.status,
+      note: task.note,
+      completion: task.completion
+    });
     
     // Update overall completion status
     const allTasks = inspectionData.tasks;
@@ -1600,6 +1614,10 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
     // Save the updated inspection data
     fs.writeFileSync(filePath, JSON.stringify(inspectionData, null, 2));
     
+    // Log what was actually saved for this specific task
+    const savedTask = inspectionData.tasks.find(t => t.id === taskId);
+    log('info', `Task ${taskId} saved with note: "${savedTask?.note}"`);
+    log('info', `Full saved task:`, JSON.stringify(savedTask, null, 2));
     log('info', `Task ${taskId} updated successfully`);
     
     res.json({ 
@@ -1614,6 +1632,36 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
     
   } catch (err) {
     log('error', 'Error updating inspection task:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Debug endpoint to check specific task
+app.get(/^\/api\/inspection\/(.+)\/task\/(.+)\/debug$/, async (req, res) => {
+  try {
+    const sessionFolder = req.params[0];
+    const taskId = req.params[1];
+    
+    const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
+    const files = fs.readdirSync(sessionPath);
+    const inspectionFile = files.find(f => f.endsWith('_inspection.json') || f === 'inspection.json');
+    
+    if (!inspectionFile) {
+      return res.status(404).json({ error: 'Inspection file not found' });
+    }
+    
+    const filePath = path.join(sessionPath, inspectionFile);
+    const inspectionData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    const task = inspectionData.tasks.find(t => t.id === taskId);
+    
+    res.json({
+      taskId,
+      task: task || 'Task not found',
+      hasNote: !!task?.note,
+      noteValue: task?.note || 'No note field',
+      noteLength: task?.note?.length || 0
+    });
+  } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
