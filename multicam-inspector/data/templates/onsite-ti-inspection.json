@@ -24,19 +24,7 @@
     {
       "id": "safety_overview",
       "title": "IMPORTANT: ENSURE OVERALL SAFETY AND ACCURACY",
-      "description": "Safety First - This checklist is critical for the safe operation of the drone. Proper execution is essential.\nJust Culture - We promote an environment of open and honest communication. Report any mistakes, incidents, or safety concerns without fear of blame. Your feedback helps improve our processes and enhances overall safety.\nAttention to Detail - Carefully follow each task in the order presented. Do not skip any steps.\nUse PPE - Always wear required safety gear.\nReport Issues - Document any abnormalities or safety concerns immediately.",
-      "instructions": [],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "power_instruction",
-      "title": "INSTRUCTION: KEEP THE DRONE POWERED ON UNTIL A TASK THAT EXPLICITLY TELLS YOU TO TURN IT OFF",
-      "description": "KEEP THE DRONE POWERED ON UNTIL A TASK THAT EXPLICITLY TELLS YOU TO TURN IT OFF.",
+      "description": "Safety First - This checklist is critical for the safe operation of the drone. Proper execution is essential.\nJust Culture - We promote an environment of open and honest communication. Report any mistakes, incidents, or safety concerns without fear of blame. Your feedback helps improve our processes and enhances overall safety.\nAttention to Detail - Carefully follow each task in the order presented. Do not skip any steps.\nUse PPE - Always wear required safety gear.\nReport Issues - Document any abnormalities or safety concerns immediately.\nINSTRUCTION: KEEP THE DRONE POWERED ON UNTIL A TASK THAT EXPLICITLY TELLS YOU TO TURN IT OFF.",
       "instructions": [],
       "validationBoxes": {},
       "completion": {
@@ -274,18 +262,6 @@
       "note": ""
     },
     {
-      "id": "port_caps",
-      "title": "PERIPHERALS: Verify that the ETH and USB caps are mounted",
-      "description": "Mount and verify that the ETH cap is screwed on and completely seals the port.\nMount and verify that the USB cap is screwed on and completely seals the port.",
-      "instructions": [],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
       "id": "downlights",
       "title": "DOWNLIGHTS: Verify that the Downlight is mounted OK",
       "description": "Verify that it is structurally intact on the front right landing gear.",
@@ -334,6 +310,18 @@
       "note": ""
     },
     {
+      "id": "port_caps",
+      "title": "PERIPHERALS: Verify that the ETH and USB caps are mounted",
+      "description": "Mount and verify that the ETH cap is screwed on and completely seals the port.\nMount and verify that the USB cap is screwed on and completely seals the port.",
+      "instructions": [],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
       "id": "open_lids",
       "title": "DRONE STRUCTURE: Open lids",
       "description": "With a screwdriver, unscrew the 4 screws holding the lids together.\nOpen them so you have access to the batteries.",
@@ -360,7 +348,19 @@
     {
       "id": "charge_old_batteries",
       "title": "BATTERIES: Put old batteries on charge",
-      "description": "Connect the used batteries to the charger.\nFollow instructions on the charger when initiating the charging.",
+      "description": "Follow the instructions at the chagrin station.",
+      "instructions": [],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "align_drone_perfect",
+      "title": "INSTRUCTION: Align the drone perfectly",
+      "description": "Align the drone over the visual navigation marker.\nFront landing gear should be placed on the two dots in front of the marker.\nEnsure the front camera faces the correct direction.\nVerify the drone body is perfectly aligned with the visual navigation markers.",
       "instructions": [],
       "validationBoxes": {},
       "completion": {
@@ -396,7 +396,7 @@
     {
       "id": "verify_new_batteries",
       "title": "BATTERIES: Verify batteries are fully charged and in good condition",
-      "description": "Verify new batteries are fully charged.\nEnsure batteries and connectors are undamaged.\nConfirm batteries are clean and dry.",
+      "description": "Verify new batteries are fully charged, both over 50V.\nEnsure batteries and connectors are undamaged.\nConfirm batteries are clean and dry.",
       "instructions": [],
       "validationBoxes": {},
       "completion": {
@@ -409,18 +409,6 @@
       "id": "connect_battery",
       "title": "BATTERIES: Connect the odd number battery to the front position of the drone",
       "description": "Place the battery in the drone and connect the battery.\nConfirm that the connector is fully seated (no visible gap).\nEnsure that the cables are routed so lids won't pinch them.",
-      "instructions": [],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "esc_sounds",
-      "title": "PROPULSION: Verify ESC sounds OK",
-      "description": "Confirm each motor produces a clear buzzing sound during power-up.\nEnsure all motors sound synchronized.",
       "instructions": [],
       "validationBoxes": {},
       "completion": {
@@ -493,18 +481,6 @@
       "id": "close_lids",
       "title": "DRONE STRUCTURE: Close the lids",
       "description": "Verify that the batteries are fully seated in their compartments.\nClose the lids.\nVerify no cables are pinched before tightening screws.\nScrew on the screws, 2 per side using the lid tool.",
-      "instructions": [],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "align_drone",
-      "title": "INSTRUCTION: Align the drone perfectly",
-      "description": "Align the drone over the visual navigation marker.\nEnsure the front camera faces the correct direction.\nVerify the drone body is perfectly aligned with the visual navigation markers.\nEnsure the landing legs and main body are parallel with the navigation marker.",
       "instructions": [],
       "validationBoxes": {},
       "completion": {
