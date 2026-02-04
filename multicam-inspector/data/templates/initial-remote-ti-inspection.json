@@ -1,22 +1,26 @@
 {
-  "inspectionType": "initial_remote_ti",
-  "name": "Initial Remote Technical Inspection",
+  "inspectionType": "initial_remote_inspection",
+  "name": "Initial Remote TI - Post-Flight Vitals",
   "version": "1.0",
-  "description": "Initial remote assessment following alarm trigger to determine inspection route",
+  "description": "Quick post-flight inspection to identify obvious issues before dispatching personnel",
   "metadata": {
     "author": "RemoteTI",
-    "created": "2024-12-08",
-    "inspectionMode": "remote"
+    "created": "2024-10-08",
+    "updated": "2026-02-04",
+    "inspectionMode": "remote",
+    "timing": "Immediately after mission completion/landing",
+    "assumptions": "Batteries are still the flown set. Drone may be misaligned. MedKit may not be mounted."
   },
   "tasks": [
     {
-      "id": "initial_safety_check",
-      "title": "SAFETY CHECK: Initial visual assessment",
-      "description": "Perform rapid safety assessment to identify any immediate threats or damage.\n\nCheck for obvious structural damage, fire, smoke, or environmental hazards.\nVerify drone is secured in hangar.\nAssess if area is safe for crew dispatch.",
+      "id": "start_conditions",
+      "title": "START CONDITIONS: Verify prerequisites",
+      "description": "Confirm all prerequisites for initial remote inspection are met.\n\nVerify correct hangar/Skybase ID is selected.\nConfirm camera feeds are LIVE with timestamp updates.\nVerify no people are visible inside the Skybase.\nThis step is critical and cannot be skipped.",
       "instructions": [
-        "Verify all camera feeds are operational",
-        "Check for visible threats or hazards",
-        "Assess overall drone condition"
+        "Confirm correct hangar/Skybase ID",
+        "Verify camera feeds are LIVE (check timestamps)",
+        "Confirm no people visible inside Skybase",
+        "STOP if any condition cannot be confirmed"
       ],
       "validationBoxes": {},
       "completion": {
@@ -26,13 +30,14 @@
       "note": ""
     },
     {
-      "id": "alarm_sector_inspection",
-      "title": "ALARM SECTOR: Inspect area that triggered alarm",
-      "description": "Focus inspection on the specific sector or area that triggered the alarm.\n\nIdentify any visible intrusion signs, damage, or anomalies in the alarm area.",
+      "id": "critical_safety_check",
+      "title": "CRITICAL SAFETY: Skybase environment check",
+      "description": "Inspect Skybase environment for immediate safety hazards.\n\nCheck for debris, tools, or loose objects on the floor.\nVerify no objects near critical areas.\nEnsure doors and enclosure appear normal.",
       "instructions": [
-        "Navigate cameras to alarm sector",
-        "Document any visible anomalies",
-        "Assess severity of findings"
+        "Check for debris/tools/loose objects on floor",
+        "Verify clearance near propellers, landing gear, umbilical",
+        "Check doors/enclosure for obstruction or damage",
+        "STOP if anything could interfere with safety"
       ],
       "validationBoxes": {},
       "completion": {
@@ -42,13 +47,15 @@
       "note": ""
     },
     {
-      "id": "drone_general_condition",
-      "title": "DRONE STATUS: Quick visual assessment",
-      "description": "Rapid assessment of drone's general condition after landing.\n\nCheck for obvious damage to body, propellers, or critical components.\nVerify landing gear status and positioning.",
+      "id": "drone_safe_state",
+      "title": "DRONE SAFE STATE: Post-flight condition",
+      "description": "Verify drone is in safe post-flight state.\n\nConfirm drone is completely stationary.\nCheck for stable landing gear position.\nLook for any signs of thermal events or damage.\nImmediate stop required if smoke, liquid, or damage observed.",
       "instructions": [
-        "Visual check of drone body",
-        "Inspect visible propellers",
-        "Verify landing position"
+        "Verify drone is stationary (no movement/rocking)",
+        "Check stability on landing gear (no abnormal tip/lean)",
+        "Look for smoke, steam, liquid, or heat haze",
+        "Check for obvious structural damage",
+        "STOP immediately if smoke/liquid/damage observed"
       ],
       "validationBoxes": {},
       "completion": {
@@ -58,13 +65,16 @@
       "note": ""
     },
     {
-      "id": "parachute_quick_check",
-      "title": "PARACHUTE: Verify deployment status",
-      "description": "Quick check to ensure parachute system has not deployed and is secure.",
+      "id": "propulsion_arm_status",
+      "title": "PROPULSION: Visual danger check",
+      "description": "Quick visual inspection of propulsion system for immediate dangers.\n\nVerify all 8 propellers are present and intact.\nCheck for visible damage or obstruction.\nConfirm motors are not spinning.\nCheck navigation light pattern if visible.",
       "instructions": [
-        "Verify yellow lid is intact",
-        "Check for any parachute fabric visible",
-        "Confirm system appears armed"
+        "Verify all propellers are present (none missing)",
+        "Check for broken/chipped propellers",
+        "Look for bent propellers or surface contact",
+        "Confirm motors are not spinning",
+        "Check nav light pattern (if known)",
+        "STOP if propeller damaged or drone appears armed"
       ],
       "validationBoxes": {},
       "completion": {
@@ -74,13 +84,14 @@
       "note": ""
     },
     {
-      "id": "battery_status",
-      "title": "BATTERY: Visual status check",
-      "description": "Check battery indicators and connections visible through cameras.",
+      "id": "umbilical_charge_area",
+      "title": "UMBILICAL: Quick visual check",
+      "description": "Visual inspection of umbilical and charging area.\n\nDrone may not be aligned yet - focus on obvious issues.\nCheck connector area for damage.\nLook for signs of electrical problems.\nVerify no obvious misalignment if connected.",
       "instructions": [
-        "Check visible battery indicators",
-        "Verify secure mounting",
-        "Note any warning lights"
+        "Check umbilical connector area for damage",
+        "Look for soot/burn marks around contacts",
+        "Verify no obvious mis-seat if connected",
+        "STOP if area burned or connector misaligned"
       ],
       "validationBoxes": {},
       "completion": {
@@ -90,13 +101,68 @@
       "note": ""
     },
     {
-      "id": "route_recommendation",
-      "title": "ROUTE DECISION: Recommend inspection path",
-      "description": "Based on initial findings, recommend whether Service Partner inspection or Onsite TI is required.\n\nService Partner: No critical issues found, standard remote inspection sufficient.\nOnsite TI: Physical inspection required due to findings or limitations.",
+      "id": "sensor_peripheral_snapshot",
+      "title": "PERIPHERALS: Quick inventory check",
+      "description": "Fast visual check for missing or broken peripherals.\n\nVerify essential components are present.\nCheck for obvious damage to sensors.\nNote: Some items may not be visible from all angles.",
       "instructions": [
-        "Review all initial findings",
-        "Assess need for physical inspection",
-        "Document recommendation rationale"
+        "Check 4G antennas present (not snapped off)",
+        "Verify GPS masts present and upright",
+        "Check RealSense lenses not cracked/covered",
+        "Look for ETH/USB caps if visible",
+        "Check downlight and MiniFinder if visible",
+        "STOP if essential peripheral missing/broken"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "system_vitals",
+      "title": "SYSTEM VITALS: UI status check",
+      "description": "Check system status from UI if available.\n\nReview any warnings or faults in the system.\nVerify telemetry and battery status.\nCheck for temperature or power warnings.\nOnly verify what your remote system actually shows.",
+      "instructions": [
+        "Check for critical warnings/faults in UI",
+        "Verify LiveView or telemetry available",
+        "Check battery status reasonable for post-flight",
+        "Look for temperature/power warnings",
+        "STOP if critical system fault present"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "dispatch_decision",
+      "title": "DISPATCH GATE: Go/No-Go decision",
+      "description": "Make dispatch decision based on inspection results.\n\nIf all items pass: DISPATCH OK\nIf any item failed or cannot be verified: DO NOT DISPATCH\n\nEscalate to pilot/maintenance lead if issues found.\nDocument decision and reasoning.",
+      "instructions": [
+        "Review all inspection results",
+        "Make PASS or STOP decision",
+        "If PASS: Clear for dispatch",
+        "If STOP: Do not dispatch, escalate immediately"
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "documentation",
+      "title": "DOCUMENTATION: Complete inspection record",
+      "description": "Complete mandatory documentation of inspection outcome.\n\nLog in work order/ops channel.\nFormat: Name, Hangar, Timestamp, Initial RemoteTI PASS/STOP + comment\n\nExample PASS: 'Oliver Wallin, Torslanda, 2026-01-17 14:06, Initial RemoteTI PASS'\n\nExample STOP: 'Initial RemoteTI STOP – damaged propeller front-right arm'\n\nIf abnormality found, submit Adverse Events form:\nhttps://forms.gle/NF1nVe6F9GGWq5fZ8",
+      "instructions": [
+        "Log outcome in work order/ops channel",
+        "Include Name, Hangar, Timestamp, Status",
+        "Add specific comment if STOP",
+        "Submit adverse events form if needed"
       ],
       "validationBoxes": {},
       "completion": {
@@ -105,5 +171,12 @@
       },
       "note": ""
     }
-  ]
+  ],
+  "completionStatus": {
+    "status": "not_started",
+    "startedBy": null,
+    "startedAt": null,
+    "completedBy": null,
+    "completedAt": null
+  }
 }
