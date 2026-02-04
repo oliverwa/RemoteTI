@@ -18,6 +18,46 @@ const app = express();
 const config = require('./config.js');
 const PORT = process.env.PORT || config.server.port;
 
+// Function to get hangar configuration from admin panel data
+function getHangarConfig(hangarId) {
+  try {
+    const hangarsDataPath = path.join(__dirname, 'data', 'hangars.json');
+    const hangarsData = JSON.parse(fs.readFileSync(hangarsDataPath, 'utf8'));
+    const hangar = hangarsData.hangars.find(h => h.id === hangarId);
+    
+    if (!hangar) {
+      // Fall back to hardcoded config if not found in admin data
+      return config.hangars[hangarId];
+    }
+    
+    // Build config from admin data
+    const hangarConfig = {
+      id: hangar.id,
+      label: hangar.label,
+      ipAddress: hangar.ipAddress,
+      folderName: hangar.folderName || hangar.label.replace(/[^a-zA-Z0-9]/g, ''), // Use folderName or sanitized label
+      connection: {
+        ssh_host: hangar.ipAddress ? `system@${hangar.ipAddress}` : '',
+        ip: hangar.ipAddress || ''
+      },
+      lights: {
+        enabled: true,
+        endpoint: hangar.ipAddress ? `https://${hangar.ipAddress}:7548/hangar/lightson` : '',
+        username: 'system',
+        password: 'FJjf93/#',
+        waitTime: 3
+      },
+      cameraTransforms: hangar.cameraTransforms || {}
+    };
+    
+    return hangarConfig;
+  } catch (error) {
+    console.error('Error loading hangar config from admin data:', error);
+    // Fall back to hardcoded config
+    return config.hangars[hangarId];
+  }
+}
+
 // Load authentication module - try full version first, fall back to simple
 let auth;
 try {
@@ -223,6 +263,8 @@ app.post('/api/capture', async (req, res) => {
     const cleanType = inspectionType.replace('-ti-inspection', '').replace(/-/g, '_');
     // Use provided session name or generate one
     const sessionName = providedSessionName || `${cleanType}_${drone}_${sessionTimestamp}`;
+    
+    // Use hangar ID directly as folder name
     const sessionFolder = `${hangar}/${sessionName}`;
     
     // Create session directory and copy inspection template for remote inspections too
@@ -271,7 +313,7 @@ app.post('/api/capture', async (req, res) => {
 
 // Function to turn on hangar lights
 async function turnOnHangarLights(hangar) {
-  const hangarConfig = config.getHangar(hangar);
+  const hangarConfig = getHangarConfig(hangar);
   
   if (!hangarConfig || !hangarConfig.lights || !hangarConfig.lights.enabled) {
     log('info', `Lights not configured or disabled for hangar: ${hangar}`);
@@ -481,8 +523,8 @@ async function captureInParallel(requestId, hangar, drone, sessionFolder) {
 // Camera capture function
 function captureCameraParallel(requestId, hangar, drone, camera, port, sessionFolder) {
   return new Promise((resolve, reject) => {
-    const hangarConfig = config.getHangar(hangar);
-    const sshHost = hangarConfig?.connection?.ssh_host || hangar;
+    const hangarConfig = getHangarConfig(hangar);
+    const sshHost = hangarConfig?.connection?.ssh_host || `system@${hangarConfig?.ipAddress}` || hangar;
     const cameraIP = config.getCameraIP(camera);
     
     if (!cameraIP) {
@@ -666,7 +708,7 @@ app.post('/api/create-inspection-session', async (req, res) => {
   const { inspectionType, hangar, drone, sessionFolder } = req.body;
   
   try {
-    // Create the session folder
+    // Create the session folder directly using hangar ID
     const sessionPath = path.join(SNAPSHOTS_DIR, sessionFolder);
     
     // Create directory
@@ -1070,6 +1112,8 @@ app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) =
     
     const droneId = alarmSession.droneId || 'unknown';
     const sessionName = `initial_remote_${droneId}_${timestamp}`;
+    
+    // Use hangar ID directly as folder name
     const inspectionFolder = `${hangarId}/${sessionName}`;
     const inspectionPath = path.join(SNAPSHOTS_DIR, inspectionFolder);
     
@@ -1437,7 +1481,8 @@ app.put('/api/hangars/:hangarId/transforms', (req, res) => {
     const { hangarId } = req.params;
     const { transforms } = req.body;
     
-    if (!config.hangars[hangarId]) {
+    const hangarConfig = getHangarConfig(hangarId);
+    if (!hangarConfig) {
       return res.status(404).json({ error: `Hangar ${hangarId} not found` });
     }
     
@@ -1445,29 +1490,18 @@ app.put('/api/hangars/:hangarId/transforms', (req, res) => {
       return res.status(400).json({ error: 'Invalid transforms data' });
     }
     
-    // Update the transforms in the config
-    config.hangars[hangarId].cameraTransforms = transforms;
+    // Update the transforms in the hangars.json file
+    const hangarsDataPath = path.join(__dirname, 'data', 'hangars.json');
+    const hangarsData = JSON.parse(fs.readFileSync(hangarsDataPath, 'utf8'));
+    const hangarIndex = hangarsData.hangars.findIndex(h => h.id === hangarId);
     
-    // Save to config file for persistence
-    const configPath = path.join(__dirname, 'config.js');
-    const configContent = fs.readFileSync(configPath, 'utf8');
+    if (hangarIndex === -1) {
+      return res.status(404).json({ error: `Hangar ${hangarId} not found in data` });
+    }
     
-    // Find and replace the camera transforms for this hangar
-    const hangarPattern = new RegExp(
-      `(${hangarId}:[^}]*cameraTransforms:\\s*{)[^}]*(})`,
-      's'
-    );
+    hangarsData.hangars[hangarIndex].cameraTransforms = transforms;
+    fs.writeFileSync(hangarsDataPath, JSON.stringify(hangarsData, null, 2));
     
-    // Format the transforms for the config file
-    const formattedTransforms = Object.entries(transforms)
-      .map(([camId, transform]) => {
-        return `        ${camId}: { x: ${transform.x}, y: ${transform.y}, scale: ${transform.scale}, rotation: ${transform.rotation} }`;
-      })
-      .join(',\n');
-    
-    const replacement = `$1\n${formattedTransforms}\n      $2`;
-    
-    // For now, just log the update - in production you'd write this back
     log('info', `Camera transforms updated for ${hangarId}`, transforms);
     
     res.json({ 

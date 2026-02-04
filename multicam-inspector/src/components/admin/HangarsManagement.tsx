@@ -181,7 +181,9 @@ const HangarsManagement: React.FC = () => {
         return;
       }
 
+      const newId = formData.id || selectedHangar.id;
       const updatedHangar = {
+        id: newId,
         label: formData.label || selectedHangar.label,
         assignedDrone: formData.assignedDrone,
         status: formData.status || selectedHangar.status,
@@ -189,10 +191,10 @@ const HangarsManagement: React.FC = () => {
         ipAddress: formData.ipAddress,
       };
 
-      console.log('Updating hangar:', selectedHangar.id, updatedHangar);
+      console.log('Updating hangar:', selectedHangar.id, 'to', updatedHangar);
       console.log('Auth token:', authService.getToken());
 
-      // Send to backend
+      // Send to backend with ID change support
       const response = await fetch(`${API_CONFIG.BASE_URL}/api/hangars/${selectedHangar.id}`, {
         method: 'PUT',
         headers: {
@@ -208,14 +210,27 @@ const HangarsManagement: React.FC = () => {
         throw new Error('Failed to update hangar');
       }
 
-      // Update in local state - need to include all fields
-      setHangars(hangars.map(h => 
-        h.id === selectedHangar.id ? {
-          ...selectedHangar,
-          ...updatedHangar,
-          updatedAt: new Date().toISOString()
-        } : h
-      ));
+      // Update in local state - handle ID changes
+      if (newId !== selectedHangar.id) {
+        // ID changed - remove old entry and add new one
+        setHangars([
+          ...hangars.filter(h => h.id !== selectedHangar.id),
+          {
+            ...selectedHangar,
+            ...updatedHangar,
+            updatedAt: new Date().toISOString()
+          }
+        ]);
+      } else {
+        // ID unchanged - update in place
+        setHangars(hangars.map(h => 
+          h.id === selectedHangar.id ? {
+            ...selectedHangar,
+            ...updatedHangar,
+            updatedAt: new Date().toISOString()
+          } : h
+        ));
+      }
 
       setShowEditModal(false);
       resetForm();
@@ -261,6 +276,7 @@ const HangarsManagement: React.FC = () => {
   const openEditModal = (hangar: Hangar) => {
     setSelectedHangar(hangar);
     setFormData({
+      id: hangar.id,
       label: hangar.label,
       status: hangar.status,
       ipAddress: hangar.ipAddress || '',
@@ -458,6 +474,7 @@ const HangarsManagement: React.FC = () => {
                   />
                 </div>
 
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Drone</label>
                   <select
@@ -533,6 +550,18 @@ const HangarsManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Hangar ID</label>
+                  <input
+                    type="text"
+                    value={formData.id || selectedHangar.id}
+                    onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    placeholder="e.g., hangar_uddevalla_vpn"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Unique identifier used in system (be careful changing this)</p>
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Hangar Name</label>
                   <input
                     type="text"
@@ -566,6 +595,7 @@ const HangarsManagement: React.FC = () => {
                     placeholder="e.g., 10.0.10.113"
                   />
                 </div>
+
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Drone</label>

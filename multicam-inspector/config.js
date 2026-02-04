@@ -387,7 +387,7 @@ function loadHangarsFromJson() {
             ssh_host: h.ipAddress ? `system@${h.ipAddress}` : '',
             ip: h.ipAddress || ''
           },
-          folderName: h.label.replace(/[^a-zA-Z0-9]/g, ''),
+          folderName: h.folderName || h.label.replace(/[^a-zA-Z0-9]/g, ''),
           lights: {
             enabled: true,
             endpoint: h.ipAddress ? `https://${h.ipAddress}:7548/hangar/lightson` : '',

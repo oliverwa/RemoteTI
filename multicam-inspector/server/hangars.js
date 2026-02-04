@@ -131,10 +131,21 @@ async function updateHangar(req, res) {
       });
     }
     
+    // Check if ID is being changed
+    const newId = req.body.id || id;
+    
+    // If ID is changing, check for duplicates
+    if (newId !== id && data.hangars.find(h => h.id === newId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'A hangar with this ID already exists'
+      });
+    }
+    
     data.hangars[index] = {
       ...data.hangars[index],
       ...req.body,
-      id: id, // Ensure ID doesn't change
+      id: newId, // Allow ID to be changed
       updatedAt: new Date().toISOString()
     };
     
