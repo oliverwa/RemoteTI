@@ -2386,6 +2386,18 @@ export default function MultiCamInspector({
                     ?
                   </button>
                 </h2>
+                {/* Instructions below title */}
+                {items[idx].instructions && items[idx].instructions.length > 0 && (
+                  <div className="mt-3 text-sm text-gray-600">
+                    <ul className="list-disc list-inside space-y-1">
+                      {items[idx].instructions.map((instruction: string, i: number) => (
+                        <li key={i} className="text-left max-w-3xl mx-auto">
+                          {instruction}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
               
               {/* Pass/Fail Buttons below title */}
@@ -3075,8 +3087,10 @@ export default function MultiCamInspector({
             
             <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">{items[idx].title}</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{items[idx].detail}</p>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">{items[idx].title}</h3>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {items[idx].detail || items[idx].description || 'No description available'}
+                </p>
               </div>
             </div>
             
