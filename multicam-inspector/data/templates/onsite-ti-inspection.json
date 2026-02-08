@@ -58,12 +58,11 @@
     {
       "id": "initial_prep",
       "title": "ARRIVAL TASKS: Battery check and drone preparation",
-      "description": "Complete initial arrival tasks.\n\nVerify spare batteries are fully charged (otherwise start charging).\nDry off any water, snow, or moisture on drone to prevent water entering during battery change.\nAlign drone for easy access.",
+      "description": "Complete initial arrival tasks.\n\nVerify spare batteries are fully charged (otherwise start charging).\nDry off any water, snow, or moisture on drone to prevent water entering during battery change.",
       "instructions": [
         "Check spare batteries are fully charged.",
         "Start charging if batteries not ready.",
-        "Dry off any moisture on drone.",
-        "Position drone for easy access."
+        "Dry off any moisture on drone."
       ],
       "validationBoxes": {},
       "completion": {
@@ -75,7 +74,7 @@
     {
       "id": "telemetry_transfer",
       "title": "SYSTEM: Initiate telemetry transfer",
-      "description": "Connect and initiate telemetry transfer.\n\nUnscrew the safety cap over the Ethernet port on bottom of drone.\nAttach the telemetry Ethernet cable.\nConfirm telemetry transfer is active: nav lights blinking yellow.\nTransfer complete when blinking returns to red, green or blue.",
+      "description": "Connect the Ethernet cable and initiate telemetry data transfer from the drone.",
       "instructions": [
         "Unscrew Ethernet port safety cap.",
         "Connect telemetry Ethernet cable.",
@@ -236,7 +235,7 @@
     {
       "id": "remove_old_batteries",
       "title": "BATTERIES: Remove and inspect old batteries",
-      "description": "Remove old batteries and verify their condition.\n\nUse battery unplugging tool to disconnect both batteries.\nInspect batteries for any damage or abnormalities.",
+      "description": "Safely remove and inspect the old batteries from the drone.",
       "instructions": [
         "Unplug both batteries with unplugging tool.",
         "Verify batteries look OK.",
@@ -269,7 +268,7 @@
     {
       "id": "align_drone_perfect",
       "title": "INSTRUCTION: Align the drone perfectly",
-      "description": "Position drone precisely on visual navigation marker.\n\nAlign drone over the visual navigation marker.\nFront landing gear should be placed on the two dots.\nEnsure front camera faces correct direction.",
+      "description": "Position the drone precisely on the visual navigation marker for proper alignment.",
       "instructions": [
         "Align drone over visual navigation marker.",
         "Place front landing gear on the two dots in front of marker.",
@@ -286,7 +285,7 @@
     {
       "id": "internal_compartment_check",
       "title": "DRONE STRUCTURE: Verify internal compartment",
-      "description": "Inspect internal compartment while batteries are out.\n\nEnsure internal power cables are routed correctly.\nCheck for any debris or dirt inside drone.\nVerify no residues or moisture present.",
+      "description": "Inspect the internal battery compartment for cables, debris, and moisture.",
       "instructions": [
         "Check internal cable routing.",
         "Look for debris or dirt.",
@@ -303,7 +302,7 @@
     {
       "id": "liveview_camera_check",
       "title": "LIVEVIEW: Verify camera condition",
-      "description": "Check LiveView camera structure and cleanliness.\n\nVerify camera is structurally OK.\nClean lens with microfiber cloth or dedicated brush.\nDo not use wet wipes.",
+      "description": "Inspect the LiveView camera for structural integrity and clean the lens.",
       "instructions": [
         "Check LiveView camera structure.",
         "Clean lens with dry microfiber/brush.",
@@ -319,7 +318,7 @@
     {
       "id": "install_odd_battery",
       "title": "BATTERIES: Install odd number battery to front",
-      "description": "Connect the odd number battery to front position.\n\nPlace odd number battery in front position of drone.\nConnect battery ensuring connector is fully seated.\nRoute cables to avoid pinching when closing lids.",
+      "description": "Install the odd-numbered battery in the front position of the drone.",
       "instructions": [
         "Place odd battery in front position.",
         "Connect battery securely.",
@@ -354,7 +353,7 @@
     {
       "id": "install_even_battery",
       "title": "BATTERIES: Install even number battery to rear",
-      "description": "Connect the even number battery to rear position.\n\nPlace even number battery in rear position of drone.\nConnect battery ensuring connector is fully seated.\nRoute cables to avoid pinching when closing lids.",
+      "description": "Install the even-numbered battery in the rear position of the drone.",
       "instructions": [
         "Place even battery in rear position.",
         "Connect battery securely.",
@@ -404,7 +403,7 @@
     {
       "id": "documentation_note",
       "title": "DOCUMENTATION: Note inspection details in work order",
-      "description": "Document inspection in work order.\n\nPress \"Add note\" in work order.\nWrite: Your name, AirframeID, drone name, battery set.\nExample: \"Oliver Wallin, 1124, E3001, F3\"\nFor E3 drones, note 4 digits before \"E3\" as AirframeID.",
+      "description": "Document the inspection details in the work order system.",
       "instructions": [
         "Open work order.",
         "Press \"Add note\".",
@@ -421,7 +420,7 @@
     {
       "id": "close_lids",
       "title": "DRONE STRUCTURE: Close the lids",
-      "description": "Close and secure the battery compartment.\n\nVerify batteries are fully seated in compartments.\nClose lids carefully checking no cables are pinched.\nScrew in 4 screws, 2 per side using lid tool.",
+      "description": "Close and secure the battery compartment lids.",
       "instructions": [
         "Verify batteries fully seated.",
         "Close lids carefully.",
@@ -472,7 +471,7 @@
     {
       "id": "medkit_mounting",
       "title": "MEDKIT: Mount and secure MedKit",
-      "description": "Position and lock MedKit in place.\n\nPlace MedKit on front brace before rolling up final line.\nPull out locking pin and lift MedKit to locking position.\nLock pin securely and verify fully seated.\nAttach magnetic connector to front right of MedKit.\nVerify nav lights turn blue and button is ON.",
+      "description": "Mount the MedKit in position and secure it with the locking mechanism.",
       "instructions": [
         "Position MedKit on front brace.",
         "Pull locking pin out.",

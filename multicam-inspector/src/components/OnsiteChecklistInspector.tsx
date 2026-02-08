@@ -9,6 +9,7 @@ interface Task {
   taskNumber: string;
   category: string;
   description: string;
+  instructions?: string[];  // Add instructions field
   presetType?: string;
   note?: string;  // Optional note field
   status?: 'pass' | 'fail' | 'pending' | 'na';  // Task status
@@ -75,6 +76,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   };
   const [taskStatuses, setTaskStatuses] = useState<{ [key: string]: 'pass' | 'fail' | 'pending' }>({});
   const [notes, setNotes] = useState<{ [key: string]: string }>({});
+  const [checkedInstructions, setCheckedInstructions] = useState<{ [key: string]: boolean[] }>({});
   const [loading, setLoading] = useState(true);
   const [sessionFolder, setSessionFolder] = useState<string>('');
 
@@ -164,6 +166,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           taskNumber: task.id || task.taskNumber || String(index + 1),
           category: task.category || 'General',
           description: task.description || '',
+          instructions: task.instructions || [],  // Add instructions field
           presetType: task.presetType || '',
           // Load note field from saved data
           note: task.note || '',  
@@ -191,6 +194,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         // Initialize task statuses
         const initialStatuses: { [key: string]: 'pass' | 'fail' | 'pending' } = {};
         const initialNotes: { [key: string]: string } = {};
+        const initialChecked: { [key: string]: boolean[] } = {};
         
         // Initialize task statuses and notes from the loaded data
         mappedTasks.forEach((task: Task) => {
@@ -212,10 +216,16 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
           } else {
             console.log(`No note found for task ${task.taskNumber}`);
           }
+          
+          // Initialize checked instructions array if task has instructions
+          if (task.instructions && task.instructions.length > 0) {
+            initialChecked[task.taskNumber] = new Array(task.instructions.length).fill(false);
+          }
         });
         
         setTaskStatuses(initialStatuses);
         setNotes(initialNotes);
+        setCheckedInstructions(initialChecked);
         
         // Find the first incomplete task and set it as current
         let firstIncompleteIndex = 0;
@@ -631,7 +641,6 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                     <span className="text-sm font-semibold text-gray-700">{currentTaskIndex + 1}</span>
                   </div>
                   <div>
-                    <div className="text-xs text-gray-500 uppercase tracking-wide">{currentTask.category}</div>
                     <h2 className="text-lg font-semibold text-gray-900">{currentTask.taskName}</h2>
                   </div>
                 </div>
@@ -652,8 +661,37 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               
               {/* Task Description */}
               <div className="mb-6">
-                <p className="text-gray-600 leading-relaxed">{currentTask.description}</p>
+                <div className="text-gray-600 leading-relaxed whitespace-pre-line">
+                  {currentTask.description}
+                </div>
               </div>
+
+              {/* Instructions with Checkboxes */}
+              {currentTask.instructions && currentTask.instructions.length > 0 && (
+                <div className="mb-6 bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Instructions:</h3>
+                  <div className="space-y-2">
+                    {currentTask.instructions.map((instruction, index) => (
+                      <label key={index} className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 rounded p-2 transition-colors">
+                        <input
+                          type="checkbox"
+                          className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          checked={checkedInstructions[currentTask.taskNumber]?.[index] || false}
+                          onChange={(e) => {
+                            const newChecked = [...(checkedInstructions[currentTask.taskNumber] || [])];
+                            newChecked[index] = e.target.checked;
+                            setCheckedInstructions(prev => ({
+                              ...prev,
+                              [currentTask.taskNumber]: newChecked
+                            }));
+                          }}
+                        />
+                        <span className="text-gray-700 text-sm leading-relaxed">{instruction}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Simplified Task Actions */}
@@ -661,9 +699,20 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               <div className="flex gap-3">
                 <Button
                   onClick={() => handleTaskStatus(currentTask.taskNumber, 'pass')}
+                  disabled={
+                    currentTask.instructions && 
+                    currentTask.instructions.length > 0 && 
+                    (!checkedInstructions[currentTask.taskNumber] || 
+                     checkedInstructions[currentTask.taskNumber].filter(Boolean).length < currentTask.instructions.length)
+                  }
                   className={`flex-1 py-4 text-lg font-medium transition-all ${
                     taskStatuses[currentTask.taskNumber] === 'pass'
                       ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : currentTask.instructions && 
+                        currentTask.instructions.length > 0 && 
+                        (!checkedInstructions[currentTask.taskNumber] || 
+                         checkedInstructions[currentTask.taskNumber].filter(Boolean).length < currentTask.instructions.length)
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-white hover:bg-green-50 text-green-600 border border-green-500'
                   }`}
                 >
