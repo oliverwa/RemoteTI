@@ -1,27 +1,26 @@
 {
   "inspectionType": "drone_remote_visual_inspection",
   "name": "Full Remote Technical Inspection Checklist",
-  "version": "2.0",
+  "version": "1.0",
   "description": "Comprehensive remote inspection checklist for drone systems using still images from 8-camera cube setup",
   "metadata": {
-    "author": "RemoteTI",
+    "author": "Oliver Wallin",
     "created": "2024-10-08",
-    "updated": "2026-02-04",
+    "updated": "2026-02-08",
     "inspectionMode": "remote",
     "assumptions": "Batteries already swapped and charging. MedKit is mounted. No one enters hangar during RemoteTI. All 8 camera images must be clear and of good quality."
   },
   "tasks": [
     {
       "id": "start_conditions",
-      "title": "START CONDITIONS: Verify remote inspection prerequisites",
-      "description": "Confirm all prerequisites for remote inspection are met.\n\nVerify you are operating RemoteTI (not on-site procedure).\nConfirm correct hangar/Skybase ID is selected.\nVerify all 8 camera still images are captured with good quality.\nConfirm image quality is sufficient for accurate inspection.\nVerify no people visible inside Skybase.\nDocument timestamp of inspection start.",
+      "title": "START CONDITIONS: Verify prerequisites",
+      "description": "Confirm all prerequisites for remote inspection are met.",
       "instructions": [
-        "Confirm RemoteTI procedure is being used",
-        "Verify correct hangar/Skybase selected",
-        "Check all 8 camera images are captured and clear",
-        "Verify image quality is good for all cameras",
-        "Confirm no personnel in hangar",
-        "STOP if any image quality is poor or condition not confirmed"
+        "Confirm RemoteTI procedure is being used.",
+        "Verify correct hangar/Skybase selected.",
+        "Check all 8 camera images are captured with good quality.",
+        "Confirm no personnel visible in hangar.",
+        "Document timestamp of inspection start."
       ],
       "validationBoxes": {},
       "completion": {
@@ -32,15 +31,15 @@
     },
     {
       "id": "camera_coverage",
-      "title": "CAMERA COVERAGE: Verify adequate visual coverage",
-      "description": "Confirm critical areas are visible in captured still images from 8 cube corner cameras.\n\nDrone visible from at least 2 opposite corners.\nMarker alignment visible from at least 1 low-angle view.\nUmbilical connection area visible from at least 1 close/side view.\nMedKit and winch line path visible from at least 1 front/side view.\nGround/enclosure visible for debris check from minimum 2 corners.",
+      "title": "CAMERA COVERAGE: Verify visual coverage",
+      "description": "Confirm critical areas are visible in captured images.",
       "instructions": [
-        "Verify drone visibility from opposite corners",
-        "Check marker alignment visibility",
-        "Confirm umbilical area is visible",
-        "Verify MedKit/winch visibility",
-        "Check ground coverage for debris",
-        "STOP if critical areas not visible"
+        "Verify drone visible from opposite corners.",
+        "Check marker alignment visibility.",
+        "Confirm umbilical area is visible.",
+        "Verify MedKit/winch visibility.",
+        "Check ground coverage for debris.",
+        "STOP if critical areas not visible."
       ],
       "validationBoxes": {},
       "completion": {
@@ -52,33 +51,14 @@
     {
       "id": "skybase_environment",
       "title": "SKYBASE SAFETY: Environment and obstacle check",
-      "description": "Inspect Skybase environment for safety hazards in still images.\n\nNo debris, tools, or loose objects on Skybase floor.\nNo cables or objects near propellers/landing gear.\nVisual navigation marker clean and unobstructed.\nEnclosure vegetation does not pose takeoff/landing risk.\nSkybase lights visible and functional.\nLow-pressure pins aligned with loops (door safety).",
+      "description": "Inspect Skybase environment for safety hazards and foreign objects.",
       "instructions": [
-        "Scan floor for debris/tools in images",
-        "Check clearance around propellers",
-        "Verify marker is clean and visible",
-        "Assess vegetation clearance",
-        "Confirm lighting functionality",
-        "Check door safety pin alignment",
-        "STOP if hazards detected"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "drone_safe_state",
-      "title": "DRONE STATUS: Verify remote safe state",
-      "description": "Confirm drone is in expected safe state in still images.\n\nDrone stationary and stable on landing gear.\nNav lights showing expected pattern:\n- Green = OK\n- Blue = OK with MedKit mounted\n- Red/unexpected = STOP and contact pilot\n\nDrone appears level and properly positioned.",
-      "instructions": [
-        "Verify drone stability on landing gear",
-        "Check navigation light status",
-        "Confirm expected light pattern",
-        "Verify drone is level",
-        "STOP if red lights or unexpected pattern"
+        "Scan floor for debris/tools in images.",
+        "Check clearance around propellers.",
+        "Verify marker is clean and visible.",
+        "Assess vegetation clearance.",
+        "Confirm lighting functionality.",
+        "STOP if hazards detected."
       ],
       "validationBoxes": {},
       "completion": {
@@ -90,13 +70,12 @@
     {
       "id": "umbilical_connection",
       "title": "UMBILICAL: Power connection and contact surfaces",
-      "description": "Inspect umbilical connection and contact surfaces in still images.\n\nUmbilical connected and appears straight (no crooked seating).\nNo visible arcing residue, soot, or corrosion on contacts.\nDrone sits correctly on contact surfaces (no odd offset).\nCable routing appears correct without strain.",
+      "description": "Inspect umbilical connection and contact surfaces.",
       "instructions": [
-        "Verify umbilical is connected straight",
-        "Check for arcing/corrosion signs",
-        "Confirm proper drone seating",
-        "Verify cable routing",
-        "STOP if misseated or damaged"
+        "Verify umbilical is connected straight.",
+        "Check for arcing/corrosion signs.",
+        "Verify cable routing appears correct.",
+        "STOP if misseated or damaged."
       ],
       "validationBoxes": {},
       "completion": {
@@ -108,15 +87,15 @@
     {
       "id": "parachute_system",
       "title": "PARACHUTE SYSTEM: Complete PRS inspection",
-      "description": "Inspect entire parachute recovery system in still images.\n\nYellow lid seated evenly with no gaps.\nNo cracks visible on lid perimeter.\nNo parachute fabric protruding outside lid.\nParachute tube seated correctly with no looseness.\nLine/collector appears intact with no excessive slack.\nFuse switch intact with red cap present.",
+      "description": "Inspect entire parachute recovery system for proper condition.",
       "instructions": [
-        "Check yellow lid seating and gaps",
-        "Inspect for perimeter cracks",
-        "Verify no fabric protrusion",
-        "Check tube mounting security",
-        "Inspect line and collector",
-        "Verify fuse switch and red cap",
-        "STOP if PRS abnormal"
+        "Check yellow lid seating and gaps.",
+        "Inspect for perimeter cracks.",
+        "Verify no fabric protrusion.",
+        "Check tube mounting security.",
+        "Inspect line and collector.",
+        "Verify fuse switch and red cap.",
+        "STOP if PRS abnormal."
       ],
       "validationBoxes": {},
       "completion": {
@@ -128,14 +107,14 @@
     {
       "id": "drone_structure",
       "title": "DRONE STRUCTURE: Arms, core, and landing gear",
-      "description": "Inspect drone structural components in still images.\n\nAll motor arms intact (no cracks/bends/dents).\nCore structure intact with no visible cracks.\nLanding gear stable and symmetric.\nNo structural damage or deformation.\nAll components appear properly aligned.",
+      "description": "Inspect drone structural components for integrity.",
       "instructions": [
-        "Inspect each motor arm for damage",
-        "Check core for cracks",
-        "Verify landing gear symmetry",
-        "Look for structural deformation",
-        "Confirm component alignment",
-        "STOP if structural damage found"
+        "Inspect each motor arm for damage.",
+        "Check core for cracks.",
+        "Verify landing gear symmetry.",
+        "Look for structural deformation.",
+        "Confirm component alignment.",
+        "STOP if structural damage found."
       ],
       "validationBoxes": {},
       "completion": {
@@ -147,33 +126,13 @@
     {
       "id": "propulsion_system",
       "title": "PROPULSION: Propellers, motors, and ESCs",
-      "description": "Inspect propulsion system components in still images.\n\nAll 8 propellers present and intact (no chips/cracks/deformation).\nNo contamination (ice/snow/mud) on propellers.\nPropellers fully deployed in flight-ready position.\nMotors intact with no visible rotor damage.\nESC-to-motor orange cables intact and routed correctly.\nESC modules appear mounted with no looseness.",
+      "description": "Inspect all propulsion system components.",
       "instructions": [
-        "Check each propeller for damage",
-        "Verify no contamination on blades",
-        "Confirm full propeller deployment",
-        "Inspect motor housings",
-        "Check orange cable routing",
-        "Verify ESC mounting",
-        "STOP if propulsion abnormal"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "antenna_systems",
-      "title": "ANTENNAS: 4G, GPS, and communication systems",
-      "description": "Inspect all antenna systems in still images.\n\n4G Antennas: 4 antennas present and secured\n- 2 pointing sideways\n- 2 angled downward\n\nGPS masts intact and aimed forward.\nAll antenna connections appear secure.\nNo damage to antenna elements.",
-      "instructions": [
-        "Count and verify 4 4G antennas",
-        "Check sideways antenna orientation",
-        "Check downward antenna orientation",
-        "Verify GPS masts forward-facing",
-        "Inspect antenna mounting security"
+        "Check all 8 propellers intact (no chips/cracks).",
+        "Verify no contamination (ice/snow/mud) on blades.",
+        "Inspect motors for visible damage.",
+        "Check ESC-to-motor orange cables intact.",
+        "Verify ESC modules mounted securely."
       ],
       "validationBoxes": {},
       "completion": {
@@ -184,14 +143,13 @@
     },
     {
       "id": "sensor_systems",
-      "title": "SENSORS: Cameras and navigation sensors",
-      "description": "Inspect sensor systems in still images.\n\nRealSense lenses clean and undamaged (front + downward).\nOpticalFlow area unobstructed (no dirt blocking).\nRangefinder lens clean and properly mounted.\nAll sensors appear properly aligned.\nNo physical damage to sensor housings.",
+      "title": "SENSORS: Navigation and vision systems",
+      "description": "Inspect sensor systems for proper condition.",
       "instructions": [
-        "Check RealSense lens cleanliness",
-        "Verify OpticalFlow unobstructed",
-        "Inspect Rangefinder condition",
-        "Confirm sensor alignment",
-        "Look for housing damage"
+        "Check RealSense lenses clean (front + downward).",
+        "Verify OpticalFlow area unobstructed.",
+        "Confirm all sensors properly aligned.",
+        "Look for physical damage to housings."
       ],
       "validationBoxes": {},
       "completion": {
@@ -201,15 +159,15 @@
       "note": ""
     },
     {
-      "id": "ports_caps",
-      "title": "PORTS & CAPS: Verify all protective covers",
-      "description": "Verify all ports have protective caps in still images.\n\nEthernet cap installed and seated properly.\nUSB cap installed and seated properly.\nAll other port covers in place.\nNo exposed connectors visible.\nCaps show no damage or loose fitting.",
+      "id": "antenna_systems",
+      "title": "ANTENNAS: Communication systems",
+      "description": "Verify all antenna systems configuration.",
       "instructions": [
-        "Verify Ethernet cap installed",
-        "Check USB cap installed",
-        "Confirm all ports covered",
-        "Look for exposed connectors",
-        "Check cap security"
+        "Count and verify 4 4G antennas present.",
+        "Check 2 antennas pointing sideways.",
+        "Check 2 antennas angled downward.",
+        "Verify GPS masts intact and forward-facing.",
+        "Confirm all antenna connections secure."
       ],
       "validationBoxes": {},
       "completion": {
@@ -219,15 +177,16 @@
       "note": ""
     },
     {
-      "id": "peripherals",
-      "title": "PERIPHERALS: Lights, MiniFinder, and accessories",
-      "description": "Inspect peripheral equipment in still images.\n\nDownlight mounted on front-right landing gear.\nDownlight not illuminated during inspection.\nMiniFinder present and mounted correctly.\nAll peripheral mounting appears secure.\nNo loose or missing accessories.",
+      "id": "ports_peripherals",
+      "title": "PORTS & PERIPHERALS: Protective covers and accessories",
+      "description": "Verify ports and peripheral equipment.",
       "instructions": [
-        "Locate downlight on landing gear",
-        "Verify downlight not illuminated",
-        "Check MiniFinder presence",
-        "Verify mounting security",
-        "Look for missing accessories"
+        "Verify Ethernet and USB caps installed.",
+        "Confirm all ports have protective covers.",
+        "Check no exposed connectors visible.",
+        "Locate downlight on front-right landing gear.",
+        "Verify downlight not illuminated.",
+        "Check MiniFinder present and mounted."
       ],
       "validationBoxes": {},
       "completion": {
@@ -238,14 +197,14 @@
     },
     {
       "id": "identification",
-      "title": "MARKINGS: Regulatory and identification markings",
-      "description": "Verify all required markings visible in still images.\n\nPermit number visible on rear arm ('SWEbne...').\nOnyx name and airframeID visible and correct.\nPublic 'found drone' instructions visible.\nAED alarm device sticker with power-off instructions.\nAll markings legible and undamaged.",
+      "title": "MARKINGS: Regulatory and identification",
+      "description": "Verify all required markings are visible.",
       "instructions": [
-        "Locate permit number on rear arm",
-        "Verify Onyx name/airframeID",
-        "Check public instructions",
-        "Find AED warning sticker",
-        "Confirm marking legibility"
+        "Locate permit number on rear arm ('SWEbne...').",
+        "Verify Onyx name and airframeID correct.",
+        "Check 'found drone' instructions visible.",
+        "Find AED alarm device warning sticker.",
+        "Confirm all markings legible."
       ],
       "validationBoxes": {},
       "completion": {
@@ -257,15 +216,15 @@
     {
       "id": "medkit_winch",
       "title": "MEDKIT & WINCH: Payload system verification",
-      "description": "Verify MedKit and winch system in still images.\n\nMedKit present and seated correctly.\nMedKit appears mechanically locked (no misalignment).\nWinch line routed through red guide below drone.\nLine appears knot-free and not snagged.\nLine tension normal (no loose loops on floor).\nAED device visible and properly mounted.",
+      "description": "Verify MedKit and winch system configuration.",
       "instructions": [
-        "Verify MedKit presence and seating",
-        "Check mechanical locking",
-        "Trace winch line routing",
-        "Look for knots or snags",
-        "Check line tension",
-        "Verify AED mounting",
-        "STOP if abnormal"
+        "Verify MedKit presence and seating.",
+        "Check mechanical locking.",
+        "Trace winch line routing.",
+        "Look for knots or snags.",
+        "Check line tension.",
+        "Verify AED mounting.",
+        "STOP if abnormal."
       ],
       "validationBoxes": {},
       "completion": {
@@ -275,33 +234,14 @@
       "note": ""
     },
     {
-      "id": "wasp_system",
-      "title": "WASP: Attachment and carbon fiber inspection",
-      "description": "Inspect WASP system attachment in still images.\n\nAll four WASP mounting points secure.\nCarbon fiber panels intact (no cracks/delamination).\nNo visible damage to WASP structure.\nAll WASP connections appear secure.\nProper alignment with drone core.",
+      "id": "drone_status",
+      "title": "DRONE STATUS: Verify safe state",
+      "description": "Confirm drone is in expected safe state.",
       "instructions": [
-        "Check four mounting points",
-        "Inspect carbon fiber integrity",
-        "Look for structural damage",
-        "Verify connections",
-        "Confirm alignment"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "battery_compartment",
-      "title": "BATTERY AREA: Compartment and lid inspection",
-      "description": "Inspect battery compartment area in still images.\n\nBattery compartment lid completely closed.\nAll latches appear engaged.\nNo gaps visible around lid edges.\nVentilation openings unobstructed.\nNo damage to lid or seals.",
-      "instructions": [
-        "Verify lid fully closed",
-        "Check latch engagement",
-        "Look for gaps around edges",
-        "Verify ventilation clear",
-        "Inspect for damage"
+        "Verify drone stable on landing gear.",
+        "Check nav lights (Green=OK, Blue=OK+MedKit, Red=STOP).",
+        "Confirm drone appears level.",
+        "STOP if red lights or unexpected pattern."
       ],
       "validationBoxes": {},
       "completion": {
@@ -312,15 +252,14 @@
     },
     {
       "id": "alignment_verification",
-      "title": "ALIGNMENT: Marker precision and positioning",
-      "description": "Verify drone alignment with navigation marker in still images.\n\nDrone centered on visual navigation marker.\nDrone body parallel with marker lines.\nLanding legs symmetric relative to marker.\nFront direction matches marker orientation.\nProper clearance from all hangar structures.",
+      "title": "ALIGNMENT: Marker positioning",
+      "description": "Verify drone alignment with navigation marker.",
       "instructions": [
-        "Check centering on marker",
-        "Verify parallel alignment",
-        "Confirm leg symmetry",
-        "Check front orientation",
-        "Verify clearances",
-        "STOP if misaligned"
+        "Check drone centered on navigation marker.",
+        "Verify body parallel with marker lines.",
+        "Confirm landing legs symmetric to marker.",
+        "Check front matches marker orientation.",
+        "Verify clearance from hangar structures."
       ],
       "validationBoxes": {},
       "completion": {
@@ -330,35 +269,13 @@
       "note": ""
     },
     {
-      "id": "cables_connectors",
-      "title": "CABLES: Visible wiring and connections",
-      "description": "Inspect all visible cables and connectors in still images.\n\nNo damaged cable shielding visible.\nNo exposed conductive material.\nAll connectors appear properly seated.\nCable routing appears organized.\nNo loose or dangling wires.",
+      "id": "battery_compartment",
+      "title": "BATTERY: Compartment inspection",
+      "description": "Inspect battery compartment area.",
       "instructions": [
-        "Scan for damaged shielding",
-        "Look for exposed conductors",
-        "Check connector seating",
-        "Verify cable routing",
-        "Identify loose wires"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "final_go_nogo",
-      "title": "FINAL CHECK: Go/No-Go decision",
-      "description": "Perform final comprehensive assessment for go/no-go decision.\n\nSkybase area clean and safe.\nMarker clean and alignment correct.\nUmbilical connection verified.\nDrone external condition acceptable.\nAll systems appear nominal.\nNo unverified critical items.",
-      "instructions": [
-        "Review Skybase safety",
-        "Confirm marker/alignment",
-        "Verify umbilical status",
-        "Assess overall condition",
-        "Check all systems nominal",
-        "Confirm no unverified items",
-        "Make GO/NO-GO decision"
+        "Verify battery compartment lid completely closed.",
+        "Check 4 screws secured (2 on each side).",
+        "Look for gaps around lid edges."
       ],
       "validationBoxes": {},
       "completion": {
@@ -370,13 +287,13 @@
     {
       "id": "documentation",
       "title": "DOCUMENTATION: Complete inspection records",
-      "description": "Complete inspection documentation and reporting.\n\nLog RemoteTI completion in work order.\nFormat: Name, Hangar, Timestamp, RemoteTI PASS/STOP + comment.\nExample: 'Oliver Wallin, Kungälv, 2026-01-17 10:42, RemoteTI PASS'\n\nIf abnormalities found, fill Adverse Events form:\nhttps://forms.gle/NF1nVe6F9GGWq5fZ8",
+      "description": "Complete inspection documentation and reporting.",
       "instructions": [
-        "Log inspection completion",
-        "Record Name, Hangar, Timestamp",
-        "Note PASS/STOP status",
-        "Add relevant comments",
-        "Submit adverse events if needed"
+        "Log inspection completion.",
+        "Record Name, Hangar, Timestamp.",
+        "Note PASS/STOP status.",
+        "Add relevant comments.",
+        "Submit adverse events if needed."
       ],
       "validationBoxes": {},
       "completion": {
