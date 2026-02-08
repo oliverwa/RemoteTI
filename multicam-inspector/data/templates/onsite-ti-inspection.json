@@ -26,10 +26,10 @@
       "title": "SAFETY BRIEFING: Review critical safety requirements",
       "description": "Safety First - This checklist is critical for safe drone operation.\n\nJust Culture - Report any mistakes or concerns without fear of blame.\nAttention to Detail - Follow each task in order. Do not skip steps.\nUse PPE - Always wear required safety gear.\nReport Issues - Document any abnormalities immediately.\n\nKEEP THE DRONE POWERED ON until explicitly told to turn it off.",
       "instructions": [
-        "Read and understand all safety requirements",
-        "Confirm PPE is available and worn",
-        "Acknowledge Just Culture principles",
-        "Prepare to follow checklist sequentially"
+        "Read and understand all safety requirements.",
+        "Confirm PPE is available and worn.",
+        "Acknowledge Just Culture principles.",
+        "Prepare to follow checklist sequentially."
       ],
       "validationBoxes": {},
       "completion": {
@@ -43,10 +43,10 @@
       "title": "PRS: Disarm the parachute system safely",
       "description": "ALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION WHEN HANDLING THE PRS FUSE.\n\nSwitch the parachute fuse just below the PRS tube to \"SAFE\".",
       "instructions": [
-        "Put on safety goggles and hearing protection",
-        "Locate PRS fuse below the PRS tube",
-        "Switch fuse to \"SAFE\" position",
-        "Verify switch is secure in SAFE position"
+        "Put on safety goggles and hearing protection.",
+        "Locate PRS fuse below the PRS tube.",
+        "Switch fuse to \"SAFE\" position.",
+        "Verify switch is secure in SAFE position."
       ],
       "validationBoxes": {},
       "completion": {
@@ -60,10 +60,10 @@
       "title": "ARRIVAL TASKS: Battery check and drone preparation",
       "description": "Complete initial arrival tasks.\n\nVerify spare batteries are fully charged (otherwise start charging).\nDry off any water, snow, or moisture on drone to prevent water entering during battery change.\nAlign drone for easy access.",
       "instructions": [
-        "Check spare batteries are fully charged",
-        "Start charging if batteries not ready",
-        "Dry off any moisture on drone",
-        "Position drone for easy access"
+        "Check spare batteries are fully charged.",
+        "Start charging if batteries not ready.",
+        "Dry off any moisture on drone.",
+        "Position drone for easy access."
       ],
       "validationBoxes": {},
       "completion": {
@@ -77,10 +77,10 @@
       "title": "SYSTEM: Initiate telemetry transfer",
       "description": "Connect and initiate telemetry transfer.\n\nUnscrew the safety cap over the Ethernet port on bottom of drone.\nAttach the telemetry Ethernet cable.\nConfirm telemetry transfer is active: nav lights blinking yellow.\nTransfer complete when blinking returns to red, green or blue.",
       "instructions": [
-        "Unscrew Ethernet port safety cap",
-        "Connect telemetry Ethernet cable",
-        "Verify nav lights blinking yellow (transfer active)",
-        "Note: Continue checklist, will verify completion later"
+        "Unscrew Ethernet port safety cap.",
+        "Connect telemetry Ethernet cable.",
+        "Verify nav lights blinking yellow (transfer active).",
+        "Note: Continue checklist, will verify completion later."
       ],
       "validationBoxes": {},
       "completion": {
@@ -94,12 +94,12 @@
       "title": "PARACHUTE SYSTEM: Complete system inspection",
       "description": "Inspect entire parachute system for integrity.\n\nYELLOW LID: Check for cracks, verify evenly pressed, no fabric protruding.\nTUBE: Verify securely mounted and fully seated, no structural damage.\nLINE & COLLECTOR: Line collector intact, no excessive slack, line retained in backpack.\nFUSE SWITCH: Structurally intact with red cap mounted.",
       "instructions": [
-        "Inspect yellow lid for cracks and proper seating",
-        "Verify no parachute fabric visible outside lid",
-        "Check tube is secure and undamaged",
-        "Verify line collector intact with proper tension",
-        "Confirm line retained in backpack",
-        "Check fuse switch intact with red cap"
+        "Inspect yellow lid for cracks and proper seating.",
+        "Verify no parachute fabric visible outside lid.",
+        "Check tube is secure and undamaged.",
+        "Verify line collector intact with proper tension.",
+        "Confirm line retained in backpack.",
+        "Check fuse switch intact with red cap."
       ],
       "validationBoxes": {},
       "completion": {
@@ -113,11 +113,11 @@
       "title": "DRONE STRUCTURE: Comprehensive structural inspection",
       "description": "Inspect all structural components.\n\nMOTOR ARMS: Check for visual or structural damage.\nCORE: Inspect for visual cracks.\nLANDING GEAR: Check for cracks, verify connection (some play acceptable).",
       "instructions": [
-        "Inspect all motor arms for damage",
-        "Check drone core for cracks",
-        "Verify landing gear structural soundness",
-        "Check landing gear connections",
-        "Confirm no excessive play in connections"
+        "Inspect all motor arms for damage.",
+        "Check drone core for cracks.",
+        "Verify landing gear structural soundness.",
+        "Check landing gear connections.",
+        "Confirm no excessive play in connections."
       ],
       "validationBoxes": {},
       "completion": {
@@ -131,15 +131,15 @@
       "title": "PROPULSION SYSTEM: Full propulsion inspection",
       "description": "Complete propulsion system check.\n\nPROPELLERS: Clean if needed, check for damage/cracks, inspect edges.\nMOTORS: Check rotors, spin for smoothness, verify no abnormal sounds, check orange ESC cables.\nAXIAL PLAY: Hold motor base, push/pull bell - no movement allowed.\nESCs: Verify no indications of loose mounting.",
       "instructions": [
-        "Clean propellers if necessary",
-        "Check all propellers for damage/cracks",
-        "Inspect leading and trailing edges",
-        "Check motor rotors for damage",
-        "Spin each motor for smooth movement",
-        "Listen for abnormal sounds",
-        "Check orange cables between ESC and motors",
-        "Test each motor for axial play",
-        "Verify ESCs are securely mounted"
+        "Clean propellers if necessary.",
+        "Check all propellers for damage/cracks.",
+        "Inspect leading and trailing edges.",
+        "Check motor rotors for damage.",
+        "Spin each motor for smooth movement.",
+        "Listen for abnormal sounds.",
+        "Check orange cables between ESC and motors.",
+        "Test each motor for axial play.",
+        "Verify ESCs are securely mounted."
       ],
       "validationBoxes": {},
       "completion": {
@@ -153,12 +153,12 @@
       "title": "PERIPHERALS: All sensors and external components",
       "description": "Inspect all peripheral systems.\n\n4G ANTENNAS: Firmly mounted, 2 to sides, 2 angled down.\nGPS MASTS: Structurally OK, both aimed forward.\nREALSENSE: Front and downward lenses clean, no damage (use dry utilities only).\nOPTICALFLOW: Clean, no dirt obscuring view.\nDOWNLIGHT: Structurally intact on front right landing gear.\nMINIFINDER: Mounted and holder intact.",
       "instructions": [
-        "Verify 4G antennas firmly mounted and positioned",
-        "Check GPS masts structure and forward aim",
-        "Clean RealSense lenses with dry utilities",
-        "Inspect OpticalFlow for obstructions",
-        "Verify Downlight intact on front right gear",
-        "Check MiniFinder and holder condition"
+        "Verify 4G antennas firmly mounted and positioned.",
+        "Check GPS masts structure and forward aim.",
+        "Clean RealSense lenses with dry utilities.",
+        "Inspect OpticalFlow for obstructions.",
+        "Verify Downlight intact on front right gear.",
+        "Check MiniFinder and holder condition."
       ],
       "validationBoxes": {},
       "completion": {
@@ -172,10 +172,10 @@
       "title": "MARKING: Verify all required markings",
       "description": "Verify drone and AED markings.\n\nPermit number on rear arm (starting with \"SWEbne…\").\nOnyx name and airframeID visible (e.g., \"E3001\" airframeID 1234C01B1124E3001).\nPublic instructions between middle and rear arms.\nAED alarm device has power-off sticker.",
       "instructions": [
-        "Check permit number on rear arm",
-        "Verify Onyx name and airframeID",
-        "Confirm public instructions present",
-        "Check AED power-off sticker"
+        "Check permit number on rear arm.",
+        "Verify Onyx name and airframeID.",
+        "Confirm public instructions present.",
+        "Check AED power-off sticker."
       ],
       "validationBoxes": {},
       "completion": {
@@ -189,11 +189,11 @@
       "title": "SYSTEM: Complete telemetry and secure ports",
       "description": "Finalize telemetry transfer and secure ports.\n\nConfirm telemetry complete (nav lights not yellow).\nIf not complete after 10 minutes, stop and continue.\nRemove Ethernet cable and store safely.\nSecurely lock Ethernet port cap.\nVerify USB cap is also screwed on and sealed.",
       "instructions": [
-        "Check nav lights no longer yellow",
-        "If still yellow after 10 min, stop transfer",
-        "Remove and store Ethernet cable",
-        "Screw on Ethernet port cap completely",
-        "Verify USB cap sealed"
+        "Check nav lights no longer yellow.",
+        "If still yellow after 10 min, stop transfer.",
+        "Remove and store Ethernet cable.",
+        "Screw on Ethernet port cap completely.",
+        "Verify USB cap sealed."
       ],
       "validationBoxes": {},
       "completion": {
@@ -207,8 +207,24 @@
       "title": "DRONE STRUCTURE: Open lids for battery access",
       "description": "Open drone compartment for battery replacement.\n\nUnscrew 4 screws holding the lids together.\nOpen lids to access battery compartment.",
       "instructions": [
-        "Unscrew 4 lid screws with screwdriver",
-        "Open lids carefully for battery access"
+        "Unscrew 4 lid screws with screwdriver.",
+        "Open lids carefully for battery access."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "verify_new_batteries",
+      "title": "BATTERIES: Verify new batteries ready",
+      "description": "Check new batteries are fully charged and undamaged.\n\nVerify both batteries are over 50.3V.\nEnsure batteries and connectors are undamaged.\nConfirm batteries are clean and dry.",
+      "instructions": [
+        "Verify both new batteries are over 50.3V.",
+        "Check battery connectors are undamaged.",
+        "Ensure batteries are clean and dry."
       ],
       "validationBoxes": {},
       "completion": {
@@ -222,9 +238,9 @@
       "title": "BATTERIES: Remove and inspect old batteries",
       "description": "Remove old batteries and verify their condition.\n\nUse battery unplugging tool to disconnect both batteries.\nInspect batteries for any damage or abnormalities.",
       "instructions": [
-        "Unplug both batteries with unplugging tool",
-        "Verify batteries look OK",
-        "Check for any swelling or damage"
+        "Unplug both batteries with unplugging tool.",
+        "Verify batteries look OK.",
+        "Check for any swelling or damage."
       ],
       "validationBoxes": {},
       "completion": {
@@ -238,9 +254,10 @@
       "title": "BATTERIES: Put old batteries on charge",
       "description": "Connect old batteries to charging station.\n\nFollow the instructions at the charging station.\nEnsure batteries are properly connected to charger.",
       "instructions": [
-        "Take batteries to charging station",
-        "Connect batteries to charger",
-        "Verify charging has started"
+        "Take batteries to charging station.",
+        "Follow instructions at the charging station.",
+        "Connect batteries to charger.",
+        "Verify charging has started."
       ],
       "validationBoxes": {},
       "completion": {
@@ -254,10 +271,10 @@
       "title": "INSTRUCTION: Align the drone perfectly",
       "description": "Position drone precisely on visual navigation marker.\n\nAlign drone over the visual navigation marker.\nFront landing gear should be placed on the two dots.\nEnsure front camera faces correct direction.",
       "instructions": [
-        "Position drone over visual marker",
-        "Place front gear on the two dots",
-        "Verify front camera direction",
-        "Ensure perfect alignment with markers"
+        "Align drone over visual navigation marker.",
+        "Place front landing gear on the two dots in front of marker.",
+        "Ensure front camera faces correct direction.",
+        "Verify drone body perfectly aligned with visual navigation markers."
       ],
       "validationBoxes": {},
       "completion": {
@@ -271,10 +288,10 @@
       "title": "DRONE STRUCTURE: Verify internal compartment",
       "description": "Inspect internal compartment while batteries are out.\n\nEnsure internal power cables are routed correctly.\nCheck for any debris or dirt inside drone.\nVerify no residues or moisture present.",
       "instructions": [
-        "Check internal cable routing",
-        "Look for debris or dirt",
-        "Verify no moisture present",
-        "Ensure compartment is clean"
+        "Check internal cable routing.",
+        "Look for debris or dirt.",
+        "Verify no moisture present.",
+        "Ensure compartment is clean."
       ],
       "validationBoxes": {},
       "completion": {
@@ -288,25 +305,9 @@
       "title": "LIVEVIEW: Verify camera condition",
       "description": "Check LiveView camera structure and cleanliness.\n\nVerify camera is structurally OK.\nClean lens with microfiber cloth or dedicated brush.\nDo not use wet wipes.",
       "instructions": [
-        "Check LiveView camera structure",
-        "Clean lens with dry microfiber/brush",
-        "Verify no damage to camera"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "verify_new_batteries",
-      "title": "BATTERIES: Verify new batteries ready",
-      "description": "Check new batteries are fully charged and undamaged.\n\nVerify both batteries are over 50V.\nEnsure batteries and connectors are undamaged.\nConfirm batteries are clean and dry.",
-      "instructions": [
-        "Verify new batteries over 50V each",
-        "Check battery connectors undamaged",
-        "Ensure batteries are clean and dry"
+        "Check LiveView camera structure.",
+        "Clean lens with dry microfiber/brush.",
+        "Verify no damage to camera."
       ],
       "validationBoxes": {},
       "completion": {
@@ -320,10 +321,10 @@
       "title": "BATTERIES: Install odd number battery to front",
       "description": "Connect the odd number battery to front position.\n\nPlace odd number battery in front position of drone.\nConnect battery ensuring connector is fully seated.\nRoute cables to avoid pinching when closing lids.",
       "instructions": [
-        "Place odd battery in front position",
-        "Connect battery securely",
-        "Ensure connector fully seated (no gap)",
-        "Route cables to avoid pinching"
+        "Place odd battery in front position.",
+        "Connect battery securely.",
+        "Ensure connector fully seated (no gap).",
+        "Route cables to avoid pinching."
       ],
       "validationBoxes": {},
       "completion": {
@@ -337,11 +338,11 @@
       "title": "SYSTEM STARTUP: Verify all systems initialize correctly",
       "description": "Confirm proper system initialization after first battery connection.\n\nLIVEVIEW: Camera moves to end position then returns forward.\nFLIGHT CONTROLLER: Initial beeping for 5-10s, then stops if untouched.\nNAV LIGHTS: Snake pattern - Green (OK), Blue (OK with MedKit), other = contact pilot.\nONYX FAN: Verify fan on bottom spins (keep fingers clear).",
       "instructions": [
-        "Watch LiveView calibration movement",
-        "Listen for flight controller beeping pattern",
-        "Verify nav light color pattern",
-        "Check Onyx fan is spinning",
-        "Contact pilot if unexpected nav lights"
+        "Watch LiveView calibration movement.",
+        "Listen for flight controller beeping pattern.",
+        "Verify nav light color pattern.",
+        "Check Onyx fan is spinning.",
+        "Contact pilot if unexpected nav lights."
       ],
       "validationBoxes": {},
       "completion": {
@@ -355,44 +356,10 @@
       "title": "BATTERIES: Install even number battery to rear",
       "description": "Connect the even number battery to rear position.\n\nPlace even number battery in rear position of drone.\nConnect battery ensuring connector is fully seated.\nRoute cables to avoid pinching when closing lids.",
       "instructions": [
-        "Place even battery in rear position",
-        "Connect battery securely",
-        "Ensure connector fully seated (no gap)",
-        "Route cables to avoid pinching"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "documentation_note",
-      "title": "DOCUMENTATION: Note inspection details in work order",
-      "description": "Document inspection in work order.\n\nPress \"Add note\" in work order.\nWrite: Your name, AirframeID, battery set.\nExample: \"Oliver Wallin, 1124, F3\"\nFor E3 drones, note 4 digits before \"E3\" as AirframeID.",
-      "instructions": [
-        "Open work order",
-        "Press \"Add note\"",
-        "Enter name, AirframeID, battery set",
-        "Save note"
-      ],
-      "validationBoxes": {},
-      "completion": {
-        "completedBy": null,
-        "completedAt": null
-      },
-      "note": ""
-    },
-    {
-      "id": "close_lids",
-      "title": "DRONE STRUCTURE: Close the lids",
-      "description": "Close and secure the battery compartment.\n\nVerify batteries are fully seated in compartments.\nClose lids carefully checking no cables are pinched.\nScrew in 4 screws, 2 per side using lid tool.",
-      "instructions": [
-        "Verify batteries fully seated",
-        "Close lids carefully",
-        "Check no cables pinched",
-        "Screw in 4 screws (2 per side)"
+        "Place even battery in rear position.",
+        "Connect battery securely.",
+        "Ensure connector fully seated (no gap).",
+        "Route cables to avoid pinching."
       ],
       "validationBoxes": {},
       "completion": {
@@ -406,10 +373,10 @@
       "title": "POWER SYSTEM: Inspect umbilical contact surfaces",
       "description": "Check umbilical for damage before connecting.\n\nInspect copper surfaces on umbilical (floor and drone landing gear).\nEnsure no soot or residues from sparks.\nVerify copper pins/pads are not bent or damaged.",
       "instructions": [
-        "Inspect umbilical copper surfaces",
-        "Check for soot or corrosion",
-        "Verify pins/pads not bent",
-        "Ensure contacts are clean"
+        "Inspect umbilical copper surfaces.",
+        "Check for soot or corrosion.",
+        "Verify pins/pads not bent.",
+        "Ensure contacts are clean."
       ],
       "validationBoxes": {},
       "completion": {
@@ -423,9 +390,43 @@
       "title": "POWER SYSTEM: Attach umbilical to drone",
       "description": "Connect umbilical for power supply.\n\nConnect umbilical next to the left landing gear.\nConfirm connector is straight and fully connected.",
       "instructions": [
-        "Connect umbilical to left landing gear",
-        "Ensure connection is straight",
-        "Verify fully connected"
+        "Connect umbilical to left landing gear.",
+        "Ensure connection is straight.",
+        "Verify fully connected."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "documentation_note",
+      "title": "DOCUMENTATION: Note inspection details in work order",
+      "description": "Document inspection in work order.\n\nPress \"Add note\" in work order.\nWrite: Your name, AirframeID, drone name, battery set.\nExample: \"Oliver Wallin, 1124, E3001, F3\"\nFor E3 drones, note 4 digits before \"E3\" as AirframeID.",
+      "instructions": [
+        "Open work order.",
+        "Press \"Add note\".",
+        "Enter name, AirframeID, drone name, battery set.",
+        "Save note."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "close_lids",
+      "title": "DRONE STRUCTURE: Close the lids",
+      "description": "Close and secure the battery compartment.\n\nVerify batteries are fully seated in compartments.\nClose lids carefully checking no cables are pinched.\nScrew in 4 screws, 2 per side using lid tool.",
+      "instructions": [
+        "Verify batteries fully seated.",
+        "Close lids carefully.",
+        "Check no cables pinched.",
+        "Screw in 4 screws (2 per side)."
       ],
       "validationBoxes": {},
       "completion": {
@@ -439,10 +440,10 @@
       "title": "MEDKIT: Verify contents and AED status",
       "description": "Verify MedKit contents and AED operational status.\n\nVerify all utilities are included and in good condition.\nCheck AED is correctly placed inside MedKit.\nConfirm AED status is OK.\nVerify AED is dry, clean and free from damage.",
       "instructions": [
-        "Check all MedKit utilities present",
-        "Verify AED placement in MedKit",
-        "Confirm AED status shows OK",
-        "Check AED is clean and undamaged"
+        "Check all MedKit utilities present.",
+        "Verify AED placement in MedKit.",
+        "Confirm AED status shows OK.",
+        "Check AED is clean and undamaged."
       ],
       "validationBoxes": {},
       "completion": {
@@ -456,10 +457,10 @@
       "title": "WINCH: Thread and attach line",
       "description": "Set up winch line for MedKit deployment.\n\nThread line through the red guide below drone.\nAttach line securely to the spool.\nRoll up line using button on winch housing.\nConfirm spool spins smoothly with no abnormal noise.",
       "instructions": [
-        "Thread line through red guide",
-        "Attach line to spool securely",
-        "Press and hold button to roll up line",
-        "Verify smooth operation, no noise"
+        "Thread line through red guide.",
+        "Attach line to spool securely.",
+        "Press and hold button to roll up line.",
+        "Verify smooth operation, no noise."
       ],
       "validationBoxes": {},
       "completion": {
@@ -473,12 +474,12 @@
       "title": "MEDKIT: Mount and secure MedKit",
       "description": "Position and lock MedKit in place.\n\nPlace MedKit on front brace before rolling up final line.\nPull out locking pin and lift MedKit to locking position.\nLock pin securely and verify fully seated.\nAttach magnetic connector to front right of MedKit.\nVerify nav lights turn blue and button is ON.",
       "instructions": [
-        "Position MedKit on front brace",
-        "Pull locking pin out",
-        "Lift MedKit to locking position",
-        "Lock pin securely",
-        "Attach magnetic connector to front right",
-        "Verify nav lights turn blue"
+        "Position MedKit on front brace.",
+        "Pull locking pin out.",
+        "Lift MedKit to locking position.",
+        "Lock pin securely.",
+        "Attach magnetic connector to front right.",
+        "Verify nav lights turn blue."
       ],
       "validationBoxes": {},
       "completion": {
@@ -490,16 +491,15 @@
     {
       "id": "skybase_complete_check",
       "title": "SKYBASE: Complete environment and maintenance check",
-      "description": "Final Skybase inspection and maintenance.\n\nVISUAL MARKERS: Clean navigation markers.\nVEGETATION: No overgrown foliage/grass.\nPRESSURE PINS: Indoor side pins aligned with loops.\nCLEAN & SAFE: Secure tools, remove debris.\nLIGHTS: Interior and external lights working.\nRESTOCK: Note any items needing restocking.\nCAMERAS: Clean all 8 dome cameras with microfiber.",
+      "description": "Final Skybase inspection and maintenance.\n\nVISUAL MARKERS: Clean navigation markers.\nVEGETATION: No overgrown foliage/grass.\nCLEAN & SAFE: Secure tools, remove debris.\nLIGHTS: Interior and external lights working.\nRESTOCK: Note any items needing restocking.\nCAMERAS: Clean all 8 dome cameras with microfiber.",
       "instructions": [
-        "Clean visual navigation markers",
-        "Check vegetation clearance",
-        "Verify pressure pin alignment",
-        "Secure all tools",
-        "Remove any debris",
-        "Test interior and external lights",
-        "Note items needing restocking",
-        "Clean all 8 RemoteTI cameras"
+        "Clean visual navigation markers.",
+        "Check vegetation clearance.",
+        "Secure all tools.",
+        "Remove any debris.",
+        "Test interior and external lights.",
+        "Note items needing restocking.",
+        "Clean all 8 RemoteTI cameras."
       ],
       "validationBoxes": {},
       "completion": {
@@ -513,10 +513,10 @@
       "title": "FINAL CHECK: Verify everything is ready",
       "description": "Final verification before arming PRS.\n\nEnsure Ethernet port cap is screwed on.\nConfirm drone is perfectly aligned.\nConfirm lids are securely screwed on.\nVerify all tools are secured.",
       "instructions": [
-        "Check Ethernet port cap sealed",
-        "Verify drone alignment on marker",
-        "Confirm lid screws tight",
-        "Ensure all tools secured"
+        "Check Ethernet port cap sealed.",
+        "Verify drone alignment on marker.",
+        "Confirm lid screws tight.",
+        "Ensure all tools secured."
       ],
       "validationBoxes": {},
       "completion": {
@@ -530,11 +530,11 @@
       "title": "PRS: Arm the parachute system safely",
       "description": "FINAL CRITICAL STEP - ARM PARACHUTE\n\nALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION.\nSwitch the parachute fuse below PRS tube to \"DANGER\".\nAfter arming the PRS, DO NOT approach the drone.",
       "instructions": [
-        "Put on safety goggles and hearing protection",
-        "Locate PRS fuse switch",
-        "Switch to \"DANGER\" position",
-        "Step away from drone immediately",
-        "DO NOT APPROACH after arming"
+        "Put on safety goggles and hearing protection.",
+        "Locate PRS fuse switch.",
+        "Switch to \"DANGER\" position.",
+        "Step away from drone immediately.",
+        "DO NOT APPROACH after arming."
       ],
       "validationBoxes": {},
       "completion": {
@@ -548,9 +548,9 @@
       "title": "DOCUMENTATION: Report any abnormalities",
       "description": "Record any issues found during inspection.\n\nFill out Adverse Events form for any abnormalities.\nLink: https://forms.gle/NF1nVe6F9GGWq5fZ8",
       "instructions": [
-        "If any issues found, open Adverse Events form",
-        "Document all abnormalities",
-        "Submit form if applicable"
+        "If any issues found, open Adverse Events form.",
+        "Document all abnormalities.",
+        "Submit form if applicable."
       ],
       "validationBoxes": {},
       "completion": {
