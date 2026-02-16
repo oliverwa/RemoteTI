@@ -4,6 +4,7 @@ const { spawn, exec } = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
 const https = require('https');
+const { saveAlarmSession } = require('./server/alarmHelper');
 
 // Try to load dotenv if available (for development)
 try {
@@ -1110,8 +1111,10 @@ app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) =
     const second = now.getSeconds().toString().padStart(2, '0');
     const timestamp = `${year}${month}${day}_${hour}${minute}${second}`;
     
+    // Get both hangar short name and drone ID
+    const hangarShortName = hangarId.replace('hangar_', '').replace('_vpn', '');
     const droneId = alarmSession.droneId || 'unknown';
-    const sessionName = `initial_remote_${droneId}_${timestamp}`;
+    const sessionName = `initial_remote_${hangarShortName}_${droneId}_${timestamp}`;
     
     // Use hangar ID directly as folder name
     const inspectionFolder = `${hangarId}/${sessionName}`;
@@ -1230,7 +1233,7 @@ app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) =
     };
     
     // Save updated alarm session
-    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    saveAlarmSession(sessionPath, alarmSession);
     
     res.json({ 
       success: true,
@@ -1812,15 +1815,19 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
       startTime: new Date().toISOString()
     };
     
-    // Get drone ID from session
-    const droneId = alarmSession.location?.drone || 'drone-001';
+    // Get drone ID from alarm session or hangar configuration
+    let droneId = alarmSession.droneId;
+    if (!droneId) {
+      const hangarConfig = getHangarConfig(hangarId);
+      droneId = hangarConfig?.assignedDrone || 'unknown';
+    }
     
-    // Create session directory with consistent naming
+    // Create session directory with consistent naming (includes both hangar and drone)
     const now = new Date();
     const dateStr = now.toISOString().slice(2, 10).replace(/-/g, '');
     const timeStr = now.toISOString().slice(11, 19).replace(/:/g, '');
     const hangarShortName = hangarId.replace('hangar_', '').replace('_vpn', ''); 
-    const sessionName = `full_remote_ti_${hangarShortName}_${dateStr}_${timeStr}`;
+    const sessionName = `full_remote_ti_${hangarShortName}_${droneId}_${dateStr}_${timeStr}`;
     const sessionDir = path.join(BASE_DIR, 'data', 'sessions', hangarId, sessionName);
     
     if (!fs.existsSync(sessionDir)) {
@@ -1899,7 +1906,7 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
             };
             
             // Save updated session
-            fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+            saveAlarmSession(sessionPath, alarmSession);
             
             // Set the path after a delay to allow progress bar to complete
             setTimeout(() => {
@@ -1959,12 +1966,15 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
 app.post('/api/alarm-session/:hangarId/clear-area', async (req, res) => {
   try {
     const { hangarId } = req.params;
+    log('info', `Clear area request for hangar: ${hangarId}`);
     const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
     
     // Find latest alarm session for this hangar
     const files = fs.readdirSync(alarmsDir)
       .filter(f => f.startsWith(`alarm_${hangarId}_`) && f.endsWith('.json'))
       .sort((a, b) => b.localeCompare(a));
+    
+    log('info', `Found ${files.length} alarm files for ${hangarId}`);
     
     if (files.length === 0) {
       return res.status(404).json({ error: 'No alarm session found' });
@@ -1991,13 +2001,44 @@ app.post('/api/alarm-session/:hangarId/clear-area', async (req, res) => {
     alarmSession.workflow.status = 'completed';
     alarmSession.workflow.completedTime = new Date().toISOString();
     
-    // Save updated session
-    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    // Debug logging
+    log('info', `Before setting alarm status - current status: ${alarmSession.status}`);
+    
+    // Mark entire alarm as completed
+    alarmSession.status = 'completed';
+    alarmSession.completedAt = new Date().toISOString();
+    
+    log('info', `Marking alarm as completed for ${hangarId}`);
+    log('info', `After setting - Alarm status: ${alarmSession.status}, completedAt: ${alarmSession.completedAt}`);
+    
+    // Ensure the properties are actually set before saving
+    // Force the status to be completed no matter what
+    const finalSession = JSON.parse(JSON.stringify(alarmSession)); // Deep clone
+    finalSession.status = 'completed';
+    finalSession.completedAt = finalSession.completedAt || new Date().toISOString();
+    
+    // Double-check before saving
+    if (finalSession.status !== 'completed') {
+      log('error', `WARNING: Status not set properly! Status is: ${finalSession.status}`);
+      finalSession.status = 'completed'; // Force it again
+    }
+    
+    // Save updated session using helper that preserves completed status
+    try {
+      saveAlarmSession(sessionPath, finalSession);
+      log('info', `File written successfully to ${sessionPath}`);
+    } catch (writeError) {
+      log('error', `Failed to write file: ${writeError.message}`);
+      throw writeError;
+    }
+    
+    log('info', `Alarm session saved successfully for ${hangarId} with status: ${finalSession.status}`);
     
     res.json({ 
       success: true, 
       message: 'Area cleared and workflow completed',
-      workflow: alarmSession.workflow
+      workflow: finalSession.workflow,
+      alarmStatus: finalSession.status
     });
     
   } catch (error) {
@@ -2031,15 +2072,20 @@ app.post('/api/alarm-session/:hangarId/generate-onsite-ti', async (req, res) => 
       startTime: new Date().toISOString()
     };
     
-    // Get drone ID from session
-    const droneId = alarmSession.location?.drone || 'drone-001';
+    // Get drone ID from alarm session or hangar configuration
+    let droneId = alarmSession.droneId;
+    if (!droneId) {
+      // Try to get from hangar configuration
+      const hangarConfig = getHangarConfig(hangarId);
+      droneId = hangarConfig?.assignedDrone || 'unknown';
+    }
     
-    // Create session directory with consistent naming
+    // Create session directory with consistent naming (includes both hangar and drone)
     const now = new Date();
     const dateStr = now.toISOString().slice(2, 10).replace(/-/g, '');
     const timeStr = now.toISOString().slice(11, 19).replace(/:/g, '');
     const hangarShortName = hangarId.replace('hangar_', '').replace('_vpn', '');
-    const sessionName = `onsite_ti_${hangarShortName}_${dateStr}_${timeStr}`;
+    const sessionName = `onsite_ti_${hangarShortName}_${droneId}_${dateStr}_${timeStr}`;
     const sessionDir = path.join(BASE_DIR, 'data', 'sessions', hangarId, sessionName);
     
     if (!fs.existsSync(sessionDir)) {
@@ -2078,7 +2124,7 @@ app.post('/api/alarm-session/:hangarId/generate-onsite-ti', async (req, res) => 
     };
     
     // Save updated alarm session
-    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    saveAlarmSession(sessionPath, alarmSession);
     
     res.json({ 
       success: true, 
@@ -2117,7 +2163,7 @@ app.post('/api/alarm-session/:hangarId/update-onsite-progress', async (req, res)
       alarmSession.inspections.onsiteTI.progress = progress;
       alarmSession.inspections.onsiteTI.lastUpdated = new Date().toISOString();
       
-      fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+      saveAlarmSession(sessionPath, alarmSession);
       
       log('info', `Updated Onsite TI progress for ${hangarId}: ${progress}`);
       res.json({ success: true, progress });
@@ -2162,7 +2208,7 @@ app.post('/api/alarm-session/:hangarId/complete-onsite-ti', async (req, res) => 
       alarmSession.inspections.onsiteTI.completedAt = completedAt || new Date().toISOString();
     }
     
-    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    saveAlarmSession(sessionPath, alarmSession);
     
     log('info', `Completed Onsite TI for ${hangarId}`);
     res.json({ success: true, message: 'Onsite TI marked as completed' });
@@ -2202,15 +2248,19 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
     
     // Create Basic TI inspection if route is 'basic' or 'basic-extended'
     if (route === 'basic' || route === 'basic-extended') {
-      // Get drone ID from alarm session
-      const droneId = alarmSession.location?.drone || 'drone-001';
+      // Get drone ID from alarm session or hangar configuration
+      let droneId = alarmSession.droneId;
+      if (!droneId) {
+        const hangarConfig = getHangarConfig(hangarId);
+        droneId = hangarConfig?.assignedDrone || 'unknown';
+      }
       
-      // Create session directory with consistent naming format
+      // Create session directory with consistent naming format (includes both hangar and drone)
       const now = new Date();
       const dateStr = now.toISOString().slice(2, 10).replace(/-/g, ''); // YYMMDD
       const timeStr = now.toISOString().slice(11, 19).replace(/:/g, ''); // HHMMSS
       const hangarShortName = hangarId.replace('hangar_', '').replace('_vpn', ''); // Extract short name
-      const sessionName = `service_partner_${hangarShortName}_${dateStr}_${timeStr}`;
+      const sessionName = `service_partner_${hangarShortName}_${droneId}_${dateStr}_${timeStr}`;
       const sessionDir = path.join(BASE_DIR, 'data', 'sessions', hangarId, sessionName);
       
       if (!fs.existsSync(sessionDir)) {
@@ -2260,8 +2310,15 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       log('info', `Created Basic TI inspection for ${hangarId}: ${sessionName}`);
     }
     
-    // Save updated alarm session
-    fs.writeFileSync(sessionPath, JSON.stringify(alarmSession, null, 2));
+    // Save updated alarm session - preserve existing status
+    // Don't overwrite if alarm is already completed
+    if (!alarmSession.status) {
+      alarmSession.status = 'active';
+    }
+    
+    saveAlarmSession(sessionPath, alarmSession);
+    
+    log('info', `Route decision saved for ${hangarId}, alarm status: ${alarmSession.status}`);
     
     res.json({ 
       success: true, 
@@ -2328,10 +2385,16 @@ app.post('/api/inspection/update-progress', async (req, res) => {
         alarmSession.inspections[inspectionType].completedAt = new Date().toISOString();
       }
       
-      // Save updated alarm session
-      fs.writeFileSync(alarmSessionPath, JSON.stringify(alarmSession, null, 2));
+      // Save updated alarm session - but don't overwrite completed status
+      // Important: If alarm was already marked completed, preserve that status
+      if (!alarmSession.status) {
+        alarmSession.status = 'active'; // Only set if not already set
+      }
+      
+      saveAlarmSession(alarmSessionPath, alarmSession);
       
       log('info', `Updated ${inspectionType} progress for ${sessionPath}: ${progress}% (${tasksCompleted}/${totalTasks})`);
+      log('info', `Alarm status preserved as: ${alarmSession.status}`);
       res.json({ success: true, message: 'Progress updated', inspectionType: inspectionType });
     } else {
       log('error', `Inspection not found in alarm session. Type: ${inspectionType}, Path: ${sessionPath}`);
@@ -2348,6 +2411,21 @@ app.post('/api/inspection/update-progress', async (req, res) => {
 app.get('/api/maintenance-history', async (req, res) => {
   try {
     const maintenanceHistory = {};
+    
+    // Load hangar-drone mapping
+    const hangarDroneMap = {};
+    try {
+      const hangarsData = JSON.parse(fs.readFileSync(path.join(BASE_DIR, 'data', 'hangars.json'), 'utf8'));
+      hangarsData.hangars.forEach(hangar => {
+        if (hangar.assignedDrone) {
+          // Extract hangar name from ID (e.g., "hangar_forsaker_vpn" -> "forsaker")
+          const hangarName = hangar.id.replace('hangar_', '').replace('_vpn', '');
+          hangarDroneMap[hangarName] = hangar.assignedDrone;
+        }
+      });
+    } catch (err) {
+      log('warn', 'Could not load hangar-drone mapping:', err.message);
+    }
     
     // Scan through all hangar folders to find drone sessions
     if (fs.existsSync(SNAPSHOTS_DIR)) {
@@ -2388,12 +2466,31 @@ app.get('/api/maintenance-history', async (req, res) => {
                 sessionName.toLowerCase().includes('service') ||
                 sessionName.toLowerCase().includes('mission') ||
                 sessionName.toLowerCase().includes('basic')) {
-              // For inspection sessions, drone ID is usually after the type prefix
+              // For inspection sessions, look for drone ID in the naming pattern
+              // New format: type_hangar_drone_date_time
+              // Old format: type_drone_date_time or type_hangar_date_time
+              let foundDrone = false;
               for (let i = 0; i < parts.length - 2; i++) {
-                // Skip type prefixes and look for the drone ID
-                if (!['onsite', 'ti', 'remote', 'full', 'initial', 'extended', 'service', 'mission', 'reset', 'basic'].includes(parts[i].toLowerCase())) {
-                  droneId = parts[i];
-                  break;
+                // Skip type prefixes
+                if (!['onsite', 'ti', 'remote', 'full', 'initial', 'extended', 'service', 'mission', 'reset', 'basic', 'partner'].includes(parts[i].toLowerCase())) {
+                  // Check next part - if it looks like a drone ID (e.g., e3002), use it
+                  if (i + 1 < parts.length - 2 && parts[i + 1].match(/^[a-z]\d+$/i)) {
+                    droneId = parts[i + 1];
+                    foundDrone = true;
+                    break;
+                  }
+                  // Otherwise check if this is a hangar name we can map
+                  else if (hangarDroneMap[parts[i]]) {
+                    droneId = hangarDroneMap[parts[i]];
+                    foundDrone = true;
+                    break;
+                  }
+                  // Or it might be the drone ID itself
+                  else if (parts[i].match(/^[a-z]\d+$/i)) {
+                    droneId = parts[i];
+                    foundDrone = true;
+                    break;
+                  }
                 }
               }
             } else {
@@ -2481,6 +2578,63 @@ app.get('/api/maintenance-history', async (req, res) => {
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastService)) {
             maintenanceHistory[session.droneId].lastService = session.date;
           }
+        }
+      }
+    }
+    
+    // Also check alarm sessions for completed Onsite TI inspections
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    if (fs.existsSync(alarmsDir)) {
+      const alarmFiles = fs.readdirSync(alarmsDir)
+        .filter(f => f.startsWith('alarm_') && f.endsWith('.json'));
+      
+      for (const alarmFile of alarmFiles) {
+        try {
+          const alarmData = JSON.parse(fs.readFileSync(path.join(alarmsDir, alarmFile), 'utf8'));
+          
+          // Check if this alarm has a completed Onsite TI
+          if (alarmData.inspections?.onsiteTI?.completedAt && alarmData.droneId) {
+            const droneId = alarmData.droneId;
+            const completedDate = alarmData.inspections.onsiteTI.completedAt;
+            
+            if (!maintenanceHistory[droneId]) {
+              maintenanceHistory[droneId] = {
+                lastOnsiteTI: null,
+                lastExtendedTI: null,
+                lastService: null
+              };
+            }
+            
+            // Update if this is more recent than the existing date
+            if (!maintenanceHistory[droneId].lastOnsiteTI || 
+                new Date(completedDate) > new Date(maintenanceHistory[droneId].lastOnsiteTI)) {
+              maintenanceHistory[droneId].lastOnsiteTI = completedDate;
+              log('info', `Updated lastOnsiteTI for ${droneId} from alarm session: ${completedDate}`);
+            }
+          }
+          
+          // Also check for completed Service Partner inspections in alarm workflow
+          if (alarmData.inspections?.servicePartner?.completedAt && alarmData.droneId) {
+            const droneId = alarmData.droneId;
+            const completedDate = alarmData.inspections.servicePartner.completedAt;
+            
+            if (!maintenanceHistory[droneId]) {
+              maintenanceHistory[droneId] = {
+                lastOnsiteTI: null,
+                lastExtendedTI: null,
+                lastService: null
+              };
+            }
+            
+            // Service Partner inspection counts as service
+            if (!maintenanceHistory[droneId].lastService || 
+                new Date(completedDate) > new Date(maintenanceHistory[droneId].lastService)) {
+              maintenanceHistory[droneId].lastService = completedDate;
+            }
+          }
+        } catch (err) {
+          // Ignore parsing errors
+          log('warn', `Failed to parse alarm file ${alarmFile}:`, err.message);
         }
       }
     }

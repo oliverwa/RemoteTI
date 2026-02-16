@@ -1,23 +1,25 @@
 {
   "inspectionType": "drone_service_partner_inspection",
   "name": "Service Partner Inspection",
-  "version": "1.0",
-  "description": "Service partner checklist for non-Everdrone personnel to prepare drone for next mission",
+  "version": "3.0",
+  "description": "Streamlined service partner checklist for battery swap, medkit verification, and essential safety checks",
   "metadata": {
-    "author": "RemoteTI",
+    "author": "Oliver Wallin",
     "created": "2024-12-05",
-    "inspectionMode": "onsite"
+    "updated": "2026-02-12",
+    "inspectionMode": "onsite",
+    "safetyNote": "Minimal onsite inspection - RemoteTI handles detailed technical checks"
   },
   "tasks": [
     {
-      "id": "battery_removal",
-      "title": "BATTERY: Remove old batteries",
-      "description": "Safely remove and dispose of old batteries from the drone.\n\nPower down the drone completely.\nCarefully disconnect battery connectors.\nRemove batteries from mounting points.\nStore old batteries safely for disposal.",
+      "id": "safety_briefing",
+      "title": "SAFETY: Review safety requirements",
+      "description": "Review critical safety requirements before starting.",
       "instructions": [
-        "Ensure drone is powered off",
-        "Disconnect battery cables carefully",
-        "Remove battery retention straps",
-        "Extract batteries from compartment"
+        "Ensure PPE is available and worn.",
+        "Verify area is safe for inspection.",
+        "Keep drone powered ON during inspection.",
+        "Note any immediate hazards."
       ],
       "validationBoxes": {},
       "completion": {
@@ -27,14 +29,14 @@
       "note": ""
     },
     {
-      "id": "battery_installation",
-      "title": "BATTERY: Install new batteries",
-      "description": "Mount fresh batteries and ensure proper connection.\n\nVerify new batteries are correct type.\nSecurely mount batteries in compartment.\nConnect battery cables properly.\nSecure with retention straps.",
+      "id": "prs_disarm",
+      "title": "PRS: Disarm the parachute system",
+      "description": "ALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION.\n\nSwitch the parachute fuse to SAFE.",
       "instructions": [
-        "Verify battery specifications match requirements",
-        "Place batteries in correct orientation",
-        "Connect power cables securely",
-        "Fasten retention straps"
+        "Put on safety goggles and hearing protection.",
+        "Locate PRS fuse below the PRS tube.",
+        "Switch fuse to \"SAFE\" position.",
+        "Verify switch is secure in SAFE position."
       ],
       "validationBoxes": {},
       "completion": {
@@ -44,14 +46,14 @@
       "note": ""
     },
     {
-      "id": "battery_verification",
-      "title": "BATTERY: Verify battery charge",
-      "description": "Confirm new batteries are fully charged and properly seated.\n\nCheck battery charge indicators.\nVerify secure mounting.\nConfirm proper cable connections.\nTest power delivery.",
+      "id": "open_lids",
+      "title": "DRONE: Open battery compartment",
+      "description": "Open drone compartment for battery access.",
       "instructions": [
-        "Check charge level indicators",
-        "Verify physical mounting is secure",
-        "Confirm all connections are tight",
-        "Power on briefly to test"
+        "Unscrew 4 lid screws (2 on each side) with torque screwdriver.",
+        "Open lids carefully.",
+        "Check for debris or moisture inside.",
+        "Check that the white seal is OK and undamaged."
       ],
       "validationBoxes": {},
       "completion": {
@@ -61,14 +63,13 @@
       "note": ""
     },
     {
-      "id": "medkit_removal",
-      "title": "MEDICAL: Remove old medical kit",
-      "description": "Safely remove the expired medical kit from the drone.\n\nLocate medical kit compartment.\nRelease mounting mechanisms.\nCarefully remove old kit.\nDocument removal for records.",
+      "id": "verify_new_batteries",
+      "title": "BATTERIES: Verify new batteries ready",
+      "description": "Check new batteries are fully charged and undamaged.",
       "instructions": [
-        "Open medical kit compartment",
-        "Release retention clips",
-        "Remove expired medical kit",
-        "Note removal date and time"
+        "Verify both new batteries are over 50.3V.",
+        "Check battery connectors are undamaged.",
+        "Ensure batteries are clean and dry."
       ],
       "validationBoxes": {},
       "completion": {
@@ -78,14 +79,136 @@
       "note": ""
     },
     {
-      "id": "medkit_installation",
-      "title": "MEDICAL: Mount new medical kit",
-      "description": "Install new medical kit and verify secure attachment.\n\nCheck new kit expiration date.\nPlace kit in mounting position.\nSecure all retention mechanisms.\nVerify kit cannot move during flight.",
+      "id": "remove_old_batteries",
+      "title": "BATTERIES: Remove old batteries",
+      "description": "Safely remove the old batteries from the drone.",
       "instructions": [
-        "Verify medical kit is within date",
-        "Position kit in compartment",
-        "Engage all retention clips",
-        "Test security with gentle pulling"
+        "Disconnect front battery cable.",
+        "Remove front battery from compartment.",
+        "Disconnect back battery cable.",
+        "Remove back battery from compartment.",
+        "Check batteries for swelling or damage."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "charge_old_batteries",
+      "title": "BATTERIES: Put old batteries on charge",
+      "description": "Connect old batteries to charging station.",
+      "instructions": [
+        "Take batteries to charging station.",
+        "Follow instructions at the charging station.",
+        "Connect batteries to charger.",
+        "Verify charging has started."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "align_drone_perfect",
+      "title": "INSTRUCTION: Align the drone perfectly",
+      "description": "Position the drone precisely on the visual navigation marker for proper alignment.",
+      "instructions": [
+        "Align drone over visual navigation marker.",
+        "Place front landing gear on the two dots in front of marker.",
+        "Ensure front camera faces correct direction.",
+        "Verify drone body perfectly aligned with visual navigation markers."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "install_front_battery",
+      "title": "BATTERIES: Install front battery",
+      "description": "Install the front battery in the drone.",
+      "instructions": [
+        "Place battery in front position.",
+        "Connect battery cable securely.",
+        "Ensure connector fully seated (no gap).",
+        "Secure velcro straps over battery wires.",
+        "Route cables to avoid pinching."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "install_back_battery",
+      "title": "BATTERIES: Install back battery",
+      "description": "Install the back battery in the drone.",
+      "instructions": [
+        "Place battery in back position.",
+        "Connect battery cable securely.",
+        "Ensure connector fully seated (no gap).",
+        "Secure velcro straps over battery wires.",
+        "Route cables to avoid pinching."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "close_lids",
+      "title": "DRONE: Close battery compartment",
+      "description": "Close and secure the battery compartment.",
+      "instructions": [
+        "Verify batteries fully seated.",
+        "Check no cables will be pinched.",
+        "Close lids carefully.",
+        "Ensure no gaps between lids and core.",
+        "Screw in 4 screws (2 per side) with torque screwdriver."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "umbilical_inspection",
+      "title": "POWER: Inspect umbilical contacts",
+      "description": "Check umbilical connection points for damage.",
+      "instructions": [
+        "Check copper surfaces on landing gear.",
+        "Look for soot or corrosion.",
+        "Verify pins/pads not bent.",
+        "Clean contacts if needed."
+      ],
+      "validationBoxes": {},
+      "completion": {
+        "completedBy": null,
+        "completedAt": null
+      },
+      "note": ""
+    },
+    {
+      "id": "attach_umbilical",
+      "title": "POWER: Attach umbilical to drone",
+      "description": "Connect umbilical for power supply.",
+      "instructions": [
+        "Connect umbilical next to the left landing gear.",
+        "Ensure connection is straight.",
+        "Verify fully connected."
       ],
       "validationBoxes": {},
       "completion": {
@@ -96,13 +219,13 @@
     },
     {
       "id": "medkit_verification",
-      "title": "MEDICAL: Verify kit expiration date",
-      "description": "Confirm new medical kit is within valid date range.\n\nCheck expiration date on kit.\nRecord installation date.\nVerify contents list is present.\nConfirm kit seal is intact.",
+      "title": "MEDKIT: Verify contents and AED status",
+      "description": "Verify MedKit contents and AED operational status.\n\nVerify all utilities are included and in good condition.\nCheck AED is correctly placed inside MedKit.\nConfirm AED status is OK.\nVerify AED is dry, clean and free from damage.",
       "instructions": [
-        "Read and record expiration date",
-        "Document installation in log",
-        "Verify contents checklist attached",
-        "Confirm tamper seal intact"
+        "Check all MedKit utilities present.",
+        "Verify AED placement in MedKit.",
+        "Confirm AED status shows OK.",
+        "Check AED is clean and undamaged."
       ],
       "validationBoxes": {},
       "completion": {
@@ -112,14 +235,14 @@
       "note": ""
     },
     {
-      "id": "structural_cracks",
-      "title": "STRUCTURE: Check for cracks or gaps",
-      "description": "Are there any cracks in the fuselage or gaps in the joints around the foldable arms?\n\nInspect main body for cracks.\nCheck all arm joints thoroughly.\nExamine folding mechanisms.\nLook for separation in seams.",
+      "id": "winch_setup",
+      "title": "WINCH: Thread and attach line",
+      "description": "Set up winch line for MedKit deployment.\n\nThread line through the red guide below drone.\nAttach line securely to the spool.\nRoll up line using button on winch housing.\nConfirm spool spins smoothly with no abnormal noise.",
       "instructions": [
-        "Visually inspect entire fuselage",
-        "Check each foldable arm joint",
-        "Look for hairline cracks",
-        "Verify no gaps in connections"
+        "Thread line through red guide.",
+        "Attach line to spool securely.",
+        "Press and hold button to roll up line.",
+        "Verify smooth operation, no noise."
       ],
       "validationBoxes": {},
       "completion": {
@@ -129,14 +252,16 @@
       "note": ""
     },
     {
-      "id": "propeller_rotation",
-      "title": "PROPELLER: Test propeller rotation",
-      "description": "Do unusual sounds occur when spinning propellers with fingers? Crackling sounds may indicate dirt in motor bearings and should not be ignored.\n\nSpin each propeller by hand.\nListen for unusual sounds.\nFeel for resistance or grinding.\nNote any irregularities.",
+      "id": "medkit_mounting",
+      "title": "MEDKIT: Mount and secure MedKit",
+      "description": "Mount the MedKit in position and secure it with the locking mechanism.",
       "instructions": [
-        "Rotate each propeller slowly by hand",
-        "Listen carefully for crackling or grinding",
-        "Feel for smooth rotation",
-        "Document any abnormal sounds"
+        "Position MedKit on front brace.",
+        "Pull locking pin out.",
+        "Lift MedKit to locking position.",
+        "Lock pin securely.",
+        "Attach magnetic connector to front right.",
+        "Verify nav lights turn blue."
       ],
       "validationBoxes": {},
       "completion": {
@@ -146,14 +271,14 @@
       "note": ""
     },
     {
-      "id": "fasteners_check",
-      "title": "HARDWARE: Check screws and fasteners",
-      "description": "Are any screws, fasteners, joints or attachments loose or damaged? Replace if necessary.\n\nCheck all visible screws.\nTest joint tightness.\nInspect fastener condition.\nTighten or replace as needed.",
+      "id": "motor_spin_test",
+      "title": "MOTORS: Test rotation by hand",
+      "description": "Spin each motor to check for bearing issues.",
       "instructions": [
-        "Inspect all accessible screws",
-        "Check for loose fasteners",
-        "Verify joint integrity",
-        "Tighten or replace damaged hardware"
+        "Rotate each of 8 propellers slowly by hand.",
+        "Listen for crackling or grinding sounds.",
+        "Feel for smooth rotation.",
+        "STOP if any resistance or noise detected."
       ],
       "validationBoxes": {},
       "completion": {
@@ -163,14 +288,13 @@
       "note": ""
     },
     {
-      "id": "propeller_damage",
-      "title": "PROPELLER: Inspect propellers",
-      "description": "Are there any damages or cracks on the propellers? Never fly with damaged propellers.\n\nVisually inspect each blade.\nCheck for chips or cracks.\nVerify blade straightness.\nReplace if any damage found.",
+      "id": "propeller_quick_check",
+      "title": "PROPELLERS: Quick visual inspection",
+      "description": "Quick check for obvious propeller damage.",
       "instructions": [
-        "Examine each propeller blade carefully",
-        "Look for chips, cracks, or deformation",
-        "Check blade edges for damage",
-        "Replace any damaged propellers immediately"
+        "Visually scan all 8 propellers.",
+        "Look for obvious chips or cracks.",
+        "STOP if any damage found."
       ],
       "validationBoxes": {},
       "completion": {
@@ -180,14 +304,13 @@
       "note": ""
     },
     {
-      "id": "cable_inspection",
-      "title": "ELECTRICAL: Check cables",
-      "description": "Are there any loose or damaged cables?\n\nInspect all visible wiring.\nCheck cable connections.\nLook for fraying or cuts.\nEnsure proper cable routing.",
+      "id": "skybase_quick_check",
+      "title": "SKYBASE: Quick area check",
+      "description": "Quick check of Skybase area.",
       "instructions": [
-        "Trace all visible cables",
-        "Check for secure connections",
-        "Look for insulation damage",
-        "Verify cables are properly secured"
+        "Remove any debris from floor.",
+        "Secure all tools.",
+        "Clean navigation marker if dirty."
       ],
       "validationBoxes": {},
       "completion": {
@@ -197,14 +320,15 @@
       "note": ""
     },
     {
-      "id": "connection_check",
-      "title": "ELECTRICAL: Check connections",
-      "description": "Are there any loose or damaged connections?\n\nInspect all connectors.\nVerify secure attachment.\nCheck for corrosion.\nEnsure proper seating.",
+      "id": "prs_arm",
+      "title": "PRS: Arm the parachute system",
+      "description": "FINAL STEP - ARM PARACHUTE\n\nALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION.",
       "instructions": [
-        "Check all electrical connectors",
-        "Verify connections are fully seated",
-        "Look for signs of corrosion",
-        "Reseat any loose connections"
+        "Put on safety goggles and hearing protection.",
+        "Locate PRS fuse switch.",
+        "Switch to \"DANGER\" position.",
+        "Step away from drone immediately.",
+        "DO NOT APPROACH after arming."
       ],
       "validationBoxes": {},
       "completion": {
@@ -214,14 +338,13 @@
       "note": ""
     },
     {
-      "id": "propeller_attachments",
-      "title": "PROPELLER: Verify propeller attachments",
-      "description": "Are propeller mounts, screws and propeller locks secure? (Check that they are tightened)\n\nTest propeller mounting security.\nVerify locking mechanisms engaged.\nCheck mounting screws tightness.\nConfirm no play in attachments.",
+      "id": "documentation",
+      "title": "DOCUMENTATION: Report completion",
+      "description": "Document inspection completion.",
       "instructions": [
-        "Check each propeller mount",
-        "Verify locking mechanisms are engaged",
-        "Test tightness of mounting screws",
-        "Ensure no movement when pulled gently"
+        "Log service partner inspection complete.",
+        "Note any issues found.",
+        "Report abnormalities if any."
       ],
       "validationBoxes": {},
       "completion": {

@@ -275,7 +275,8 @@
       "instructions": [
         "Verify battery compartment lid completely closed.",
         "Check 4 screws secured (2 on each side).",
-        "Look for gaps around lid edges."
+        "Ensure no gaps between lids and core.",
+        "Verify white seal visible and intact if observable."
       ],
       "validationBoxes": {},
       "completion": {

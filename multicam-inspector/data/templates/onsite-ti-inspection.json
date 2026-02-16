@@ -186,13 +186,13 @@
     {
       "id": "telemetry_complete_ports",
       "title": "SYSTEM: Complete telemetry and secure ports",
-      "description": "Finalize telemetry transfer and secure ports.\n\nConfirm telemetry complete (nav lights not yellow).\nIf not complete after 10 minutes, stop and continue.\nRemove Ethernet cable and store safely.\nSecurely lock Ethernet port cap.\nVerify USB cap is also screwed on and sealed.",
+      "description": "Finalize telemetry transfer and secure ports.\n\nConfirm telemetry complete (nav lights not yellow).\nIf not complete after 10 minutes, stop and continue.\nRemove Ethernet cable and store safely.\nSecurely lock Ethernet port cap.\nVerify USB caps on both sides are sealed with silver cover.",
       "instructions": [
         "Check nav lights no longer yellow.",
         "If still yellow after 10 min, stop transfer.",
         "Remove and store Ethernet cable.",
         "Screw on Ethernet port cap completely.",
-        "Verify USB cap sealed."
+        "Verify USB caps on both sides sealed with silver cover."
       ],
       "validationBoxes": {},
       "completion": {
@@ -204,9 +204,9 @@
     {
       "id": "open_lids",
       "title": "DRONE STRUCTURE: Open lids for battery access",
-      "description": "Open drone compartment for battery replacement.\n\nUnscrew 4 screws holding the lids together.\nOpen lids to access battery compartment.",
+      "description": "Open drone compartment for battery replacement.\n\nUnscrew 4 screws holding the lids together using torque screwdriver.\nOpen lids to access battery compartment.",
       "instructions": [
-        "Unscrew 4 lid screws with screwdriver.",
+        "Unscrew 4 lid screws with torque screwdriver.",
         "Open lids carefully for battery access."
       ],
       "validationBoxes": {},
@@ -285,11 +285,12 @@
     {
       "id": "internal_compartment_check",
       "title": "DRONE STRUCTURE: Verify internal compartment",
-      "description": "Inspect the internal battery compartment for cables, debris, and moisture.",
+      "description": "Inspect the internal battery compartment for cables, debris, moisture, and white seal integrity.",
       "instructions": [
         "Check internal cable routing.",
         "Look for debris or dirt.",
         "Verify no moisture present.",
+        "Check that the white seal is OK and undamaged.",
         "Ensure compartment is clean."
       ],
       "validationBoxes": {},
@@ -316,13 +317,14 @@
       "note": ""
     },
     {
-      "id": "install_odd_battery",
-      "title": "BATTERIES: Install odd number battery to front",
-      "description": "Install the odd-numbered battery in the front position of the drone.",
+      "id": "install_front_battery",
+      "title": "BATTERIES: Install front battery",
+      "description": "Install the front battery in the drone.",
       "instructions": [
-        "Place odd battery in front position.",
+        "Place battery in front position.",
         "Connect battery securely.",
         "Ensure connector fully seated (no gap).",
+        "Secure velcro straps over battery wires.",
         "Route cables to avoid pinching."
       ],
       "validationBoxes": {},
@@ -351,13 +353,14 @@
       "note": ""
     },
     {
-      "id": "install_even_battery",
-      "title": "BATTERIES: Install even number battery to rear",
-      "description": "Install the even-numbered battery in the rear position of the drone.",
+      "id": "install_back_battery",
+      "title": "BATTERIES: Install back battery",
+      "description": "Install the back battery in the drone.",
       "instructions": [
-        "Place even battery in rear position.",
+        "Place battery in back position.",
         "Connect battery securely.",
         "Ensure connector fully seated (no gap).",
+        "Secure velcro straps over battery wires.",
         "Route cables to avoid pinching."
       ],
       "validationBoxes": {},
@@ -402,13 +405,12 @@
     },
     {
       "id": "documentation_note",
-      "title": "DOCUMENTATION: Note inspection details in work order",
+      "title": "DOCUMENTATION: Write a note for inspection details",
       "description": "Document the inspection details in the work order system.",
       "instructions": [
         "Open work order.",
-        "Press \"Add note\".",
-        "Enter name, AirframeID, drone name, battery set.",
-        "Save note."
+        "Write a note with name, AirframeID, drone name, battery set.",
+        "Save the note."
       ],
       "validationBoxes": {},
       "completion": {
@@ -425,7 +427,8 @@
         "Verify batteries fully seated.",
         "Close lids carefully.",
         "Check no cables pinched.",
-        "Screw in 4 screws (2 per side)."
+        "Ensure no gaps between lids and core.",
+        "Screw in 4 screws (2 per side) with torque screwdriver."
       ],
       "validationBoxes": {},
       "completion": {

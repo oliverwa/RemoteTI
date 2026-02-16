@@ -57,6 +57,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [captureStartTimes, setCaptureStartTimes] = useState<{ [key: string]: number }>({});
   const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
   const [availableInspections, setAvailableInspections] = useState<any[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Helper function to calculate days since a date
   const getDaysSince = (dateString: string): number => {
@@ -194,7 +195,12 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   let currentPhase = '';
                   let activeInspection = undefined;
                   
-                  if (session.workflow?.phases) {
+                  // Check if the entire alarm session is completed
+                  if (session.status === 'completed') {
+                    // Alarm is fully completed, return to standby
+                    state = 'standby';
+                    currentPhase = '';
+                  } else if (session.workflow?.phases) {
                     const phases = session.workflow.phases;
                     
                     if (phases.flight?.status === 'in-progress') {
@@ -336,7 +342,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [visibleHangars, userType]);
+  }, [visibleHangars, userType, refreshTrigger]);
 
   // Simplified status component for remote users
   const RemoteUserStatus = ({ alarmSession, hangarId, hangar }: any) => {
@@ -745,7 +751,44 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   }
                 });
                 if (response.ok) {
-                  // Area cleared successfully
+                  const result = await response.json();
+                  // Area cleared successfully - update state immediately
+                  console.log('Area cleared successfully, alarm status:', result.alarmStatus);
+                  
+                  // Update the hangar status to reflect the completed alarm
+                  setHangarStatuses(prevStatuses => 
+                    prevStatuses.map(status => 
+                      status.id === hangarId 
+                        ? {
+                            ...status,
+                            state: 'standby' as const,
+                            currentPhase: '',
+                            alarmSession: {
+                              ...status.alarmSession,
+                              status: 'completed',
+                              completedAt: new Date().toISOString(),
+                              workflow: {
+                                ...status.alarmSession?.workflow,
+                                status: 'completed',
+                                phases: {
+                                  ...status.alarmSession?.workflow?.phases,
+                                  clearArea: {
+                                    status: 'completed',
+                                    completedTime: new Date().toISOString()
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        : status
+                    )
+                  );
+                  
+                  // Trigger a refresh of hangar data
+                  setRefreshTrigger(prev => prev + 1);
+                  
+                  // Also refresh hangars list
+                  await fetchHangars();
                 }
               } catch (error) {
                 console.error('Error clearing area:', error);
@@ -772,7 +815,44 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   }
                 });
                 if (response.ok) {
-                  // Area cleared successfully
+                  const result = await response.json();
+                  // Area cleared successfully - update state immediately
+                  console.log('Area cleared successfully, alarm status:', result.alarmStatus);
+                  
+                  // Update the hangar status to reflect the completed alarm
+                  setHangarStatuses(prevStatuses => 
+                    prevStatuses.map(status => 
+                      status.id === hangarId 
+                        ? {
+                            ...status,
+                            state: 'standby' as const,
+                            currentPhase: '',
+                            alarmSession: {
+                              ...status.alarmSession,
+                              status: 'completed',
+                              completedAt: new Date().toISOString(),
+                              workflow: {
+                                ...status.alarmSession?.workflow,
+                                status: 'completed',
+                                phases: {
+                                  ...status.alarmSession?.workflow?.phases,
+                                  clearArea: {
+                                    status: 'completed',
+                                    completedTime: new Date().toISOString()
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        : status
+                    )
+                  );
+                  
+                  // Trigger a refresh of hangar data
+                  setRefreshTrigger(prev => prev + 1);
+                  
+                  // Also refresh hangars list
+                  await fetchHangars();
                 }
               } catch (error) {
                 console.error('Error clearing area:', error);
@@ -782,6 +862,21 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           >
             Area Ready to Open
           </button>
+        );
+      }
+      
+      // Handle clearArea completed - show completion message
+      if (currentStep.id === 'clearArea' && currentStep.status === 'completed') {
+        return (
+          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+            <div className="flex items-center gap-2 text-green-700">
+              <CheckCircle className="w-4 h-4" />
+              <span className="text-xs font-medium">Workflow Completed</span>
+            </div>
+            <p className="text-xs text-green-600 mt-1">
+              Area is ready and safe. Hangar returning to standby.
+            </p>
+          </div>
         );
       }
       
