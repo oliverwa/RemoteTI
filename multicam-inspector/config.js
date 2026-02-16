@@ -54,8 +54,8 @@ const baseConfig = {
       "RDL": "10.20.1.215"
     },
     credentials: {
-      username: "admin",
-      password: "H4anGar0NeC4amAdmin"
+      username: process.env.CAMERA_ADMIN_USERNAME || "admin",
+      password: process.env.CAMERA_ADMIN_PASSWORD || "defaultPassword"
     }
   },
   
@@ -72,8 +72,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "https://10.0.10.113:7548/hangar/lightson",
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3 // seconds to wait after turning on lights
       },
       cameraTransforms: {
@@ -100,8 +100,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "https://10.0.10.172:7548/hangar/lightson",
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3 // seconds to wait after turning on lights
       },
       cameraTransforms: {
@@ -128,8 +128,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "", // To be configured with IP
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
       },
       cameraTransforms: {
@@ -155,8 +155,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "", // To be configured with IP
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
       },
       cameraTransforms: {
@@ -182,8 +182,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "", // To be configured with IP
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
       },
       cameraTransforms: {
@@ -209,8 +209,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "", // To be configured with IP
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
       },
       cameraTransforms: {
@@ -236,8 +236,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "", // To be configured with IP
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
       },
       cameraTransforms: {
@@ -263,8 +263,8 @@ const baseConfig = {
       lights: {
         enabled: true,
         endpoint: "", // To be configured with IP
-        username: "system",
-        password: "FJjf93/#",
+        username: process.env.HANGAR_SYSTEM_USERNAME || "system",
+        password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
       },
       cameraTransforms: {
@@ -391,8 +391,8 @@ function loadHangarsFromJson() {
           lights: {
             enabled: true,
             endpoint: h.ipAddress ? `https://${h.ipAddress}:7548/hangar/lightson` : '',
-            username: 'system',
-            password: 'FJjf93/#',
+            username: process.env.HANGAR_SYSTEM_USERNAME || 'system',
+            password: process.env.HANGAR_SYSTEM_PASSWORD || 'defaultPassword',
             waitTime: 3
           },
           cameraTransforms: h.cameraTransforms || {

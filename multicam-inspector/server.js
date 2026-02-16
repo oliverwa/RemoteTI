@@ -44,8 +44,8 @@ function getHangarConfig(hangarId) {
       lights: {
         enabled: true,
         endpoint: hangar.ipAddress ? `https://${hangar.ipAddress}:7548/hangar/lightson` : '',
-        username: 'system',
-        password: 'FJjf93/#',
+        username: process.env.HANGAR_SYSTEM_USERNAME || 'system',
+        password: process.env.HANGAR_SYSTEM_PASSWORD || 'defaultPassword',
         waitTime: 3
       },
       cameraTransforms: hangar.cameraTransforms || {}
