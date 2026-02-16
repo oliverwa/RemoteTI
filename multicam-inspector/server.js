@@ -2524,7 +2524,11 @@ app.get('/api/maintenance-history', async (req, res) => {
                 type = 'onsite-ti';
               } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
                 type = 'extended-ti';
+              } else if (sessionNameLower.includes('service_partner')) {
+                // Service Partner is a basic inspection, not a service
+                type = 'service-partner';
               } else if (sessionNameLower.includes('service') || inspectionData.type === 'service-inspection') {
+                // Only real service inspections, not service_partner
                 type = 'service';
               }
               
@@ -2574,11 +2578,13 @@ app.get('/api/maintenance-history', async (req, res) => {
             maintenanceHistory[session.droneId].lastExtendedTI = session.date;
           }
         } else if (session.type === 'service') {
+          // Only update lastService for real service inspections, not service_partner
           if (!maintenanceHistory[session.droneId].lastService || 
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastService)) {
             maintenanceHistory[session.droneId].lastService = session.date;
           }
         }
+        // Note: service-partner type is ignored - it's a basic inspection, not maintenance
       }
     }
     
@@ -2613,25 +2619,8 @@ app.get('/api/maintenance-history', async (req, res) => {
             }
           }
           
-          // Also check for completed Service Partner inspections in alarm workflow
-          if (alarmData.inspections?.servicePartner?.completedAt && alarmData.droneId) {
-            const droneId = alarmData.droneId;
-            const completedDate = alarmData.inspections.servicePartner.completedAt;
-            
-            if (!maintenanceHistory[droneId]) {
-              maintenanceHistory[droneId] = {
-                lastOnsiteTI: null,
-                lastExtendedTI: null,
-                lastService: null
-              };
-            }
-            
-            // Service Partner inspection counts as service
-            if (!maintenanceHistory[droneId].lastService || 
-                new Date(completedDate) > new Date(maintenanceHistory[droneId].lastService)) {
-              maintenanceHistory[droneId].lastService = completedDate;
-            }
-          }
+          // Note: Service Partner inspections are NOT counted as service
+          // They are basic inspections performed during alarm workflows, not maintenance
         } catch (err) {
           // Ignore parsing errors
           log('warn', `Failed to parse alarm file ${alarmFile}:`, err.message);

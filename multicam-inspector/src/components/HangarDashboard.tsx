@@ -515,11 +515,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         id: 'telemetryAnalysis', 
         icon: BarChart, 
         label: 'Data Analysis', 
-        status: phases.telemetryAnalysis?.status === 'completed' && (phases.initialRTI?.status || routeDecision) 
-          ? 'completed' 
-          : phases.telemetryAnalysis?.status,
-        clickable: phases.telemetryAnalysis?.status === 'in-progress' || phases.telemetryAnalysis?.status === 'completed',
-        needsAttention: phases.telemetryAnalysis?.status === 'completed' && !phases.initialRTI?.status && !routeDecision
+        status: 'disabled', // Temporarily disabled for production
+        clickable: false,
+        needsAttention: false
       },
       { 
         id: 'initialRTI', 
@@ -962,6 +960,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 const isCompleted = step.status === 'completed';
                 const isInProgress = step.status === 'in-progress';
                 const isPending = !step.status || step.status === 'pending';
+                const isDisabled = step.status === 'disabled';
                 const isCurrent = index === currentStepIndex;
                 const hasProgress = isInProgress && step.progress !== undefined && step.progress > 0;
                 
@@ -977,15 +976,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     <div 
                       className={`
                         w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm
-                        ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'fail' ? 'bg-red-500' : ''}
-                        ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'warning' ? 'bg-yellow-500' : ''}
-                        ${step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'pass' ? 'bg-green-500' : ''}
-                        ${step.id !== 'telemetryAnalysis' && isCompleted && !needsAttention ? 'bg-green-500' : ''}
-                        ${step.id !== 'telemetryAnalysis' && isCompleted && needsAttention ? 'bg-amber-500 animate-pulse ring-4 ring-amber-100' : ''}
-                        ${highlightRoute ? 'bg-amber-50 border-2 border-amber-300 animate-pulse' : ''}
-                        ${!highlightRoute && isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
-                        ${!highlightRoute && isPending ? 'bg-white border-2 border-gray-200' : ''}
-                        ${isClickable ? 'cursor-pointer hover:scale-110' : ''}
+                        ${isDisabled ? 'bg-gray-300' : ''}
+                        ${!isDisabled && step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'fail' ? 'bg-red-500' : ''}
+                        ${!isDisabled && step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'warning' ? 'bg-yellow-500' : ''}
+                        ${!isDisabled && step.id === 'telemetryAnalysis' && isCompleted && phases.telemetryAnalysis?.result === 'pass' ? 'bg-green-500' : ''}
+                        ${!isDisabled && step.id !== 'telemetryAnalysis' && isCompleted && !needsAttention ? 'bg-green-500' : ''}
+                        ${!isDisabled && step.id !== 'telemetryAnalysis' && isCompleted && needsAttention ? 'bg-amber-500 animate-pulse ring-4 ring-amber-100' : ''}
+                        ${!isDisabled && highlightRoute ? 'bg-amber-50 border-2 border-amber-300 animate-pulse' : ''}
+                        ${!isDisabled && !highlightRoute && isInProgress ? 'bg-blue-500 ring-4 ring-blue-100' : ''}
+                        ${!isDisabled && !highlightRoute && isPending ? 'bg-white border-2 border-gray-200' : ''}
+                        ${!isDisabled && isClickable ? 'cursor-pointer hover:scale-110' : ''}
                       `}
                       onClick={() => {
                         if (!isClickable) return;
@@ -1023,9 +1023,10 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     >
                       <Icon className={`
                         w-4 h-4
-                        ${highlightRoute ? 'text-amber-600' : ''}
-                        ${!highlightRoute && (isCompleted || isInProgress) ? 'text-white' : ''}
-                        ${!highlightRoute && !(isCompleted || isInProgress) ? 'text-gray-400' : ''}
+                        ${isDisabled ? 'text-gray-500' : ''}
+                        ${!isDisabled && highlightRoute ? 'text-amber-600' : ''}
+                        ${!isDisabled && !highlightRoute && (isCompleted || isInProgress) ? 'text-white' : ''}
+                        ${!isDisabled && !highlightRoute && !(isCompleted || isInProgress) ? 'text-gray-400' : ''}
                       `} />
                     </div>
                     

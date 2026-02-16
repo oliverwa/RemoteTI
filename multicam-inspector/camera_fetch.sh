@@ -229,7 +229,7 @@ trigger_autofocus() {
 
     # Wait for zoom change and autofocus trigger
     echo "Waiting for autofocus to trigger"
-    sleep 2
+    sleep 5
     
     echo "Returning to original zoom position $current_zoom"
     
@@ -244,7 +244,7 @@ trigger_autofocus() {
 
     # Wait for autofocus to complete
     echo "Waiting for focus to stabilize"
-    sleep 3
+    sleep 6
     echo "Autofocus completed for ${cam_name}"
 }
 

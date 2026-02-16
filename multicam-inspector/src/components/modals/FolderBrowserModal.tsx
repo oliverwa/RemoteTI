@@ -38,22 +38,29 @@ interface FolderBrowserModalProps {
 }
 
 const formatSessionName = (name: string): string => {
-  // List of actual drones in the system
-  const knownDrones = ['bender', 'lancelot', 'marvin'];
+  // List of actual drones in the system - updated with real drone IDs
+  const knownDrones = ['e3001', 'e3002', 'marvin'];
   
   // Try multiple patterns to extract drone name
+  // New naming convention: type_hangar_drone_date_time
+  // Old naming convention: type_drone_date_time or type_hangar_date_time
   const patterns = [
-    /initial_remote_([a-zA-Z]+)_/,
-    /full_remote_([a-zA-Z]+)_/,
-    /standard_([a-zA-Z]+)_mission/,
-    /^([a-zA-Z]+)_\d{6}_\d{6}/, // Direct pattern like "bender_241201_090045"
-    /onsite_([a-zA-Z]+)_ti/,
-    /remote_([a-zA-Z]+)_/,
-    /extended_([a-zA-Z]+)_/,
-    /service_([a-zA-Z]+)_/,
-    /basic_([a-zA-Z]+)_/,
-    /_([a-zA-Z]+)_ti_/,
-    /^([a-zA-Z]+)_ti$/
+    // New patterns with both hangar and drone
+    /initial_remote_[a-zA-Z]+_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /full_remote_ti_[a-zA-Z]+_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /onsite_ti_[a-zA-Z]+_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /service_partner_[a-zA-Z]+_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    // Old patterns
+    /initial_remote_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /full_remote_ti_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /onsite_ti_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /onsite_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /service_partner_([a-zA-Z0-9]+)_\d{6}_\d{6}/,
+    /remote_([a-zA-Z0-9]+)_/,
+    /extended_([a-zA-Z0-9]+)_/,
+    /service_([a-zA-Z0-9]+)_/,
+    /basic_([a-zA-Z0-9]+)_/,
+    /^([a-zA-Z0-9]+)_\d{6}_\d{6}/, // Direct pattern like "e3002_241201_090045"
   ];
   
   for (const pattern of patterns) {
@@ -62,6 +69,10 @@ const formatSessionName = (name: string): string => {
       const droneName = match[1].toLowerCase();
       // Check if it's a known drone
       if (knownDrones.includes(droneName)) {
+        // Return uppercase for drone IDs like E3002
+        if (droneName.match(/^[a-z]\d+$/)) {
+          return droneName.toUpperCase();
+        }
         return droneName.charAt(0).toUpperCase() + droneName.slice(1);
       }
     }
@@ -71,6 +82,10 @@ const formatSessionName = (name: string): string => {
   const parts = name.toLowerCase().split('_');
   for (const part of parts) {
     if (knownDrones.includes(part)) {
+      // Return uppercase for drone IDs like E3002
+      if (part.match(/^[a-z]\d+$/)) {
+        return part.toUpperCase();
+      }
       return part.charAt(0).toUpperCase() + part.slice(1);
     }
   }
@@ -85,8 +100,14 @@ const getInspectionTypeFromName = (name: string): string => {
   // Check for new remote inspection types first
   if (nameLower.startsWith('initial_remote_')) {
     return 'initial-remote';
+  } else if (nameLower.startsWith('full_remote_ti_')) {
+    return 'full-remote';
   } else if (nameLower.startsWith('full_remote_')) {
     return 'full-remote';
+  } else if (nameLower.startsWith('service_partner_')) {
+    return 'service';
+  } else if (nameLower.startsWith('onsite_ti_')) {
+    return 'onsite';
   } else if (firstPart === 'remote' || nameLower.includes('remote')) {
     return 'remote';
   } else if (firstPart === 'onsite' || nameLower.includes('onsite')) {
