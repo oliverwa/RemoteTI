@@ -39,8 +39,27 @@
     {
       "id": "hangar_forsaker_vpn",
       "label": "Forsåker",
+      "assignedDrone": "e3002",
       "operational": true,
       "ipAddress": "10.0.10.176",
+      "status": "operational",
+      "cameraTransforms": {
+        "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "1": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "2": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "3": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "4": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "5": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "6": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "7": {"x": 0, "y": 0, "scale": 1, "rotation": 0}
+      }
+    },
+    {
+      "id": "hangar_trollhattan_vpn",
+      "label": "Trollhättan",
+      "assignedDrone": "e3003",
+      "operational": true,
+      "ipAddress": "10.0.10.171",
       "status": "operational",
       "cameraTransforms": {
         "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},

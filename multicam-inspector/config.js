@@ -229,13 +229,13 @@ const baseConfig = {
       label: "Trollhättan (hangar_trollhattan_vpn)",
       description: "Trollhättan hangar",
       connection: {
-        ssh_host: "", // To be configured
-        ip: "" // To be configured
+        ssh_host: "system@10.0.10.171",
+        ip: "10.0.10.171"
       },
       folderName: "Trollhattan",
       lights: {
         enabled: true,
-        endpoint: "", // To be configured with IP
+        endpoint: "https://10.0.10.171:7548/hangar/lightson",
         username: process.env.HANGAR_SYSTEM_USERNAME || "system",
         password: process.env.HANGAR_SYSTEM_PASSWORD || "defaultPassword",
         waitTime: 3
