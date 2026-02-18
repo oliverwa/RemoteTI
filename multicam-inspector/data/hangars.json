@@ -71,6 +71,24 @@
         "6": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
         "7": {"x": 0, "y": 0, "scale": 1, "rotation": 0}
       }
+    },
+    {
+      "id": "hangar_vanersborg_vpn",
+      "label": "Vänersborg",
+      "assignedDrone": "e3004",
+      "operational": true,
+      "ipAddress": "10.0.10.85",
+      "status": "operational",
+      "cameraTransforms": {
+        "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "1": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "2": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "3": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "4": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "5": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "6": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
+        "7": {"x": 0, "y": 0, "scale": 1, "rotation": 0}
+      }
     }
   ]
 }
