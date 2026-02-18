@@ -209,13 +209,13 @@ function updateConfigFile(hangar) {
   console.log(`Hangar ${hangar.id} saved to hangars.json`);
 }
 
-// Get hangar config from config.js for compatibility
+// Get hangar config from hangars.json
 function getHangarFromConfig(hangarId) {
   try {
-    const config = require('../config');
-    return config.hangars[hangarId];
+    const hangarsData = getHangars();
+    return hangarsData.find(h => h.id === hangarId) || null;
   } catch (error) {
-    console.error('Error reading config:', error);
+    console.error('Error reading hangar config:', error);
     return null;
   }
 }

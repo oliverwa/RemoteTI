@@ -19,7 +19,19 @@ const app = express();
 const config = require('./config.js');
 const PORT = process.env.PORT || config.server.port;
 
-// Function to get hangar configuration from admin panel data
+// Function to get all hangars from hangars.json
+function getAllHangars() {
+  try {
+    const hangarsDataPath = path.join(__dirname, 'data', 'hangars.json');
+    const hangarsData = JSON.parse(fs.readFileSync(hangarsDataPath, 'utf8'));
+    return hangarsData.hangars || [];
+  } catch (error) {
+    console.error('Error loading hangars from hangars.json:', error);
+    return [];
+  }
+}
+
+// Function to get hangar configuration from hangars.json
 function getHangarConfig(hangarId) {
   try {
     const hangarsDataPath = path.join(__dirname, 'data', 'hangars.json');
@@ -27,22 +39,26 @@ function getHangarConfig(hangarId) {
     const hangar = hangarsData.hangars.find(h => h.id === hangarId);
     
     if (!hangar) {
-      // Fall back to hardcoded config if not found in admin data
-      return config.hangars[hangarId];
+      // No fallback - hangar must exist in hangars.json
+      console.error(`Hangar ${hangarId} not found in hangars.json`);
+      return null;
     }
     
-    // Build config from admin data
+    // Build config from hangars.json data
     const hangarConfig = {
       id: hangar.id,
       label: hangar.label,
       ipAddress: hangar.ipAddress,
+      assignedDrone: hangar.assignedDrone,
+      operational: hangar.operational,
+      status: hangar.status,
       folderName: hangar.folderName || hangar.label.replace(/[^a-zA-Z0-9]/g, ''), // Use folderName or sanitized label
       connection: {
         ssh_host: hangar.ipAddress ? `system@${hangar.ipAddress}` : '',
         ip: hangar.ipAddress || ''
       },
-      lights: {
-        enabled: true,
+      lights: hangar.lights || {
+        enabled: false, // Default to disabled if not configured in hangars.json
         endpoint: hangar.ipAddress ? `https://${hangar.ipAddress}:7548/hangar/lightson` : '',
         username: process.env.HANGAR_SYSTEM_USERNAME || 'system',
         password: process.env.HANGAR_SYSTEM_PASSWORD || 'defaultPassword',
@@ -53,9 +69,9 @@ function getHangarConfig(hangarId) {
     
     return hangarConfig;
   } catch (error) {
-    console.error('Error loading hangar config from admin data:', error);
-    // Fall back to hardcoded config
-    return config.hangars[hangarId];
+    console.error('Error loading hangar config from hangars.json:', error);
+    // No fallback - return null on error
+    return null;
   }
 }
 
@@ -680,7 +696,7 @@ app.get('/api/health', (req, res) => {
       timestamp: new Date().toISOString(),
       config: {
         cameras: config.cameras.ids.length,
-        hangars: Object.keys(config.hangars).length,
+        hangars: getAllHangars().length,
         batchSize: config.capture.batchSize
       }
     });
@@ -1528,7 +1544,7 @@ app.listen(PORT, () => {
     nodeVersion: process.version,
     platform: process.platform,
     cameras: config.cameras.ids.length,
-    hangars: Object.keys(config.hangars).length,
+    hangars: getAllHangars().length,
     batchSize: config.capture.batchSize,
     cameraScriptPath: CAMERA_SCRIPT_PATH,
     snapshotsDir: SNAPSHOTS_DIR
