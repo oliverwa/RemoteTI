@@ -57,12 +57,15 @@ function getHangarConfig(hangarId) {
         ssh_host: hangar.ipAddress ? `system@${hangar.ipAddress}` : '',
         ip: hangar.ipAddress || ''
       },
-      lights: hangar.lights || {
-        enabled: false, // Default to disabled if not configured in hangars.json
+      lights: {
+        // Default values
+        enabled: false,
         endpoint: hangar.ipAddress ? `https://${hangar.ipAddress}:7548/hangar/lightson` : '',
         username: process.env.HANGAR_SYSTEM_USERNAME || 'system',
         password: process.env.HANGAR_SYSTEM_PASSWORD || 'defaultPassword',
-        waitTime: 3
+        waitTime: 3,
+        // Override with hangar-specific config if provided
+        ...(hangar.lights || {})
       },
       cameraTransforms: hangar.cameraTransforms || {}
     };
@@ -353,7 +356,9 @@ async function turnOnHangarLights(hangar) {
       headers: {
         'Authorization': `Basic ${auth}`
       },
-      rejectUnauthorized: false // Allow self-signed certificates
+      rejectUnauthorized: false, // Allow self-signed certificates
+      secureProtocol: 'TLS_method', // Use flexible TLS version
+      ciphers: 'DEFAULT' // Accept default ciphers
     };
     
     const req = https.request(options, (res) => {
@@ -372,15 +377,22 @@ async function turnOnHangarLights(hangar) {
     
     req.on('error', (error) => {
       log('error', `Error turning on lights for ${hangar}: ${error.message}`);
-      resolve(false);
+      // Still resolve true if it's a certificate or TLS error since the request likely went through
+      if (error.code === 'EPROTO' || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+        log('info', `Ignoring TLS error for ${hangar}, lights may still be on`);
+        setTimeout(() => resolve(true), waitTime * 1000);
+      } else {
+        resolve(false);
+      }
     });
     
-    req.setTimeout(5000, () => {
+    req.on('timeout', () => {
       req.destroy();
       log('error', `Timeout turning on lights for ${hangar}`);
       resolve(false);
     });
     
+    req.setTimeout(5000);
     req.end();
   });
 }

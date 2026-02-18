@@ -7,6 +7,9 @@
       "operational": true,
       "ipAddress": "10.0.10.113",
       "status": "operational",
+      "lights": {
+        "enabled": true
+      },
       "cameraTransforms": {
         "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
         "1": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
@@ -25,6 +28,9 @@
       "operational": true,
       "ipAddress": "10.0.10.172",
       "status": "operational",
+      "lights": {
+        "enabled": true
+      },
       "cameraTransforms": {
         "0": {"x": -77, "y": 11, "scale": 1, "rotation": -3.3},
         "1": {"x": -50, "y": -75, "scale": 1, "rotation": 1.4},
@@ -43,6 +49,9 @@
       "operational": true,
       "ipAddress": "10.0.10.176",
       "status": "operational",
+      "lights": {
+        "enabled": true
+      },
       "cameraTransforms": {
         "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
         "1": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
@@ -61,6 +70,9 @@
       "operational": true,
       "ipAddress": "10.0.10.171",
       "status": "operational",
+      "lights": {
+        "enabled": true
+      },
       "cameraTransforms": {
         "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
         "1": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
@@ -79,6 +91,9 @@
       "operational": true,
       "ipAddress": "10.0.10.85",
       "status": "operational",
+      "lights": {
+        "enabled": true
+      },
       "cameraTransforms": {
         "0": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
         "1": {"x": 0, "y": 0, "scale": 1, "rotation": 0},
