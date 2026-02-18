@@ -2524,6 +2524,11 @@ app.get('/api/maintenance-history', async (req, res) => {
                 type = 'onsite-ti';
               } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
                 type = 'extended-ti';
+              } else if (sessionNameLower.includes('full_remote_ti') || 
+                         inspectionData.inspectionType === 'drone_remote_visual_inspection' ||
+                         inspectionData.inspectionType === 'full-remote-ti-inspection') {
+                // Only full_remote_ti sessions are considered Full Remote TI (not initial_remote)
+                type = 'full-remote';
               } else if (sessionNameLower.includes('service_partner')) {
                 // Service Partner is a basic inspection, not a service
                 type = 'service-partner';
@@ -2563,7 +2568,8 @@ app.get('/api/maintenance-history', async (req, res) => {
           maintenanceHistory[session.droneId] = {
             lastOnsiteTI: null,
             lastExtendedTI: null,
-            lastService: null
+            lastService: null,
+            lastFullRemoteTI: null
           };
         }
         
@@ -2582,6 +2588,12 @@ app.get('/api/maintenance-history', async (req, res) => {
           if (!maintenanceHistory[session.droneId].lastService || 
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastService)) {
             maintenanceHistory[session.droneId].lastService = session.date;
+          }
+        } else if (session.type === 'full-remote') {
+          // Track Full Remote TI inspections
+          if (!maintenanceHistory[session.droneId].lastFullRemoteTI || 
+              new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastFullRemoteTI)) {
+            maintenanceHistory[session.droneId].lastFullRemoteTI = session.date;
           }
         }
         // Note: service-partner type is ignored - it's a basic inspection, not maintenance
@@ -2607,7 +2619,8 @@ app.get('/api/maintenance-history', async (req, res) => {
               maintenanceHistory[droneId] = {
                 lastOnsiteTI: null,
                 lastExtendedTI: null,
-                lastService: null
+                lastService: null,
+                lastFullRemoteTI: null
               };
             }
             
@@ -2659,6 +2672,7 @@ app.post('/api/maintenance-history/:hangarId', async (req, res) => {
         lastOnsiteTI: null,
         lastExtendedTI: null,
         lastService: null,
+        lastFullRemoteTI: null,
         history: []
       };
     }
@@ -2670,6 +2684,8 @@ app.post('/api/maintenance-history/:hangarId', async (req, res) => {
       history[hangarId].lastExtendedTI = date;
     } else if (type === 'service') {
       history[hangarId].lastService = date;
+    } else if (type === 'full-remote-ti') {
+      history[hangarId].lastFullRemoteTI = date;
     }
     
     // Add to history log

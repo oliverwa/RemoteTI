@@ -35,6 +35,7 @@ interface HangarStatusData {
     lastOnsiteTI: string | null;
     lastExtendedTI: string | null;
     lastService: string | null;
+    lastFullRemoteTI: string | null;
   };
 }
 
@@ -171,11 +172,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           maintenanceHistory: (hangar.assignedDrone && maintenanceData[hangar.assignedDrone]) ? {
             lastOnsiteTI: maintenanceData[hangar.assignedDrone].lastOnsiteTI,
             lastExtendedTI: maintenanceData[hangar.assignedDrone].lastExtendedTI,
-            lastService: maintenanceData[hangar.assignedDrone].lastService
+            lastService: maintenanceData[hangar.assignedDrone].lastService,
+            lastFullRemoteTI: maintenanceData[hangar.assignedDrone].lastFullRemoteTI
           } : {
             lastOnsiteTI: null,
             lastExtendedTI: null,
-            lastService: null
+            lastService: null,
+            lastFullRemoteTI: null
           }
         }));
         
@@ -1554,7 +1557,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               (hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
               (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
               (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
-              (!hangar.maintenanceHistory?.lastOnsiteTI && !hangar.maintenanceHistory?.lastExtendedTI && !hangar.maintenanceHistory?.lastService)
+              (hangar.maintenanceHistory?.lastFullRemoteTI && getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45) ||
+              (!hangar.maintenanceHistory?.lastOnsiteTI && !hangar.maintenanceHistory?.lastExtendedTI && !hangar.maintenanceHistory?.lastService && !hangar.maintenanceHistory?.lastFullRemoteTI)
             );
 
             // Determine the left border color based on state
@@ -1657,7 +1661,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               {(userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && hangar.assignedDrone && hangar.state === 'standby' && (
                 <div className="mt-auto pt-3 border-t border-gray-200">
                   <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Time Since Last Maintenance</div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-4 gap-2">
                     <div className={`p-2 rounded-lg text-center ${
                       hangar.maintenanceHistory?.lastOnsiteTI 
                         ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'bg-red-50' : 'bg-green-50'
@@ -1672,6 +1676,23 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       }`}>
                         {hangar.maintenanceHistory?.lastOnsiteTI 
                           ? formatTimeSince(hangar.maintenanceHistory.lastOnsiteTI)
+                          : '-'}
+                      </div>
+                    </div>
+                    <div className={`p-2 rounded-lg text-center ${
+                      hangar.maintenanceHistory?.lastFullRemoteTI 
+                        ? getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45 ? 'bg-red-50' : 'bg-green-50'
+                        : 'bg-gray-50'
+                    }`}>
+                      <div className="text-[10px] font-medium text-gray-600">Full Remote</div>
+                      <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
+                      <div className={`text-xs font-bold ${
+                        hangar.maintenanceHistory?.lastFullRemoteTI 
+                          ? getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45 ? 'text-red-600' : 'text-green-600'
+                          : 'text-gray-400'
+                      }`}>
+                        {hangar.maintenanceHistory?.lastFullRemoteTI 
+                          ? formatTimeSince(hangar.maintenanceHistory.lastFullRemoteTI)
                           : '-'}
                       </div>
                     </div>
