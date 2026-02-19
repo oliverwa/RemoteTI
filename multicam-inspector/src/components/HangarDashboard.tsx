@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
 import SimpleTelemetryAnalysis from './SimpleTelemetryAnalysis';
@@ -59,6 +59,28 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
   const [availableInspections, setAvailableInspections] = useState<any[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [previewModal, setPreviewModal] = useState<{ hangarId: string; hangarName: string } | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [previewTimestamp, setPreviewTimestamp] = useState(Date.now());
+  const [previewLoadTime, setPreviewLoadTime] = useState<number | null>(null);
+  const [previewRefreshInterval, setPreviewRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [nextRefreshTime, setNextRefreshTime] = useState<number | null>(null);
+  const [refreshCountdown, setRefreshCountdown] = useState<number>(0);
+  const [selectedCamera, setSelectedCamera] = useState<string>('RUL');
+
+  // Update countdown timer for next refresh
+  useEffect(() => {
+    if (nextRefreshTime && previewModal) {
+      const countdownInterval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((nextRefreshTime - now) / 1000));
+        setRefreshCountdown(remaining);
+      }, 100); // Update every 100ms for smooth countdown
+      
+      return () => clearInterval(countdownInterval);
+    }
+  }, [nextRefreshTime, previewModal]);
 
   // Helper function to calculate days since a date
   const getDaysSince = (dateString: string): number => {
@@ -1605,16 +1627,39 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             >
               {/* Header */}
               <div className="mb-4">
-                <div className="flex justify-between items-start">
-                  <div>
+                <div className="flex justify-between items-center">
+                  <div className="flex-1">
                     <h3 className="text-2xl font-semibold text-gray-900">{hangar.name}</h3>
                     <p className="text-sm text-gray-500 mt-1">
                       Drone: {hangar.assignedDrone || 'Not assigned'}
                     </p>
                   </div>
-                  {/* Status Badge - Only show for non-service partners or when not in standby */}
-                  {(userType !== 'service_partner' || hangar.state !== 'standby') && (
-                    <div className="flex items-center">
+                  <div className="flex items-center gap-2">
+                    {/* Quick Preview Eye Icon */}
+                    {hangar.status === 'operational' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewModal({ hangarId: hangar.id, hangarName: hangar.name });
+                          setPreviewError(null);
+                          setPreviewLoading(true);
+                          setPreviewTimestamp(Date.now());
+                          setPreviewLoadTime(null);
+                          
+                          // Clear any existing interval
+                          if (previewRefreshInterval) {
+                            clearInterval(previewRefreshInterval);
+                            setPreviewRefreshInterval(null);
+                          }
+                        }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+                        title="Quick camera preview"
+                      >
+                        <Eye className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </button>
+                    )}
+                    {/* Status Badge - Only show for non-service partners or when not in standby */}
+                    {(userType !== 'service_partner' || hangar.state !== 'standby') && (
                       <span className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
                         hangar.status === 'construction' ? 'bg-yellow-100 text-yellow-700' :
                         hangar.status === 'maintenance' ? 'bg-orange-100 text-orange-700' :
@@ -1628,8 +1673,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       }`}>
                         {getStatusLabel(hangar.state, hangar.currentPhase, hangar.alarmSession, userType === 'service_partner', hangar.status || 'operational', !!isMaintenanceOverdue)}
                       </span>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -1925,6 +1970,187 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               }}
               onClose={() => setShowTelemetryAnalysis(false)}
             />
+          </div>
+        </div>
+      )}
+      
+      {/* Camera Preview Modal */}
+      {previewModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {previewModal.hangarName} - Live Camera Preview
+                </h3>
+                <div className="flex items-center gap-4 mt-2">
+                  <label className="text-sm text-gray-600">Camera:</label>
+                  <select
+                    value={selectedCamera}
+                    onChange={(e) => {
+                      setSelectedCamera(e.target.value);
+                      setPreviewTimestamp(Date.now());
+                      setPreviewLoading(true);
+                      setPreviewLoadTime(null);
+                      // Clear and restart interval with new camera
+                      if (previewRefreshInterval) {
+                        clearInterval(previewRefreshInterval);
+                        setPreviewRefreshInterval(null);
+                      }
+                    }}
+                    className="text-sm px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <optgroup label="Inside Hangar">
+                      <option value="RUL">RUL - Rear Upper Left (Default)</option>
+                      <option value="FDL">FDL - Front Down Left</option>
+                      <option value="FDR">FDR - Front Down Right</option>
+                      <option value="FUL">FUL - Front Upper Left</option>
+                      <option value="FUR">FUR - Front Upper Right</option>
+                      <option value="RUR">RUR - Rear Upper Right</option>
+                      <option value="RDL">RDL - Rear Down Left</option>
+                      <option value="RDR">RDR - Rear Down Right</option>
+                    </optgroup>
+                    <optgroup label="Outside Hangar">
+                      <option value="EXT1">External Camera 1</option>
+                      <option value="EXT2">External Camera 2</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setPreviewModal(null);
+                  setPreviewError(null);
+                  // Clear refresh interval when closing
+                  if (previewRefreshInterval) {
+                    clearInterval(previewRefreshInterval);
+                    setPreviewRefreshInterval(null);
+                  }
+                }}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 flex items-center justify-center bg-gray-50" style={{ minHeight: '500px' }}>
+              {previewError ? (
+                <div className="text-center">
+                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                  <p className="text-gray-700 font-medium mb-2">Failed to load camera preview</p>
+                  <p className="text-sm text-gray-500">{previewError}</p>
+                  <button
+                    onClick={() => {
+                      setPreviewError(null);
+                      setPreviewLoading(true);
+                    }}
+                    className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <img
+                    src={`${API_CONFIG.BASE_URL}/api/hangar/${previewModal.hangarId}/quick-preview?camera=${selectedCamera}&t=${previewTimestamp}`}
+                    alt="Camera Preview"
+                    className="max-w-full max-h-[70vh] rounded-lg shadow-lg"
+                    onLoad={() => {
+                      const loadTime = Date.now() - previewTimestamp;
+                      setPreviewLoading(false);
+                      setPreviewLoadTime(loadTime);
+                      
+                      // Adaptive refresh rate based on load time:
+                      // < 300ms = 1s refresh (excellent connection)
+                      // 300-600ms = 2s refresh (very good connection)
+                      // 600ms-1.2s = 4s refresh (good connection)
+                      // 1.2-2s = 8s refresh (moderate connection)
+                      // > 2s = 15s refresh (poor connection)
+                      let refreshRate = 15000; // Default 15s for poor
+                      if (loadTime < 300) {
+                        refreshRate = 1000; // 1s for excellent connection
+                      } else if (loadTime < 600) {
+                        refreshRate = 2000; // 2s for very good connection
+                      } else if (loadTime < 1200) {
+                        refreshRate = 4000; // 4s for good connection
+                      } else if (loadTime < 2000) {
+                        refreshRate = 8000; // 8s for moderate connection
+                      }
+                      
+                      // Set up adaptive refresh
+                      if (previewRefreshInterval) {
+                        clearInterval(previewRefreshInterval);
+                      }
+                      
+                      // Set next refresh time for countdown
+                      setNextRefreshTime(Date.now() + refreshRate);
+                      
+                      const interval = setInterval(() => {
+                        setPreviewTimestamp(Date.now());
+                        setNextRefreshTime(Date.now() + refreshRate);
+                        // Don't set loading to true for refresh - keep image visible
+                      }, refreshRate);
+                      setPreviewRefreshInterval(interval);
+                    }}
+                    onError={() => {
+                      setPreviewLoading(false);
+                      setPreviewError('Unable to connect to camera. The hangar might be offline or the camera is unavailable.');
+                      // Clear interval on error
+                      if (previewRefreshInterval) {
+                        clearInterval(previewRefreshInterval);
+                        setPreviewRefreshInterval(null);
+                      }
+                    }}
+                  />
+                  {previewLoading && (
+                    <div className="absolute top-4 right-4 bg-black bg-opacity-50 rounded-full p-2">
+                      <RefreshCw className="w-4 h-4 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <div className="flex justify-between items-center">
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500">
+                    This is a live preview from the {selectedCamera} camera. No lights are turned on for this preview.
+                  </p>
+                  {previewLoadTime && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Connection: {previewLoadTime < 300 ? '🟢 Excellent' :
+                                  previewLoadTime < 600 ? '🟢 Very Good' : 
+                                  previewLoadTime < 1200 ? '🟡 Good' : 
+                                  previewLoadTime < 2000 ? '🟠 Moderate' : '🔴 Poor'} 
+                      {' '}({Math.round(previewLoadTime / 100) / 10}s) • 
+                      Auto-refresh: {previewLoadTime < 300 ? '1s' :
+                                    previewLoadTime < 600 ? '2s' : 
+                                    previewLoadTime < 1200 ? '4s' : 
+                                    previewLoadTime < 2000 ? '8s' : '15s'}
+                      {' '}• Next update in: {refreshCountdown}s
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => {
+                    setPreviewModal(null);
+                    setPreviewError(null);
+                    // Clear refresh interval when closing
+                    if (previewRefreshInterval) {
+                      clearInterval(previewRefreshInterval);
+                      setPreviewRefreshInterval(null);
+                    }
+                  }}
+                  className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

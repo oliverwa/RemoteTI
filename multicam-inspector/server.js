@@ -67,7 +67,15 @@ function getHangarConfig(hangarId) {
         // Override with hangar-specific config if provided
         ...(hangar.lights || {})
       },
-      cameraTransforms: hangar.cameraTransforms || {}
+      cameraTransforms: hangar.cameraTransforms || {},
+      // Add camera configuration for quick preview - using port 8083 for camera access
+      cameras: hangar.ipAddress ? {
+        RUL: {
+          url: `https://${hangar.ipAddress}:8083/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C`,
+          username: 'admin',
+          password: 'H4anGar0NeC4amAdmin'
+        }
+      } : {}
     };
     
     return hangarConfig;
@@ -1319,6 +1327,95 @@ app.post('/api/alarm-session/:hangarId/update-phase', async (req, res) => {
   } catch (error) {
     log('error', 'Error updating alarm session:', error.message);
     res.status(500).json({ error: 'Failed to update alarm session' });
+  }
+});
+
+// Quick camera preview endpoint - fetches RUL camera image without full capture process
+app.get('/api/hangar/:hangarId/quick-preview', async (req, res) => {
+  const { exec } = require('child_process');
+  const { promisify } = require('util');
+  const execAsync = promisify(exec);
+  
+  try {
+    const { hangarId } = req.params;
+    const { camera = 'RUL' } = req.query; // Default to RUL if not specified
+    
+    log('info', `Quick preview requested for hangar: ${hangarId}, camera: ${camera}`);
+    
+    // Get hangar configuration
+    const hangarConfig = getHangarConfig(hangarId);
+    if (!hangarConfig) {
+      return res.status(404).json({ error: 'Hangar not found' });
+    }
+    
+    if (!hangarConfig.ipAddress) {
+      return res.status(400).json({ error: 'Hangar IP not configured' });
+    }
+    
+    // Map camera names to IP addresses - using config from config.js
+    const cameraIPs = {
+      'FDR': '10.20.1.208', // Front Down Right
+      'FUR': '10.20.1.209', // Front Upper Right
+      'RUR': '10.20.1.210', // Rear Upper Right  
+      'RDR': '10.20.1.211', // Rear Down Right
+      'FDL': '10.20.1.212', // Front Down Left
+      'FUL': '10.20.1.213', // Front Upper Left
+      'RUL': '10.20.1.214', // Rear Upper Left (Default)
+      'RDL': '10.20.1.215', // Rear Down Left
+      'EXT1': '10.20.1.216', // External Camera 1 (Outside hangar)
+      'EXT2': '10.20.1.217'  // External Camera 2 (Outside hangar)
+    };
+    
+    const cameraIP = cameraIPs[camera] || cameraIPs['RUL']; // Default to RUL if unknown camera
+    const hangarIP = hangarConfig.ipAddress;
+    const username = 'admin';
+    const password = 'H4anGar0NeC4amAdmin';
+    
+    // Create a temporary file for the image
+    const tempFile = `/tmp/preview_${hangarId}_${Date.now()}.jpg`;
+    
+    // SSH command to fetch image via curl on the hangar system
+    const sshCommand = `ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no system@${hangarIP} "curl -sSLk --fail --connect-timeout 5 --max-time 10 'http://${cameraIP}/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C&user=${username}&password=${password}' -o - 2>/dev/null" > ${tempFile}`;
+    
+    log('info', `Fetching ${camera} camera image (${cameraIP}) via SSH from ${hangarIP}`);
+    
+    try {
+      await execAsync(sshCommand, { timeout: 15000 });
+      
+      // Check if file was created and has content
+      const stats = fs.statSync(tempFile);
+      if (stats.size === 0) {
+        throw new Error('Empty image received');
+      }
+      
+      // Send the image
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      
+      const stream = fs.createReadStream(tempFile);
+      stream.pipe(res);
+      
+      // Clean up temp file after sending
+      stream.on('end', () => {
+        fs.unlink(tempFile, (err) => {
+          if (err) log('warn', `Failed to delete temp file: ${tempFile}`);
+        });
+      });
+      
+    } catch (cmdError) {
+      log('error', `SSH command failed: ${cmdError.message}`);
+      // Clean up temp file if it exists
+      if (fs.existsSync(tempFile)) {
+        fs.unlinkSync(tempFile);
+      }
+      throw cmdError;
+    }
+    
+  } catch (error) {
+    log('error', 'Error in quick preview:', error.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to fetch preview. Camera might be offline.' });
+    }
   }
 });
 
