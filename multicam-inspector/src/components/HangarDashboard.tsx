@@ -171,38 +171,54 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   useEffect(() => {
     const fetchHangarStatuses = async () => {
       try {
-        // Fetch maintenance history (only for admin and everdrone users)
-        let maintenanceData: {[key: string]: any} = {};
-        if (userType === 'admin' || userType === 'everdrone') {
-          const historyResponse = await fetch(`${API_CONFIG.BASE_URL}/api/maintenance-history`);
-          if (historyResponse.ok) {
-            maintenanceData = await historyResponse.json();
-            setMaintenanceHistory(maintenanceData);
-          }
-        }
-        
         // Start with default statuses
-        const statuses: HangarStatusData[] = visibleHangars.map(hangar => ({
-          id: hangar.id,
-          name: hangar.label,
-          state: 'standby' as const,
-          assignedDrone: hangar.assignedDrone,
-          lastActivity: 'No recent activity',
-          operational: hangar.operational !== false, // Default to true if not specified
-          status: hangar.status || 'operational', // Use status from admin panel
-          // Get maintenance history for the drone assigned to this hangar
-          maintenanceHistory: (hangar.assignedDrone && maintenanceData[hangar.assignedDrone]) ? {
-            lastOnsiteTI: maintenanceData[hangar.assignedDrone].lastOnsiteTI,
-            lastExtendedTI: maintenanceData[hangar.assignedDrone].lastExtendedTI,
-            lastService: maintenanceData[hangar.assignedDrone].lastService,
-            lastFullRemoteTI: maintenanceData[hangar.assignedDrone].lastFullRemoteTI
-          } : {
+        const statuses: HangarStatusData[] = await Promise.all(visibleHangars.map(async (hangar) => {
+          // Fetch maintenance history for this specific hangar (only for admin and everdrone users)
+          let hangarMaintenanceData = {
             lastOnsiteTI: null,
             lastExtendedTI: null,
             lastService: null,
             lastFullRemoteTI: null
+          };
+          
+          if (userType === 'admin' || userType === 'everdrone') {
+            try {
+              const historyResponse = await fetch(`${API_CONFIG.BASE_URL}/api/hangar-maintenance/${hangar.id}`);
+              if (historyResponse.ok) {
+                const data = await historyResponse.json();
+                hangarMaintenanceData = {
+                  lastOnsiteTI: data.lastOnsiteTI,
+                  lastExtendedTI: data.lastExtendedTI,
+                  lastService: data.lastService,
+                  lastFullRemoteTI: data.lastFullRemoteTI
+                };
+              }
+            } catch (err) {
+              console.warn(`Failed to fetch maintenance for hangar ${hangar.id}:`, err);
+            }
           }
+          
+          return {
+            id: hangar.id,
+            name: hangar.label,
+            state: 'standby' as const,
+            assignedDrone: hangar.assignedDrone,
+            lastActivity: 'No recent activity',
+            operational: hangar.operational !== false, // Default to true if not specified
+            status: hangar.status || 'operational', // Use status from admin panel
+            // Use hangar-specific maintenance history
+            maintenanceHistory: hangarMaintenanceData
+          };
         }));
+        
+        // Store maintenance data for compatibility
+        const maintenanceData: {[key: string]: any} = {};
+        statuses.forEach(status => {
+          if (status.assignedDrone && status.maintenanceHistory) {
+            maintenanceData[status.assignedDrone] = status.maintenanceHistory;
+          }
+        });
+        setMaintenanceHistory(maintenanceData);
         
         // Fetch alarm session for each hangar
         for (const hangar of visibleHangars) {

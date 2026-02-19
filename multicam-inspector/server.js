@@ -2649,10 +2649,10 @@ app.get('/api/maintenance-history', async (req, res) => {
                 type = 'onsite-ti';
               } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
                 type = 'extended-ti';
-              } else if (sessionNameLower.includes('full_remote_ti') || 
+              } else if (sessionNameLower.includes('full_remote') || 
                          inspectionData.inspectionType === 'drone_remote_visual_inspection' ||
                          inspectionData.inspectionType === 'full-remote-ti-inspection') {
-                // Only full_remote_ti sessions are considered Full Remote TI (not initial_remote)
+                // Full Remote TI sessions (both full_remote_ti and full_remote patterns)
                 type = 'full-remote';
               } else if (sessionNameLower.includes('service_partner')) {
                 // Service Partner is a basic inspection, not a service
@@ -2770,6 +2770,164 @@ app.get('/api/maintenance-history', async (req, res) => {
     
   } catch (error) {
     log('error', 'Failed to get maintenance history:', error.message);
+    res.status(500).json({ error: 'Failed to get maintenance history' });
+  }
+});
+
+// NEW API endpoint to get maintenance history per hangar (only for assigned drone at that hangar)
+app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    
+    // Input validation - sanitize hangar ID
+    if (!hangarId || typeof hangarId !== 'string' || hangarId.length > 100) {
+      return res.status(400).json({ error: 'Invalid hangar ID' });
+    }
+    
+    // Validate hangar ID format (alphanumeric with underscores only)
+    if (!/^[a-zA-Z0-9_]+$/.test(hangarId)) {
+      return res.status(400).json({ error: 'Invalid hangar ID format' });
+    }
+    
+    // Load hangar configuration to get the assigned drone
+    const hangarsData = JSON.parse(fs.readFileSync(path.join(BASE_DIR, 'data', 'hangars.json'), 'utf8'));
+    const hangar = hangarsData.hangars.find(h => h.id === hangarId);
+    
+    if (!hangar) {
+      return res.status(404).json({ error: 'Hangar not found' });
+    }
+    
+    if (!hangar.assignedDrone) {
+      // No drone assigned, return empty maintenance history
+      return res.json({
+        hangarId,
+        assignedDrone: null,
+        lastOnsiteTI: null,
+        lastExtendedTI: null,
+        lastService: null,
+        lastFullRemoteTI: null
+      });
+    }
+    
+    const maintenanceHistory = {
+      hangarId,
+      assignedDrone: hangar.assignedDrone,
+      lastOnsiteTI: null,
+      lastExtendedTI: null,
+      lastService: null,
+      lastFullRemoteTI: null
+    };
+    
+    // Use the hangar ID directly as the folder name (folders are named like "hangar_forsaker_vpn")
+    const hangarPath = path.join(SNAPSHOTS_DIR, hangarId);
+    
+    // Only look for sessions in THIS hangar's folder
+    if (fs.existsSync(hangarPath)) {
+      const sessions = fs.readdirSync(hangarPath)
+        .filter(item => {
+          const itemPath = path.join(hangarPath, item);
+          return fs.statSync(itemPath).isDirectory();
+        });
+      
+      for (const sessionName of sessions) {
+        const sessionPath = path.join(hangarPath, sessionName);
+        
+        // Check if this session is for the currently assigned drone
+        // Session names can be like: "e3002_241124_140000" or "onsite_ti_e3002_241124_140000"
+        if (!sessionName.toLowerCase().includes(hangar.assignedDrone.toLowerCase())) {
+          continue; // Skip sessions from other drones that were previously at this hangar
+        }
+        
+        // Find inspection JSON file
+        const files = fs.readdirSync(sessionPath);
+        const inspectionFile = files.find(f => f.endsWith('_inspection.json'));
+        
+        if (!inspectionFile) continue;
+        
+        try {
+          const inspectionData = JSON.parse(fs.readFileSync(path.join(sessionPath, inspectionFile), 'utf8'));
+          
+          // Verify drone ID matches (double-check)
+          const sessionDrone = inspectionData.sessionInfo?.drone || inspectionData.metadata?.droneId;
+          if (sessionDrone && sessionDrone !== hangar.assignedDrone) {
+            continue; // Skip if drone doesn't match
+          }
+          
+          // Check if inspection is completed
+          const isCompleted = inspectionData.completionStatus?.status === 'completed' ||
+                             (inspectionData.tasks && 
+                              inspectionData.tasks.every(t => t.status === 'pass' || t.status === 'fail' || t.status === 'na'));
+          
+          if (!isCompleted) continue;
+          
+          const completionDate = inspectionData.completionStatus?.completedAt || 
+                                fs.statSync(sessionPath).mtime.toISOString();
+          
+          // Determine inspection type and update if more recent
+          const sessionNameLower = sessionName.toLowerCase();
+          
+          if (sessionNameLower.includes('onsite') || inspectionData.type === 'onsite-ti-inspection') {
+            if (!maintenanceHistory.lastOnsiteTI || 
+                new Date(completionDate) > new Date(maintenanceHistory.lastOnsiteTI)) {
+              maintenanceHistory.lastOnsiteTI = completionDate;
+            }
+          } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
+            if (!maintenanceHistory.lastExtendedTI || 
+                new Date(completionDate) > new Date(maintenanceHistory.lastExtendedTI)) {
+              maintenanceHistory.lastExtendedTI = completionDate;
+            }
+          } else if (sessionNameLower.includes('full_remote') || 
+                     inspectionData.inspectionType === 'drone_remote_visual_inspection' ||
+                     inspectionData.inspectionType === 'full-remote-ti-inspection') {
+            if (!maintenanceHistory.lastFullRemoteTI || 
+                new Date(completionDate) > new Date(maintenanceHistory.lastFullRemoteTI)) {
+              maintenanceHistory.lastFullRemoteTI = completionDate;
+            }
+          } else if (sessionNameLower.includes('service') && !sessionNameLower.includes('service_partner')) {
+            if (!maintenanceHistory.lastService || 
+                new Date(completionDate) > new Date(maintenanceHistory.lastService)) {
+              maintenanceHistory.lastService = completionDate;
+            }
+          }
+        } catch (err) {
+          // Ignore parsing errors
+          log('warn', `Failed to parse inspection file ${inspectionFile}:`, err.message);
+        }
+      }
+    }
+    
+    // Also check alarm sessions for this hangar
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    if (fs.existsSync(alarmsDir)) {
+      const alarmFiles = fs.readdirSync(alarmsDir)
+        .filter(f => f.startsWith('alarm_') && f.endsWith('.json'));
+      
+      for (const alarmFile of alarmFiles) {
+        try {
+          const alarmData = JSON.parse(fs.readFileSync(path.join(alarmsDir, alarmFile), 'utf8'));
+          
+          // Check if this alarm is for the correct hangar and drone
+          if (alarmData.hangarId === hangarId && 
+              alarmData.droneId === hangar.assignedDrone &&
+              alarmData.inspections?.onsiteTI?.completedAt) {
+            
+            const completedDate = alarmData.inspections.onsiteTI.completedAt;
+            
+            if (!maintenanceHistory.lastOnsiteTI || 
+                new Date(completedDate) > new Date(maintenanceHistory.lastOnsiteTI)) {
+              maintenanceHistory.lastOnsiteTI = completedDate;
+            }
+          }
+        } catch (err) {
+          log('warn', `Failed to parse alarm file ${alarmFile}:`, err.message);
+        }
+      }
+    }
+    
+    res.json(maintenanceHistory);
+    
+  } catch (error) {
+    log('error', 'Failed to get hangar maintenance history:', error.message);
     res.status(500).json({ error: 'Failed to get maintenance history' });
   }
 });
