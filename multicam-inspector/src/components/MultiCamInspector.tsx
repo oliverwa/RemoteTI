@@ -275,9 +275,6 @@ export default function MultiCamInspector({
   // Validation box tracking for innovative mode
   const [validatedBoxes, setValidatedBoxes] = useState<Record<string, Set<string>>>({}); // taskId -> Set of validated box IDs
   
-  // Comment section visibility
-  const [showComments, setShowComments] = useState(false);
-  
   // Log state
   const [logs, setLogs] = useState<string[]>([]);
   const [showLogs, setShowLogs] = useState(false);
@@ -1855,10 +1852,12 @@ export default function MultiCamInspector({
     
     if (currentSessionName && currentTask.id) {
       const url = `${API_CONFIG.BASE_URL}/api/inspection/${currentSessionName}/task/${currentTask.id}/status`;
+      // Get the latest comment from the items state (which gets updated by updateTaskComment)
+      const latestComment = items[idx].comment || '';
       const payload = {
         status: s,
         completedBy: inspectionMeta.inspectorName || currentUser,
-        comment: currentTask.comment || ''
+        comment: latestComment
       };
       
       console.log('Sending POST request to:', url);
@@ -1951,7 +1950,8 @@ export default function MultiCamInspector({
       addLog(`⚠️ Cannot save to backend - ${!currentSessionName ? 'no session' : 'no task ID'}`);
     }
     
-    if (s === "pass" || s === "fail") {
+    // Auto-advance for pass, fail, and na
+    if (s === "pass" || s === "fail" || s === "na") {
       setLeaving(true);
       setTimeout(() => {
         setLeaving(false);
@@ -2003,6 +2003,12 @@ export default function MultiCamInspector({
   // --- Hotkeys: fullscreen ---
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // Don't handle shortcuts when typing in text inputs or textareas
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+        return;
+      }
+      
       const k = e.key?.toLowerCase?.();
       // Handle fullscreen mode keys
       if (fsId != null) {
@@ -2489,42 +2495,36 @@ export default function MultiCamInspector({
               </div>
             </div>
             
-            {/* Thin Add Comments / N/A row */}
-            <div className="flex items-center justify-between px-4 py-2 bg-gray-50 rounded-lg">
-              <button
-                onClick={() => setShowComments(!showComments)}
-                className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                </svg>
-                <span>Add Comments</span>
-              </button>
-              
-              <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800">
-                <input 
-                  type="radio" 
-                  name={`task-${idx}`}
-                  checked={items[idx].status === "na"}
-                  onChange={() => selectStatus("na")}
-                  className="w-4 h-4"
-                />
-                <span>N/A</span>
-              </label>
-            </div>
-            
-            {/* Comments textarea if open */}
-            {showComments && (
-              <div className="px-4">
-                <textarea
-                  className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                  rows={2}
-                  placeholder="Add comments or notes for this inspection task..."
-                  value={items[idx].comment || ''}
-                  onChange={(e) => updateTaskComment(e.target.value)}
-                />
+            {/* Notes Section - Always visible */}
+            <div className="px-4 py-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <label className="flex items-center gap-2 text-sm text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                  <span>Notes (Optional)</span>
+                </label>
+                
+                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                  <input 
+                    type="radio" 
+                    name={`task-${idx}`}
+                    checked={items[idx].status === "na"}
+                    onChange={() => selectStatus("na")}
+                    className="w-4 h-4"
+                  />
+                  <span>N/A</span>
+                </label>
               </div>
-            )}
+              
+              <textarea
+                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                rows={3}
+                placeholder="Add any observations or notes about this task..."
+                value={items[idx].comment || ''}
+                onChange={(e) => updateTaskComment(e.target.value)}
+              />
+            </div>
           </div>
         )}
 

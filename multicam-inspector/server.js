@@ -1724,10 +1724,12 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
   try {
     const sessionFolder = req.params[0];  // First capture group
     const taskId = req.params[1];  // Second capture group
-    const { status, completedBy, note } = req.body;
+    const { status, completedBy, note, comment } = req.body;
+    // Support both 'note' and 'comment' field names for compatibility
+    const taskNote = note || comment || '';
     
     log('info', `Updating task ${taskId} status to ${status} for session ${sessionFolder}`);
-    log('info', `Note received: "${note}"`);
+    log('info', `Note received: "${taskNote}" (note: "${note}", comment: "${comment}")`);
     log('info', `Request body:`, req.body);
     
     // Build the full path to the inspection JSON
@@ -1779,8 +1781,10 @@ app.post(/^\/api\/inspection\/(.+)\/task\/(.+)\/status$/, async (req, res) => {
     };
     
     // Always update the note field (even if empty string)
-    task.note = note || '';
-    log('info', `Setting task.note to: "${task.note}" (received: "${note}")`)
+    // Save as both 'note' (for onsite compatibility) and 'comment' (for camera inspection)
+    task.note = taskNote;
+    task.comment = taskNote;
+    log('info', `Setting task.note/comment to: "${task.note}" (received note: "${note}", comment: "${comment}")`)
     
     // Log the task after update
     log('info', `Task after update:`, {
