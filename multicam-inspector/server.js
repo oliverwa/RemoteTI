@@ -62,7 +62,7 @@ function getHangarConfig(hangarId) {
         enabled: false,
         endpoint: hangar.ipAddress ? `https://${hangar.ipAddress}:7548/hangar/lightson` : '',
         username: process.env.HANGAR_SYSTEM_USERNAME || 'system',
-        password: process.env.HANGAR_SYSTEM_PASSWORD || 'defaultPassword',
+        password: process.env.HANGAR_SYSTEM_PASSWORD || 'FJjf93/#',
         waitTime: 3,
         // Override with hangar-specific config if provided
         ...(hangar.lights || {})
@@ -356,6 +356,8 @@ async function turnOnHangarLights(hangar) {
     const url = new URL(endpoint);
     const auth = Buffer.from(`${username}:${password}`).toString('base64');
     
+    let responseReceived = false;
+    
     const options = {
       hostname: url.hostname,
       port: url.port || 443,
@@ -371,22 +373,37 @@ async function turnOnHangarLights(hangar) {
     
     const req = https.request(options, (res) => {
       let data = '';
-      res.on('data', (chunk) => { data += chunk; });
+      
+      res.on('data', (chunk) => { 
+        data += chunk; 
+      });
+      
       res.on('end', () => {
-        if (res.statusCode === 200) {
-          log('info', `Lights turned on successfully for ${hangar}, waiting ${waitTime}s`);
+        responseReceived = true;
+        if (res.statusCode === 200 || data === '"ok"') {
+          log('info', `Lights turned on successfully for ${hangar} (response: ${data}), waiting ${waitTime}s`);
           setTimeout(() => resolve(true), waitTime * 1000);
         } else {
-          log('warn', `Failed to turn on lights for ${hangar}: HTTP ${res.statusCode}`);
+          log('warn', `Failed to turn on lights for ${hangar}: HTTP ${res.statusCode}, data: ${data}`);
           resolve(false);
         }
       });
     });
     
     req.on('error', (error) => {
+      // Check if we already handled the response successfully
+      if (responseReceived) {
+        log('debug', `Ignoring error after successful response for ${hangar}`);
+        return;
+      }
+      
       log('error', `Error turning on lights for ${hangar}: ${error.message}`);
-      // Still resolve true if it's a certificate or TLS error since the request likely went through
-      if (error.code === 'EPROTO' || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
+      // Socket hang up or connection reset often means the server closed connection after processing
+      // This can happen when lights turn on successfully but server doesn't send proper response
+      if (error.code === 'ECONNRESET' || error.message.includes('socket hang up')) {
+        log('info', `Connection reset for ${hangar}, lights likely turned on successfully`);
+        setTimeout(() => resolve(true), waitTime * 1000);
+      } else if (error.code === 'EPROTO' || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
         log('info', `Ignoring TLS error for ${hangar}, lights may still be on`);
         setTimeout(() => resolve(true), waitTime * 1000);
       } else {

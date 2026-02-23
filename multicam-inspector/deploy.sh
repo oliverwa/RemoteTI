@@ -83,9 +83,21 @@ ssh $SERVER "cd $REMOTE_DIR && \
 echo "  📦 Copying scripts..."
 scp camera_fetch.sh $SERVER:$REMOTE_DIR/ 2>/dev/null || true
 
-# Copy .env.production as .env on server
-echo "  📦 Copying production environment..."
-scp .env.production $SERVER:$REMOTE_DIR/.env
+# Copy example env file for reference
+scp .env.example $SERVER:$REMOTE_DIR/ 2>/dev/null || true
+
+# NEVER overwrite .env on server - it contains real credentials
+echo "  📦 Checking production environment..."
+ssh $SERVER "if [ -f $REMOTE_DIR/.env ]; then \
+  echo '  ✓ Keeping existing .env on server (contains real credentials)'; \
+else \
+  echo '  ⚠️  WARNING: No .env file found on server!'; \
+  echo '  ⚠️  You need to create one with real credentials:'; \
+  echo '     ssh $SERVER'; \
+  echo '     cd $REMOTE_DIR'; \
+  echo '     cp .env.example .env'; \
+  echo '     nano .env  # Add real passwords'; \
+fi"
 
 echo -e "${GREEN}✅ Files copied${NC}"
 echo ""
