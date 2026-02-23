@@ -59,7 +59,7 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
     
     try {
       // Load inspection data from the session
-      const response = await fetch(`/api/sessions/${encodeURIComponent(sessionPath)}`);
+      const response = await fetch(`/api/inspection/${sessionPath}/data`);
       if (!response.ok) {
         const error = await response.text();
         throw new Error(`Failed to load inspection data: ${error}`);

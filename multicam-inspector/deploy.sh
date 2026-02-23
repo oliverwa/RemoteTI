@@ -159,15 +159,24 @@ else
 fi
 echo ""
 
-# Step 8: Final instructions
+# Step 8: Restart PM2 application
+echo -e "${YELLOW}Step 8: Managing PM2 application...${NC}"
+ssh $SERVER "cd $REMOTE_DIR && (pm2 describe multicam > /dev/null 2>&1 && pm2 restart multicam --update-env || pm2 start server.js --name multicam) && pm2 save" > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ PM2 application running${NC}"
+else
+    echo -e "${YELLOW}⚠️  PM2 restart failed, manual restart may be needed${NC}"
+fi
+echo ""
+
+# Step 9: Final instructions
 echo -e "${GREEN}🎉 Deployment complete!${NC}"
 echo ""
-echo "The server is ready to run at: http://172.20.1.254:5001"
+echo "The server is running at: http://172.20.1.254:5001"
 echo ""
-echo "To start the server:"
+echo "To check server status:"
 echo "1. SSH into server: ssh $SERVER"
-echo "2. Navigate to app: cd $REMOTE_DIR"
-echo "3. Start with PM2: pm2 start server.js --name multicam"
-echo "   Or test mode: npm run server"
+echo "2. View PM2 status: pm2 status"
+echo "3. View logs: pm2 logs multicam"
 echo ""
 echo "To update in the future, just run: ./deploy.sh"

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X, Lightbulb } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
 import SimpleTelemetryAnalysis from './SimpleTelemetryAnalysis';
+import InspectionSummaryModal from './modals/InspectionSummaryModal';
 import { API_CONFIG } from '../config/api.config';
 import authService from '../services/authService';
 
@@ -37,6 +38,9 @@ interface HangarStatusData {
     lastService: string | null;
     lastFullRemoteTI: string | null;
   };
+  lights?: {
+    enabled: boolean;
+  };
 }
 
 const HangarDashboard: React.FC<HangarDashboardProps> = ({
@@ -65,7 +69,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [previewTimestamp, setPreviewTimestamp] = useState(Date.now());
   const [previewLoadTime, setPreviewLoadTime] = useState<number | null>(null);
   const [previewRefreshInterval, setPreviewRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [lightsLoading, setLightsLoading] = useState<{ [key: string]: boolean }>({});
+  const [lightsOn, setLightsOn] = useState<{ [key: string]: boolean }>({});
   const [nextRefreshTime, setNextRefreshTime] = useState<number | null>(null);
+  const [showInspectionSummary, setShowInspectionSummary] = useState(false);
+  const [selectedInspectionData, setSelectedInspectionData] = useState<any>(null);
   const [refreshCountdown, setRefreshCountdown] = useState<number>(0);
   const [selectedCamera, setSelectedCamera] = useState<string>('RUL');
 
@@ -119,6 +127,75 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     }
   };
 
+
+  // Handle opening inspection summary
+  const handleOpenInspectionSummary = async (hangarId: string, inspectionType: string) => {
+    console.log('handleOpenInspectionSummary called:', { hangarId, inspectionType });
+    
+    try {
+      // Find the hangar
+      const hangar = visibleHangars.find(h => h.id === hangarId);
+      console.log('Found hangar:', hangar);
+      
+      if (!hangar || !hangar.maintenanceHistory) {
+        console.log('No hangar or maintenance history found');
+        return;
+      }
+
+      let sessionPath = '';
+      let timestamp = '';
+      
+      console.log('Maintenance history:', hangar.maintenanceHistory);
+      
+      if (inspectionType === 'onsite' && hangar.maintenanceHistory.lastOnsiteTI) {
+        sessionPath = hangar.maintenanceHistory.lastOnsiteTISession;
+        timestamp = hangar.maintenanceHistory.lastOnsiteTI;
+      } else if (inspectionType === 'full_remote' && hangar.maintenanceHistory.lastFullRemoteTI) {
+        sessionPath = hangar.maintenanceHistory.lastFullRemoteTISession;
+        timestamp = hangar.maintenanceHistory.lastFullRemoteTI;
+      } else if (inspectionType === 'extended' && hangar.maintenanceHistory.lastExtendedTI) {
+        sessionPath = hangar.maintenanceHistory.lastExtendedTISession;
+        timestamp = hangar.maintenanceHistory.lastExtendedTI;
+      } else if (inspectionType === 'service' && hangar.maintenanceHistory.lastService) {
+        sessionPath = hangar.maintenanceHistory.lastServiceSession;
+        timestamp = hangar.maintenanceHistory.lastService;
+      }
+
+      console.log('Session path:', sessionPath, 'Timestamp:', timestamp);
+
+      if (!sessionPath) {
+        console.log('No session path found for inspection type:', inspectionType);
+        return;
+      }
+
+      // Fetch the inspection data
+      console.log('Fetching inspection data from:', `${API_CONFIG.BASE_URL}/api/inspection/${sessionPath}/data`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${sessionPath}/data`);
+      if (!response.ok) {
+        console.error('Failed to fetch inspection data:', response.status, response.statusText);
+        throw new Error('Failed to fetch inspection data');
+      }
+      
+      const data = await response.json();
+      console.log('Inspection data received:', data);
+      
+      // Show the modal with the inspection data
+      const modalData = {
+        ...data,
+        hangarName: hangar.label || hangar.name,
+        hangarId: hangar.id,
+        timestamp: timestamp,
+        sessionPath: sessionPath
+      };
+      
+      console.log('Setting modal data:', modalData);
+      setSelectedInspectionData(modalData);
+      setShowInspectionSummary(true);
+    } catch (error) {
+      console.error('Error opening inspection summary:', error);
+      alert('Failed to open inspection summary. Check console for details.');
+    }
+  };
 
   // Fetch hangars from backend (reads from hangars.json)
   const fetchHangars = async () => {
@@ -1674,6 +1751,63 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         <Eye className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                       </button>
                     )}
+                    {/* Light Control Button */}
+                    {(() => {
+                      const hangarDetails = visibleHangars.find((h: any) => h.id === hangar.id);
+                      return hangar.status === 'operational' && hangarDetails?.lights?.enabled && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const hangarId = hangar.id;
+                          
+                          // Set loading state
+                          setLightsLoading(prev => ({ ...prev, [hangarId]: true }));
+                          
+                          try {
+                            const response = await fetch(`${API_CONFIG.BASE_URL}/api/hangar/${hangarId}/lights`, {
+                              method: 'POST',
+                              headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+                              },
+                              body: JSON.stringify({ action: 'on' })
+                            });
+                            
+                            const data = await response.json();
+                            
+                            if (response.ok && data.success) {
+                              // Mark lights as on
+                              setLightsOn(prev => ({ ...prev, [hangarId]: true }));
+                              
+                              // Auto turn off indicator after waitTime
+                              if (data.waitTime) {
+                                setTimeout(() => {
+                                  setLightsOn(prev => ({ ...prev, [hangarId]: false }));
+                                }, data.waitTime * 1000);
+                              }
+                            } else {
+                              console.error('Failed to turn on lights:', data.error);
+                            }
+                          } catch (error) {
+                            console.error('Error controlling lights:', error);
+                          } finally {
+                            setLightsLoading(prev => ({ ...prev, [hangarId]: false }));
+                          }
+                        }}
+                        className={`p-2 hover:bg-gray-100 rounded-lg transition-colors group ${
+                          lightsOn[hangar.id] ? 'bg-yellow-50' : ''
+                        }`}
+                        title={lightsOn[hangar.id] ? 'Lights are on' : 'Turn on lights'}
+                        disabled={lightsLoading[hangar.id]}
+                      >
+                        <Lightbulb className={`w-5 h-5 ${
+                          lightsLoading[hangar.id] ? 'text-gray-300 animate-pulse' :
+                          lightsOn[hangar.id] ? 'text-yellow-500' : 
+                          'text-gray-400 group-hover:text-gray-600'
+                        }`} />
+                      </button>
+                    );
+                    })()}
                     {/* Status Badge - Only show for non-service partners or when not in standby */}
                     {(userType !== 'service_partner' || hangar.state !== 'standby') && (
                       <span className={`px-3 py-1.5 rounded-lg text-xs font-medium ${
@@ -1723,11 +1857,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 <div className="mt-auto pt-3 border-t border-gray-200">
                   <div className="text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wide">Time Since Last Maintenance</div>
                   <div className="grid grid-cols-4 gap-2">
-                    <div className={`p-2 rounded-lg text-center ${
-                      hangar.maintenanceHistory?.lastOnsiteTI 
-                        ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'bg-red-50' : 'bg-green-50'
-                        : 'bg-gray-50'
-                    }`}>
+                    <div 
+                      className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
+                        hangar.maintenanceHistory?.lastOnsiteTI 
+                          ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'bg-red-50' : 'bg-green-50'
+                          : 'bg-gray-50'
+                      }`}
+                      onClick={() => hangar.maintenanceHistory?.lastOnsiteTI && handleOpenInspectionSummary(hangar.id, 'onsite')}>
                       <div className="text-[10px] font-medium text-gray-600">Onsite TI</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
@@ -1740,11 +1876,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           : '-'}
                       </div>
                     </div>
-                    <div className={`p-2 rounded-lg text-center ${
-                      hangar.maintenanceHistory?.lastFullRemoteTI 
-                        ? getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45 ? 'bg-red-50' : 'bg-green-50'
-                        : 'bg-gray-50'
-                    }`}>
+                    <div 
+                      className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
+                        hangar.maintenanceHistory?.lastFullRemoteTI 
+                          ? getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45 ? 'bg-red-50' : 'bg-green-50'
+                          : 'bg-gray-50'
+                      }`}
+                      onClick={() => hangar.maintenanceHistory?.lastFullRemoteTI && handleOpenInspectionSummary(hangar.id, 'full_remote')}>
                       <div className="text-[10px] font-medium text-gray-600">Full Remote</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
@@ -1757,11 +1895,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           : '-'}
                       </div>
                     </div>
-                    <div className={`p-2 rounded-lg text-center ${
-                      hangar.maintenanceHistory?.lastExtendedTI 
-                        ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'bg-red-50' : 'bg-green-50'
-                        : 'bg-gray-50'
-                    }`}>
+                    <div 
+                      className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
+                        hangar.maintenanceHistory?.lastExtendedTI 
+                          ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'bg-red-50' : 'bg-green-50'
+                          : 'bg-gray-50'
+                      }`}
+                      onClick={() => hangar.maintenanceHistory?.lastExtendedTI && handleOpenInspectionSummary(hangar.id, 'extended')}>
                       <div className="text-[10px] font-medium text-gray-600">Extended</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
@@ -1774,11 +1914,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           : '-'}
                       </div>
                     </div>
-                    <div className={`p-2 rounded-lg text-center ${
-                      hangar.maintenanceHistory?.lastService 
-                        ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'bg-red-50' : 'bg-green-50'
-                        : 'bg-gray-50'
-                    }`}>
+                    <div 
+                      className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
+                        hangar.maintenanceHistory?.lastService 
+                          ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'bg-red-50' : 'bg-green-50'
+                          : 'bg-gray-50'
+                      }`}
+                      onClick={() => hangar.maintenanceHistory?.lastService && handleOpenInspectionSummary(hangar.id, 'service')}>
                       <div className="text-[10px] font-medium text-gray-600">Service</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
@@ -2170,6 +2312,18 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Inspection Summary Modal */}
+      <InspectionSummaryModal
+        isOpen={showInspectionSummary}
+        onClose={() => {
+          setShowInspectionSummary(false);
+          setSelectedInspectionData(null);
+        }}
+        sessionPath={selectedInspectionData?.sessionPath || ''}
+        hangarId={selectedInspectionData?.hangarId}
+        showImages={selectedInspectionData?.sessionPath?.includes('full_remote')}
+      />
       
     </div>
   );

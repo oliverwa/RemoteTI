@@ -111,6 +111,9 @@ app.use('/public', express.static('public'));
 // Serve static files from build directory (but don't catch all routes yet)
 app.use('/static', express.static(path.join(__dirname, 'build/static')));
 
+// Serve session images from data/sessions directory
+app.use('/data/sessions', express.static(path.join(__dirname, 'data/sessions')));
+
 // Initialize authentication system
 auth.initializeUsersDB().catch(console.error);
 
@@ -339,8 +342,12 @@ app.post('/api/capture', async (req, res) => {
   }
 });
 
-// Function to turn on hangar lights
+// Function to turn on hangar lights (using curl for better compatibility)
 async function turnOnHangarLights(hangar) {
+  const { exec } = require('child_process');
+  const { promisify } = require('util');
+  const execAsync = promisify(exec);
+  
   const hangarConfig = getHangarConfig(hangar);
   
   if (!hangarConfig || !hangarConfig.lights || !hangarConfig.lights.enabled) {
@@ -350,75 +357,38 @@ async function turnOnHangarLights(hangar) {
   
   const { endpoint, username, password, waitTime } = hangarConfig.lights;
   
-  return new Promise((resolve) => {
-    log('info', `Turning on lights for hangar: ${hangar}`);
+  // Use curl command for better compatibility with light controllers
+  return new Promise(async (resolve) => {
+    log('info', `Turning on lights for hangar: ${hangar} using curl`);
+    log('debug', `Light control details - Endpoint: ${endpoint}, Username: ${username}`);
     
-    const url = new URL(endpoint);
-    const auth = Buffer.from(`${username}:${password}`).toString('base64');
-    
-    let responseReceived = false;
-    
-    const options = {
-      hostname: url.hostname,
-      port: url.port || 443,
-      path: url.pathname,
-      method: 'GET',
-      headers: {
-        'Authorization': `Basic ${auth}`
-      },
-      rejectUnauthorized: false, // Allow self-signed certificates
-      secureProtocol: 'TLS_method', // Use flexible TLS version
-      ciphers: 'DEFAULT' // Accept default ciphers
-    };
-    
-    const req = https.request(options, (res) => {
-      let data = '';
+    try {
+      // Build curl command that matches what works manually
+      // Use base64 encoding to avoid shell escaping issues with special characters
+      const auth = Buffer.from(`${username}:${password}`).toString('base64');
+      const curlCmd = `curl -X PUT -k -H "Authorization: Basic ${auth}" '${endpoint}' -w "\\nHTTP_STATUS:%{http_code}" 2>/dev/null`;
       
-      res.on('data', (chunk) => { 
-        data += chunk; 
-      });
+      const { stdout, stderr } = await execAsync(curlCmd, { timeout: 10000 });
       
-      res.on('end', () => {
-        responseReceived = true;
-        if (res.statusCode === 200 || data === '"ok"') {
-          log('info', `Lights turned on successfully for ${hangar} (response: ${data}), waiting ${waitTime}s`);
-          setTimeout(() => resolve(true), waitTime * 1000);
-        } else {
-          log('warn', `Failed to turn on lights for ${hangar}: HTTP ${res.statusCode}, data: ${data}`);
-          resolve(false);
-        }
-      });
-    });
-    
-    req.on('error', (error) => {
-      // Check if we already handled the response successfully
-      if (responseReceived) {
-        log('debug', `Ignoring error after successful response for ${hangar}`);
-        return;
-      }
+      // Parse response and status
+      const lines = stdout.split('\n');
+      const statusLine = lines.find(l => l.startsWith('HTTP_STATUS:'));
+      const httpStatus = statusLine ? parseInt(statusLine.split(':')[1]) : 0;
+      const responseBody = lines.filter(l => !l.startsWith('HTTP_STATUS:')).join('\n').trim();
       
-      log('error', `Error turning on lights for ${hangar}: ${error.message}`);
-      // Socket hang up or connection reset often means the server closed connection after processing
-      // This can happen when lights turn on successfully but server doesn't send proper response
-      if (error.code === 'ECONNRESET' || error.message.includes('socket hang up')) {
-        log('info', `Connection reset for ${hangar}, lights likely turned on successfully`);
-        setTimeout(() => resolve(true), waitTime * 1000);
-      } else if (error.code === 'EPROTO' || error.code === 'ERR_TLS_CERT_ALTNAME_INVALID') {
-        log('info', `Ignoring TLS error for ${hangar}, lights may still be on`);
+      if (httpStatus === 200 || responseBody.includes('ok')) {
+        log('info', `Lights turned on successfully for ${hangar} (status: ${httpStatus}, response: ${responseBody}), waiting ${waitTime}s`);
         setTimeout(() => resolve(true), waitTime * 1000);
       } else {
+        log('warn', `Failed to turn on lights for ${hangar}: HTTP ${httpStatus}, response: ${responseBody}`);
         resolve(false);
       }
-    });
-    
-    req.on('timeout', () => {
-      req.destroy();
-      log('error', `Timeout turning on lights for ${hangar}`);
+    } catch (error) {
+      log('error', `Error turning on lights for ${hangar} with curl: ${error.message}`);
+      
+      // If curl times out or fails, the lights likely didn't turn on
       resolve(false);
-    });
-    
-    req.setTimeout(5000);
-    req.end();
+    }
   });
 }
 
@@ -1347,6 +1317,64 @@ app.post('/api/alarm-session/:hangarId/update-phase', async (req, res) => {
   }
 });
 
+// Light control endpoint - manually control lights for a hangar (no auth required - lights have their own auth)
+app.post('/api/hangar/:hangarId/lights', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const { action = 'on' } = req.body; // 'on' or 'off', default to 'on'
+    
+    log('info', `Light control requested for hangar: ${hangarId}, action: ${action}`);
+    
+    // Get hangar configuration
+    const hangarConfig = getHangarConfig(hangarId);
+    if (!hangarConfig) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Hangar not found' 
+      });
+    }
+    
+    if (!hangarConfig.lights || !hangarConfig.lights.enabled) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Lights not configured for this hangar' 
+      });
+    }
+    
+    if (action === 'on') {
+      // Turn on lights using the same function as camera capture
+      const lightsOn = await turnOnHangarLights(hangarId);
+      
+      if (lightsOn) {
+        log('info', `Lights successfully turned on for ${hangarId}`);
+        res.json({ 
+          success: true, 
+          message: `Lights turned on for ${hangarId}`,
+          waitTime: hangarConfig.lights.waitTime 
+        });
+      } else {
+        log('error', `Failed to turn on lights for ${hangarId}`);
+        res.status(500).json({ 
+          success: false,
+          error: 'Failed to turn on lights' 
+        });
+      }
+    } else {
+      // For now, we don't have an off endpoint, but we can add it later
+      res.status(501).json({ 
+        success: false,
+        error: 'Light off functionality not implemented yet' 
+      });
+    }
+  } catch (error) {
+    log('error', `Error controlling lights for ${req.params.hangarId}:`, error.message);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to control lights' 
+    });
+  }
+});
+
 // Quick camera preview endpoint - fetches RUL camera image without full capture process
 app.get('/api/hangar/:hangarId/quick-preview', async (req, res) => {
   const { exec } = require('child_process');
@@ -1866,6 +1894,20 @@ app.get(/^\/api\/inspection\/(.+)\/data$/, async (req, res) => {
     
     const filePath = path.join(sessionPath, inspectionFile);
     const inspectionData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    
+    // Add images from the session folder
+    const imageFiles = files.filter(f => f.endsWith('.jpg') || f.endsWith('.jpeg') || f.endsWith('.png'));
+    if (imageFiles.length > 0) {
+      inspectionData.images = {};
+      imageFiles.forEach(imageFile => {
+        // Extract camera ID from filename (e.g., "FDR_260220_075448.jpg" -> "FDR")
+        const cameraId = imageFile.split('_')[0];
+        if (cameraId) {
+          // Store the relative path from the data/sessions directory
+          inspectionData.images[cameraId] = `${sessionFolder}/${imageFile}`;
+        }
+      });
+    }
     
     res.json(inspectionData);
     
@@ -2661,21 +2703,35 @@ app.get('/api/maintenance-history', async (req, res) => {
               // Determine inspection type
               let type = null;
               const sessionNameLower = sessionName.toLowerCase();
+              const inspType = inspectionData.inspectionType || inspectionData.type;
               
-              if (sessionNameLower.includes('onsite') || inspectionData.type === 'onsite-ti-inspection') {
+              // Check for onsite TI (must be specifically onsite)
+              if (sessionNameLower.includes('onsite') || inspType === 'onsite-ti-inspection' || inspType === 'onsite_ti_inspection') {
                 type = 'onsite-ti';
-              } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
+              } 
+              // Check for extended TI
+              else if (sessionNameLower.includes('extended') || inspType === 'extended-ti-inspection' || inspType === 'extended_ti_inspection') {
                 type = 'extended-ti';
-              } else if (sessionNameLower.includes('full_remote') || 
-                         inspectionData.inspectionType === 'drone_remote_visual_inspection' ||
-                         inspectionData.inspectionType === 'full-remote-ti-inspection') {
-                // Full Remote TI sessions (both full_remote_ti and full_remote patterns)
+              } 
+              // Check for FULL remote TI (not initial remote)
+              else if (sessionNameLower.includes('full_remote') || 
+                       inspType === 'full-remote-ti-inspection' ||
+                       inspType === 'full_remote_ti_inspection' ||
+                       inspType === 'full_remote_inspection') {
+                // Only full remote, NOT initial remote
                 type = 'full-remote';
-              } else if (sessionNameLower.includes('service_partner')) {
-                // Service Partner is a basic inspection, not a service
+              } 
+              // Skip initial remote - it should NOT count as full remote
+              else if (sessionNameLower.includes('initial_remote') || inspType === 'initial_remote_inspection') {
+                // Initial remote is a different type, skip it
+                type = null;
+              }
+              // Service partner
+              else if (sessionNameLower.includes('service_partner')) {
                 type = 'service-partner';
-              } else if (sessionNameLower.includes('service') || inspectionData.type === 'service-inspection') {
-                // Only real service inspections, not service_partner
+              } 
+              // Service inspection
+              else if (sessionNameLower.includes('service') || inspType === 'service-inspection' || inspType === 'service_inspection') {
                 type = 'service';
               }
               
@@ -2709,9 +2765,13 @@ app.get('/api/maintenance-history', async (req, res) => {
         if (!maintenanceHistory[session.droneId]) {
           maintenanceHistory[session.droneId] = {
             lastOnsiteTI: null,
+            lastOnsiteTISession: null,
             lastExtendedTI: null,
+            lastExtendedTISession: null,
             lastService: null,
-            lastFullRemoteTI: null
+            lastServiceSession: null,
+            lastFullRemoteTI: null,
+            lastFullRemoteTISession: null
           };
         }
         
@@ -2719,23 +2779,27 @@ app.get('/api/maintenance-history', async (req, res) => {
           if (!maintenanceHistory[session.droneId].lastOnsiteTI || 
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastOnsiteTI)) {
             maintenanceHistory[session.droneId].lastOnsiteTI = session.date;
+            maintenanceHistory[session.droneId].lastOnsiteTISession = `${session.hangarId}/${session.sessionName}`;
           }
         } else if (session.type === 'extended-ti') {
           if (!maintenanceHistory[session.droneId].lastExtendedTI || 
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastExtendedTI)) {
             maintenanceHistory[session.droneId].lastExtendedTI = session.date;
+            maintenanceHistory[session.droneId].lastExtendedTISession = `${session.hangarId}/${session.sessionName}`;
           }
         } else if (session.type === 'service') {
           // Only update lastService for real service inspections, not service_partner
           if (!maintenanceHistory[session.droneId].lastService || 
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastService)) {
             maintenanceHistory[session.droneId].lastService = session.date;
+            maintenanceHistory[session.droneId].lastServiceSession = `${session.hangarId}/${session.sessionName}`;
           }
         } else if (session.type === 'full-remote') {
           // Track Full Remote TI inspections
           if (!maintenanceHistory[session.droneId].lastFullRemoteTI || 
               new Date(session.date) > new Date(maintenanceHistory[session.droneId].lastFullRemoteTI)) {
             maintenanceHistory[session.droneId].lastFullRemoteTI = session.date;
+            maintenanceHistory[session.droneId].lastFullRemoteTISession = `${session.hangarId}/${session.sessionName}`;
           }
         }
         // Note: service-partner type is ignored - it's a basic inspection, not maintenance
@@ -2760,9 +2824,13 @@ app.get('/api/maintenance-history', async (req, res) => {
             if (!maintenanceHistory[droneId]) {
               maintenanceHistory[droneId] = {
                 lastOnsiteTI: null,
+                lastOnsiteTISession: null,
                 lastExtendedTI: null,
+                lastExtendedTISession: null,
                 lastService: null,
-                lastFullRemoteTI: null
+                lastServiceSession: null,
+                lastFullRemoteTI: null,
+                lastFullRemoteTISession: null
               };
             }
             
@@ -2882,28 +2950,45 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
           
           // Determine inspection type and update if more recent
           const sessionNameLower = sessionName.toLowerCase();
+          const inspType = inspectionData.inspectionType || inspectionData.type;
           
-          if (sessionNameLower.includes('onsite') || inspectionData.type === 'onsite-ti-inspection') {
+          // Check for onsite TI (must be specifically onsite)
+          if (sessionNameLower.includes('onsite') || inspType === 'onsite-ti-inspection' || inspType === 'onsite_ti_inspection') {
             if (!maintenanceHistory.lastOnsiteTI || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastOnsiteTI)) {
               maintenanceHistory.lastOnsiteTI = completionDate;
+              maintenanceHistory.lastOnsiteTISession = `${hangarId}/${sessionName}`;
             }
-          } else if (sessionNameLower.includes('extended') || inspectionData.type === 'extended-ti-inspection') {
+          } 
+          // Check for extended TI
+          else if (sessionNameLower.includes('extended') || inspType === 'extended-ti-inspection' || inspType === 'extended_ti_inspection') {
             if (!maintenanceHistory.lastExtendedTI || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastExtendedTI)) {
               maintenanceHistory.lastExtendedTI = completionDate;
+              maintenanceHistory.lastExtendedTISession = `${hangarId}/${sessionName}`;
             }
-          } else if (sessionNameLower.includes('full_remote') || 
-                     inspectionData.inspectionType === 'drone_remote_visual_inspection' ||
-                     inspectionData.inspectionType === 'full-remote-ti-inspection') {
+          } 
+          // Check for FULL remote TI (not initial remote)
+          else if (sessionNameLower.includes('full_remote') || 
+                   inspType === 'full-remote-ti-inspection' ||
+                   inspType === 'full_remote_ti_inspection' ||
+                   inspType === 'full_remote_inspection') {
             if (!maintenanceHistory.lastFullRemoteTI || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastFullRemoteTI)) {
               maintenanceHistory.lastFullRemoteTI = completionDate;
+              maintenanceHistory.lastFullRemoteTISession = `${hangarId}/${sessionName}`;
             }
-          } else if (sessionNameLower.includes('service') && !sessionNameLower.includes('service_partner')) {
+          }
+          // Skip initial remote - it should NOT count as full remote
+          else if (sessionNameLower.includes('initial_remote') || inspType === 'initial_remote_inspection') {
+            // Initial remote is a different type, don't count it
+          }
+          // Service inspection
+          else if (sessionNameLower.includes('service') && !sessionNameLower.includes('service_partner')) {
             if (!maintenanceHistory.lastService || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastService)) {
               maintenanceHistory.lastService = completionDate;
+              maintenanceHistory.lastServiceSession = `${hangarId}/${sessionName}`;
             }
           }
         } catch (err) {
