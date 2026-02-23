@@ -1,10 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { X, Check, CheckCircle, AlertTriangle, FileText, Wrench, Camera, Clock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Check, AlertTriangle, Camera, Clock, Wrench, FileText, Download, Share2, CheckCircle, XCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
+interface InspectionSummaryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sessionPath: string;
+  hangarId?: string;
+  showImages?: boolean;
+}
 
 interface InspectionTask {
   id: string;
   title: string;
-  status: 'completed' | 'skipped' | 'failed';
+  status: 'completed' | 'failed' | 'skipped';
   notes?: string;
   images?: string[];
 }
@@ -18,21 +28,13 @@ interface InspectionSummaryData {
   inspectionType: string;
   completedAt: string;
   duration: number;
-  operator?: string;
+  operator: string;
   tasks: InspectionTask[];
-  images?: { [cameraId: string]: string };
+  images: { [key: string]: string };
   overallStatus: 'passed' | 'failed' | 'partial';
   notes?: string;
   weatherConditions?: string;
   location?: string;
-}
-
-interface InspectionSummaryModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  sessionPath: string;
-  hangarId?: string;
-  showImages?: boolean;
 }
 
 const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
@@ -40,12 +42,14 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
   onClose,
   sessionPath,
   hangarId,
-  showImages = true
+  showImages = false
 }) => {
   const [summaryData, setSummaryData] = useState<InspectionSummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [expandedTasks, setExpandedTasks] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ camId: string; path: string } | null>(null);
 
   useEffect(() => {
     if (isOpen && sessionPath) {
@@ -67,19 +71,72 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
       
       const data = await response.json();
       
+      // Extract hangar ID from session path (e.g., "hangar_forsaker_vpn/session_name")
+      const pathParts = sessionPath.split('/');
+      const hangarIdFromPath = pathParts[0] || '';
+      
+      // Format hangar name from ID
+      const formatHangarName = (id: string): string => {
+        // Remove "hangar_" prefix and "_vpn" suffix, capitalize
+        const name = id.replace(/^hangar_/, '').replace(/_vpn$/, '');
+        return name.charAt(0).toUpperCase() + name.slice(1);
+      };
+      
+      // If images not in JSON, build them from standard camera IDs
+      let images = data.images || {};
+      if (Object.keys(images).length === 0) {
+        // For camera inspections, we know the standard camera IDs and file format
+        const cameraIds = ['FDL', 'FDR', 'FUL', 'FUR', 'RDL', 'RDR', 'RUL', 'RUR'];
+        const sessionName = sessionPath.split('/').pop() || '';
+        // Extract timestamp from session name (e.g., "full_remote_e3002_260223_140122" -> "260223_140122")
+        const timestampMatch = sessionName.match(/_(\d{6}_\d{6})$/);
+        if (timestampMatch) {
+          const timestamp = timestampMatch[1];
+          // Build images object with expected filenames
+          cameraIds.forEach(camId => {
+            images[camId] = `${camId}_${timestamp}.jpg`;
+          });
+        }
+      } else {
+        // Clean up image paths if they contain the full path
+        const cleanedImages: Record<string, string> = {};
+        Object.entries(images).forEach(([camId, imagePath]) => {
+          if (typeof imagePath === 'string') {
+            // If the path contains slashes, extract just the filename
+            // This handles cases like "hangar_forsaker_vpn/full_remote_e3002_260223_141009/RUR_260223_141009.jpg"
+            const parts = imagePath.split('/');
+            cleanedImages[camId] = parts[parts.length - 1]; // Get just the filename
+          }
+        });
+        images = cleanedImages;
+      }
+      
+      // Determine inspection type from session name if not properly set
+      let inspectionType = data.inspectionType || data.sessionInfo?.inspectionType || '';
+      const sessionName = sessionPath.split('/').pop() || '';
+      if (inspectionType === 'drone_remote_visual_inspection' || !inspectionType) {
+        if (sessionName.startsWith('full_remote_')) {
+          inspectionType = 'full-remote-ti-inspection';
+        } else if (sessionName.startsWith('initial_remote_')) {
+          inspectionType = 'initial-remote-ti-inspection';
+        } else if (sessionName.startsWith('onsite_')) {
+          inspectionType = 'onsite-ti-inspection';
+        }
+      }
+      
       // Process and format the data
       const summaryData: InspectionSummaryData = {
         sessionId: sessionPath.split('/').pop() || '',
         sessionFolder: sessionPath,
-        hangarId: data.hangar || data.sessionInfo?.hangar || hangarId || '',
-        hangarName: data.hangarName || data.name || '',
-        droneId: data.drone || data.sessionInfo?.drone || '',
-        inspectionType: formatInspectionType(data.inspectionType || data.sessionInfo?.inspectionType || ''),
+        hangarId: data.hangar || data.sessionInfo?.hangar || hangarIdFromPath || hangarId || '',
+        hangarName: data.hangarName || formatHangarName(hangarIdFromPath) || data.name || '',
+        droneId: data.drone || data.sessionInfo?.drone || extractDroneFromSession(sessionName) || '',
+        inspectionType: formatInspectionType(inspectionType),
         completedAt: data.completionStatus?.completedAt || data.completedAt || data.sessionInfo?.createdAt || new Date().toISOString(),
         duration: calculateDuration(data.completionStatus?.startedAt || data.sessionInfo?.createdAt, data.completionStatus?.completedAt || data.completedAt),
         operator: data.completionStatus?.completedBy || data.operator || data.metadata?.author || 'System',
         tasks: processTasks(data.tasks || data.checklist || []),
-        images: data.images || {},
+        images: images,
         overallStatus: calculateOverallStatus(data.tasks || data.checklist || []),
         notes: data.notes || data.description,
         weatherConditions: data.weatherConditions,
@@ -89,25 +146,39 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
       setSummaryData(summaryData);
     } catch (err) {
       console.error('Error loading inspection summary:', err);
-      setError('Failed to load inspection summary');
+      setError(err instanceof Error ? err.message : 'Failed to load inspection summary');
     } finally {
       setLoading(false);
     }
   };
+  
+  const extractDroneFromSession = (sessionName: string): string => {
+    // Extract drone ID from session name (e.g., "full_remote_e3002_260223_140122" -> "e3002")
+    const parts = sessionName.split('_');
+    for (const part of parts) {
+      if (part.match(/^[a-z]\d{4}$/i) || part.match(/^marvin$/i) || part.match(/^bender$/i)) {
+        return part;
+      }
+    }
+    return '';
+  };
 
   const formatInspectionType = (type: string): string => {
     const typeMap: { [key: string]: string } = {
-      'onsite-ti-inspection': 'Onsite TI',
+      'remote-ti-inspection': 'Remote TI',
+      'initial-remote-ti-inspection': 'Initial Remote TI',
       'full-remote-ti-inspection': 'Full Remote TI',
+      'onsite-ti-inspection': 'Onsite TI',
+      'extended-ti-inspection': 'Extended TI',
       'service-partner-inspection': 'Service Partner',
-      'initial-remote-inspection': 'Initial Remote'
+      'service-ti-inspection': 'Service TI'
     };
-    return typeMap[type] || type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    return typeMap[type] || type;
   };
 
-  const calculateDuration = (startTime?: string, endTime?: string): number => {
-    if (!startTime || !endTime) return 0;
-    return Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
+  const calculateDuration = (start?: string, end?: string): number => {
+    if (!start || !end) return 0;
+    return Math.floor((new Date(end).getTime() - new Date(start).getTime()) / 1000);
   };
 
   const processTasks = (tasks: any[]): InspectionTask[] => {
@@ -136,421 +207,377 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
         title: task.title || task.name || task.description || 'Unnamed task',
         status: status,
         notes: task.note || task.notes || (task.comment && task.comment !== '' ? task.comment : undefined),
-        images: task.images
+        images: task.images || []
       };
     });
   };
 
   const calculateOverallStatus = (tasks: any[]): 'passed' | 'failed' | 'partial' => {
-    if (!tasks || tasks.length === 0) return 'partial';
-    
-    // Process tasks the same way to get proper statuses
     const processedTasks = processTasks(tasks);
-    const completedCount = processedTasks.filter(t => t.status === 'completed').length;
-    const failedCount = processedTasks.filter(t => t.status === 'failed').length;
-    const skippedCount = processedTasks.filter(t => t.status === 'skipped').length;
+    const hasFailed = processedTasks.some(t => t.status === 'failed');
+    const hasSkipped = processedTasks.some(t => t.status === 'skipped');
     
-    if (failedCount > 0) return 'failed';
-    if (skippedCount > 0) return 'partial';
-    if (completedCount === processedTasks.length) return 'passed';
-    return 'partial';
+    if (hasFailed) return 'failed';
+    if (hasSkipped) return 'partial';
+    return 'passed';
   };
 
   const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes} minutes`;
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}m`;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusIcon = (status: 'completed' | 'failed' | 'skipped') => {
     switch (status) {
       case 'completed':
-      case 'passed':
-        return 'text-green-600 bg-green-50';
+        return <Check className="w-3 h-3 text-green-600" />;
       case 'failed':
-        return 'text-red-600 bg-red-50';
-      case 'partial':
+        return <X className="w-3 h-3 text-red-600" />;
       case 'skipped':
-        return 'text-yellow-600 bg-yellow-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
+        return <AlertTriangle className="w-3 h-3 text-yellow-600" />;
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusColor = (status: 'completed' | 'failed' | 'skipped') => {
     switch (status) {
       case 'completed':
-      case 'passed':
-        return 'bg-green-500 text-white';
+        return 'bg-green-100';
       case 'failed':
-        return 'bg-red-500 text-white';
-      case 'partial':
+        return 'bg-red-100';
       case 'skipped':
-        return 'bg-yellow-500 text-white';
-      default:
-        return 'bg-gray-500 text-white';
+        return 'bg-yellow-100';
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-      case 'passed':
-        return <Check className="w-4 h-4" />;
-      case 'failed':
-        return <X className="w-4 h-4" />;
-      case 'partial':
-      case 'skipped':
-        return <AlertTriangle className="w-4 h-4" />;
-      default:
-        return null;
+  const exportToPDF = async () => {
+    if (!summaryData) return;
+    
+    setIsExporting(true);
+    try {
+      const element = document.getElementById('inspection-summary-content');
+      if (!element) return;
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      const filename = `inspection-${summaryData.hangarId}-${summaryData.droneId}-${new Date(summaryData.completedAt).toISOString().split('T')[0]}.pdf`;
+      pdf.save(filename);
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+    } finally {
+      setIsExporting(false);
     }
   };
 
+  const shareResults = () => {
+    if (!summaryData) return;
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('action', 'view-summary');
+    url.searchParams.set('session', summaryData.sessionFolder);
+    
+    if (navigator.share) {
+      navigator.share({
+        title: `Inspection Summary - ${summaryData.hangarId}`,
+        text: `Inspection completed for ${summaryData.droneId} at ${summaryData.hangarId}`,
+        url: url.toString()
+      }).catch(console.error);
+    } else {
+      navigator.clipboard.writeText(url.toString());
+      alert('Link copied to clipboard!');
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[85vh] flex flex-col overflow-hidden">
-        {/* Modern Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 backdrop-blur rounded-lg">
-                <FileText className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold">Inspection Report</h2>
-                <p className="text-xs text-blue-100">
-                  {summaryData?.sessionId ? `Session: ${summaryData.sessionId}` : 'Loading...'}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {summaryData && (
-                <span className={`px-3 py-1.5 rounded-full text-xs font-semibold ${getStatusBadge(summaryData.overallStatus)}`}>
-                  {getStatusIcon(summaryData.overallStatus)}
-                  <span className="ml-1">{summaryData.overallStatus.toUpperCase()}</span>
-                </span>
-              )}
-              <button
-                onClick={onClose}
-                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000] p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <FileText className="w-5 h-5" />
+            Inspection Summary
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={exportToPDF}
+              disabled={isExporting || !summaryData}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              title="Export to PDF"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+            <button
+              onClick={shareResults}
+              disabled={!summaryData}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              title="Share Results"
+            >
+              <Share2 className="w-4 h-4" />
+            </button>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading inspection summary...</p>
+              </div>
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center h-64 text-red-600">
-              <AlertTriangle className="w-8 h-8 mr-2" />
-              <span>{error}</span>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+                <div>
+                  <div className="font-semibold text-red-900">Error Loading Summary</div>
+                  <div className="text-sm text-red-700 mt-1">{error}</div>
+                </div>
+              </div>
             </div>
           ) : summaryData ? (
-            <div className="space-y-4">
-              {/* Primary Info - WHO and WHEN (prominent when all passed) */}
-              {summaryData.overallStatus === 'passed' ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                      <div>
-                        <div className="text-lg font-semibold text-green-900">
-                          Completed by {summaryData.operator}
-                        </div>
-                        <div className="text-sm text-green-700">
-                          {new Date(summaryData.completedAt).toLocaleDateString()} at {new Date(summaryData.completedAt).toLocaleTimeString()}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500">{summaryData.inspectionType}</div>
-                      <div className="text-sm font-medium">{summaryData.hangarName || summaryData.hangarId}</div>
-                    </div>
+            <div id="inspection-summary-content" className="space-y-4">
+              {/* Compact Header with all key info */}
+              <div className={`border rounded-lg p-3 ${
+                summaryData.overallStatus === 'passed' 
+                  ? 'bg-green-50 border-green-200' 
+                  : summaryData.overallStatus === 'failed'
+                  ? 'bg-red-50 border-red-200'
+                  : 'bg-yellow-50 border-yellow-200'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {summaryData.overallStatus === 'passed' ? (
+                      <Check className="w-5 h-5 text-green-600" />
+                    ) : summaryData.overallStatus === 'failed' ? (
+                      <X className="w-5 h-5 text-red-600" />
+                    ) : (
+                      <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    )}
+                    <span className={`font-semibold text-sm ${
+                      summaryData.overallStatus === 'passed' ? 'text-green-900' : 
+                      summaryData.overallStatus === 'failed' ? 'text-red-900' : 'text-yellow-900'
+                    }`}>
+                      {summaryData.overallStatus === 'passed' ? 'Inspection Passed' : 
+                       summaryData.overallStatus === 'failed' ? 'Inspection Failed' : 'Partially Completed'}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    Duration: {formatDuration(summaryData.duration)}
+                  </span>
+                </div>
+                
+                {/* Key details in compact format */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-600">Type:</span>
+                    <span className="font-medium ml-1">{summaryData.inspectionType}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Inspector:</span>
+                    <span className="font-medium ml-1">{summaryData.operator}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Location:</span>
+                    <span className="font-medium ml-1">{summaryData.hangarName || summaryData.hangarId}</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600">Drone:</span>
+                    <span className="font-medium ml-1">{summaryData.droneId}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-600">Date:</span>
+                    <span className="font-medium ml-1">
+                      {new Date(summaryData.completedAt).toLocaleDateString()} at {new Date(summaryData.completedAt).toLocaleTimeString()}
+                    </span>
                   </div>
                 </div>
-              ) : summaryData.overallStatus === 'failed' ? (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <div className="flex items-center gap-4">
-                    <X className="w-8 h-8 text-red-600" />
-                    <div>
-                      <div className="text-lg font-semibold text-red-900">
-                        Inspection Failed
-                      </div>
-                      <div className="text-sm text-red-700">
-                        {summaryData.operator} • {new Date(summaryData.completedAt).toLocaleDateString()} at {new Date(summaryData.completedAt).toLocaleTimeString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <AlertTriangle className="w-8 h-8 text-yellow-600" />
-                      <div>
-                        <div className="text-lg font-semibold text-yellow-900">
-                          Partially Completed
-                        </div>
-                        <div className="text-sm text-yellow-700">
-                          {summaryData.operator} • {new Date(summaryData.completedAt).toLocaleDateString()} at {new Date(summaryData.completedAt).toLocaleTimeString()}
+              </div>
+
+              {/* Images section - moved up */}
+              {showImages && Object.keys(summaryData.images).length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-3">
+                  <h3 className="font-semibold text-xs text-gray-700 mb-2">Inspection Images</h3>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Object.entries(summaryData.images).map(([camId, imagePath]) => (
+                      <div key={camId} className="relative group cursor-pointer" onClick={() => setSelectedImage({ camId, path: imagePath })}>
+                        <img 
+                          src={`/api/image/${summaryData.hangarId}/${summaryData.sessionId}/${imagePath}`}
+                          alt={`Camera ${camId}`}
+                          className="w-full h-20 object-cover rounded border border-gray-200 hover:border-blue-400 transition-colors"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-1 py-0.5 rounded-b">
+                          {camId}
                         </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500">{summaryData.inspectionType}</div>
-                      <div className="text-sm font-medium">{summaryData.hangarName || summaryData.hangarId}</div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Compact metadata bar */}
-              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-600 bg-white rounded-md px-3 py-2 border">
-                <div className="flex items-center gap-1">
-                  <Wrench className="w-3 h-3" />
-                  <span className="font-medium">{summaryData.inspectionType}</span>
-                </div>
-                <span className="text-gray-300">•</span>
-                <div className="flex items-center gap-1">
-                  <Camera className="w-3 h-3" />
-                  <span>Drone: {summaryData.droneId}</span>
-                </div>
-                {summaryData.duration > 0 && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{formatDuration(summaryData.duration)}</span>
-                    </div>
-                  </>
-                )}
-                {summaryData.weatherConditions && (
-                  <>
-                    <span className="text-gray-300">•</span>
-                    <span>{summaryData.weatherConditions}</span>
-                  </>
-                )}
-              </div>
-
-              {/* Failed/Skipped Tasks - Show prominently if any */}
-              {(() => {
-                const failedTasks = summaryData.tasks.filter(t => t.status === 'failed');
-                const skippedTasks = summaryData.tasks.filter(t => t.status === 'skipped');
-                const tasksWithNotes = summaryData.tasks.filter(t => t.notes);
-                
-                return (
-                  <>
-                    {failedTasks.length > 0 && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                        <h3 className="font-semibold text-sm text-red-900 mb-2 flex items-center gap-2">
-                          <X className="w-4 h-4" />
-                          Failed Tasks ({failedTasks.length})
-                        </h3>
-                        <div className="space-y-1">
-                          {failedTasks.map(task => (
-                            <div key={task.id} className="flex items-start gap-2">
-                              <X className="w-3 h-3 text-red-600 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <span className="text-xs font-medium text-red-800">{task.title}</span>
-                                {task.notes && (
-                                  <p className="text-xs text-red-600 mt-0.5">{task.notes}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {skippedTasks.length > 0 && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                        <h3 className="font-semibold text-sm text-yellow-900 mb-2 flex items-center gap-2">
-                          <AlertTriangle className="w-4 h-4" />
-                          Skipped Tasks ({skippedTasks.length})
-                        </h3>
-                        <div className="space-y-1">
-                          {skippedTasks.map(task => (
-                            <div key={task.id} className="flex items-start gap-2">
-                              <AlertTriangle className="w-3 h-3 text-yellow-600 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <span className="text-xs font-medium text-yellow-800">{task.title}</span>
-                                {task.notes && (
-                                  <p className="text-xs text-yellow-600 mt-0.5">{task.notes}</p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Show notes from passed tasks if any */}
-                    {(() => {
-                      const passedTasksWithNotes = summaryData.tasks.filter(t => t.status === 'completed' && t.notes && t.notes.trim() !== '');
-                      return passedTasksWithNotes.length > 0 ? (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                          <h3 className="font-semibold text-sm text-blue-900 mb-2">Notes from Completed Tasks</h3>
-                          <div className="space-y-1">
-                            {passedTasksWithNotes.map(task => (
-                              <div key={task.id} className="text-xs">
-                                <span className="font-medium text-gray-700">{task.title}:</span>
-                                <span className="text-gray-600 ml-1">{task.notes}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ) : null;
-                    })()}
-                  </>
-                );
-              })()}
-              
-              {/* All Tasks Summary - Compact with notes for passed tasks */}
+              {/* Compact Tasks Summary */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-xs text-gray-700">All Tasks</h3>
+                  <h3 className="font-semibold text-xs text-gray-700">Tasks Summary</h3>
                   <span className="text-xs text-gray-500">
                     {summaryData.tasks.filter(t => t.status === 'completed').length}/{summaryData.tasks.length} completed
                   </span>
                 </div>
-                <div className="space-y-1">
-                  {summaryData.tasks.map((task) => {
-                    const hasNote = task.notes && task.notes.trim() !== '';
-                    return (
-                      <div
-                        key={task.id}
-                        className="flex items-start gap-2 p-1.5 bg-white border rounded"
-                      >
-                        <div className={`p-0.5 rounded mt-0.5 ${getStatusColor(task.status)}`}>
-                          {getStatusIcon(task.status)}
+                
+                {/* Failed and Skipped tasks - keep prominent */}
+                {(() => {
+                  const failedTasks = summaryData.tasks.filter(t => t.status === 'failed');
+                  const skippedTasks = summaryData.tasks.filter(t => t.status === 'skipped');
+                  const passedTasks = summaryData.tasks.filter(t => t.status === 'completed');
+                  
+                  return (
+                    <>
+                      {/* Failed tasks */}
+                      {failedTasks.length > 0 && (
+                        <div className="mb-3">
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <h4 className="text-xs font-semibold text-red-900 mb-2">Failed Tasks ({failedTasks.length})</h4>
+                            <div className="space-y-1">
+                              {failedTasks.map(task => (
+                                <div key={task.id} className="flex items-start gap-2">
+                                  <X className="w-3 h-3 text-red-600 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <div className="text-xs font-medium text-red-800">{task.title}</div>
+                                    {task.notes && (
+                                      <div className="text-xs text-red-600 mt-0.5">→ {task.notes}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-gray-700">
-                              {task.title}
-                            </span>
-                            {task.status === 'completed' && (
-                              <span className="text-xs text-green-600">✓</span>
+                      )}
+                      
+                      {/* Skipped/N/A tasks */}
+                      {skippedTasks.length > 0 && (
+                        <div className="mb-3">
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                            <h4 className="text-xs font-semibold text-yellow-900 mb-2">N/A Tasks ({skippedTasks.length})</h4>
+                            <div className="space-y-1">
+                              {skippedTasks.map(task => (
+                                <div key={task.id} className="flex items-start gap-2">
+                                  <AlertTriangle className="w-3 h-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <div className="text-xs font-medium text-yellow-800">{task.title}</div>
+                                    {task.notes && (
+                                      <div className="text-xs text-yellow-600 mt-0.5">→ {task.notes}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Passed tasks in compact 2-column grid */}
+                      {passedTasks.length > 0 && (
+                        <div>
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="text-xs font-semibold text-green-900">Passed Tasks ({passedTasks.length})</h4>
+                              <button
+                                onClick={() => setExpandedTasks(!expandedTasks)}
+                                className="text-xs text-green-700 hover:text-green-800"
+                              >
+                                {expandedTasks ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                              </button>
+                            </div>
+                            {expandedTasks && (
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                                {passedTasks.map(task => (
+                                  <div key={task.id} className="flex items-start gap-1">
+                                    <Check className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1">
+                                      <div className="text-xs text-gray-700">{task.title}</div>
+                                      {task.notes && (
+                                        <div className="text-xs text-gray-500 italic mt-0.5">→ {task.notes}</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             )}
                           </div>
-                          {hasNote && (
-                            <p className="text-xs text-gray-500 mt-0.5 italic">
-                              Note: {task.notes}
-                            </p>
-                          )}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
-
-              {/* Images Section - Only show if images exist */}
-              {showImages && summaryData.images && Object.keys(summaryData.images).length > 0 ? (
-                <div>
-                  <h3 className="font-semibold mb-3 flex items-center gap-2 text-sm">
-                    <Camera className="w-4 h-4" />
-                    Inspection Images
-                  </h3>
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                    {Object.entries(summaryData.images).slice(0, 12).map(([cameraId, imagePath]) => {
-                      // Ensure proper image path construction
-                      // Images come as "hangar_id/session_name/image.jpg" and need /data/sessions/ prefix
-                      const fullImagePath = imagePath.startsWith('data/') 
-                        ? `/${imagePath}` 
-                        : imagePath.startsWith('/') 
-                          ? imagePath 
-                          : `/data/sessions/${imagePath}`;
-                      
-                      return (
-                        <div
-                          key={cameraId}
-                          className="relative group cursor-pointer aspect-square"
-                          onClick={() => setSelectedImage(fullImagePath)}
-                        >
-                          <img
-                            src={fullImagePath}
-                            alt={cameraId}
-                            className="w-full h-full object-cover rounded-md border border-gray-200 hover:border-blue-400 transition-colors"
-                            onError={(e) => {
-                              console.error(`Failed to load image for ${cameraId}:`, fullImagePath);
-                              (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjE0IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
-                            }}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-end justify-center pb-1">
-                            <span className="text-white text-[10px] font-medium">
-                              {cameraId.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ) : showImages && (
-                <div className="text-center py-4 text-xs text-gray-500">
-                  <Camera className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                  <p>No images captured for this inspection</p>
-                </div>
-              )}
-
-              {/* Notes Section - Compact */}
-              {summaryData.notes && (
-                <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                  <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <h3 className="font-semibold text-xs text-amber-900 mb-1">Notes</h3>
-                      <p className="text-xs text-gray-700 leading-relaxed">{summaryData.notes}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           ) : null}
         </div>
-
-
-        {/* Image Preview Modal */}
-        {selectedImage && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-90 z-60 flex items-center justify-center p-4"
-            onClick={() => setSelectedImage(null)}
-          >
-            <div className="relative max-w-[90vw] max-h-[90vh]">
-              <img
-                src={selectedImage}
-                alt="Preview"
-                className="max-w-full max-h-full rounded-lg"
-                onError={(e) => {
-                  console.error('Failed to load preview image:', selectedImage);
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOTk5IiBmb250LXNpemU9IjI0IiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+SW1hZ2UgTm90IEF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';
-                }}
-              />
+      </div>
+      
+      {/* Image Preview Modal */}
+      {selectedImage && summaryData && (
+        <div 
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-[60] p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img 
+              src={`/api/image/${summaryData.hangarId}/${summaryData.sessionId}/${selectedImage.path}`}
+              alt={`Camera ${selectedImage.camId}`}
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div className="absolute top-2 right-2">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedImage(null);
-                }}
-                className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
+                onClick={() => setSelectedImage(null)}
+                className="bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
               >
-                <X className="w-5 h-5 text-white" />
+                <X className="w-5 h-5 text-gray-700" />
               </button>
             </div>
+            <div className="absolute bottom-2 left-2 bg-black/70 text-white px-3 py-1 rounded-lg">
+              Camera: {selectedImage.camId}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
