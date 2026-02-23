@@ -893,6 +893,7 @@ app.get('/api/folders', (req, res) => {
           let totalTasks = 0;
           let inspectionType = null;
           let detectedCategory = 'unknown';
+          let detailedStatus = null;
           
           // ALWAYS check session name FIRST for most reliable detection
           const nameLower = sessionName.toLowerCase();
@@ -931,11 +932,29 @@ app.get('/api/folders', (req, res) => {
                 completedTasks = inspectionData.tasks.filter(t => 
                   t.status === 'pass' || t.status === 'fail' || t.status === 'na'
                 ).length;
+                
+                // Determine the detailed inspection result status
+                if (completedTasks === 0) {
+                  inspectionStatus = 'not_started';
+                  detailedStatus = 'pending';
+                } else if (completedTasks === totalTasks) {
+                  inspectionStatus = 'completed';
+                  // Check for failures or partial completion
+                  const failedTasks = inspectionData.tasks.filter(t => t.status === 'fail' || t.status === 'failed').length;
+                  const skippedTasks = inspectionData.tasks.filter(t => t.status === 'na' || t.status === 'skip' || t.status === 'skipped').length;
+                  
+                  if (failedTasks > 0) {
+                    detailedStatus = 'failed';
+                  } else if (skippedTasks > 0) {
+                    detailedStatus = 'partial';
+                  } else {
+                    detailedStatus = 'passed';
+                  }
+                } else {
+                  inspectionStatus = 'in_progress';
+                  detailedStatus = 'pending';
+                }
               }
-              
-              inspectionStatus = inspectionData.completionStatus?.status || 
-                (completedTasks === 0 ? 'not_started' : 
-                 completedTasks === totalTasks ? 'completed' : 'in_progress');
             } catch (err) {
               console.error('Error reading inspection file:', err);
             }
@@ -951,6 +970,7 @@ app.get('/api/folders', (req, res) => {
             hasInspection: !!inspectionFile,
             inspectionType: inspectionType,
             inspectionStatus: inspectionStatus,
+            inspectionDetailedStatus: inspectionFile ? detailedStatus : null,
             inspectionCategory: detectedCategory,
             hangarId: hangarName,
             hangarName: hangarName,
@@ -2595,6 +2615,31 @@ app.post('/api/inspection/update-progress', async (req, res) => {
   }
 });
 
+// API endpoint to delete an inspection session
+app.delete('/api/inspection/:hangarId/:sessionName', async (req, res) => {
+  try {
+    const { hangarId, sessionName } = req.params;
+    
+    // Build the full path to the session
+    const sessionPath = path.join(SNAPSHOTS_DIR, hangarId, sessionName);
+    
+    // Check if the session exists
+    if (!fs.existsSync(sessionPath)) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    
+    // Delete the entire session directory recursively
+    fs.rmSync(sessionPath, { recursive: true, force: true });
+    
+    log('info', `Deleted session: ${hangarId}/${sessionName}`);
+    res.json({ success: true, message: 'Session deleted successfully' });
+    
+  } catch (error) {
+    log('error', `Failed to delete session: ${error.message}`);
+    res.status(500).json({ error: 'Failed to delete session' });
+  }
+});
+
 // API endpoint to get maintenance history by drone (auto-detected from completed inspections)
 app.get('/api/maintenance-history', async (req, res) => {
   try {
@@ -2902,9 +2947,13 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
       hangarId,
       assignedDrone: hangar.assignedDrone,
       lastOnsiteTI: null,
+      lastOnsiteTIStatus: null,
       lastExtendedTI: null,
+      lastExtendedTIStatus: null,
       lastService: null,
-      lastFullRemoteTI: null
+      lastServiceStatus: null,
+      lastFullRemoteTI: null,
+      lastFullRemoteTIStatus: null
     };
     
     // Use the hangar ID directly as the folder name (folders are named like "hangar_forsaker_vpn")
@@ -2942,12 +2991,32 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
             continue; // Skip if drone doesn't match
           }
           
-          // Check if inspection is completed
-          const isCompleted = inspectionData.completionStatus?.status === 'completed' ||
-                             (inspectionData.tasks && 
-                              inspectionData.tasks.every(t => t.status === 'pass' || t.status === 'fail' || t.status === 'na'));
+          // Check inspection status and completion
+          const tasks = inspectionData.tasks || [];
+          const completedTasks = tasks.filter(t => t.status === 'pass' || t.status === 'fail' || t.status === 'na');
+          const isCompleted = inspectionData.completionStatus?.status === 'completed' || 
+                             (tasks.length > 0 && tasks.length === completedTasks.length);
           
-          if (!isCompleted) continue;
+          // Determine the inspection result status
+          let inspectionStatus = 'pending';
+          if (isCompleted) {
+            const failedTasks = tasks.filter(t => t.status === 'fail' || t.status === 'failed');
+            const skippedTasks = tasks.filter(t => t.status === 'na' || t.status === 'skip' || t.status === 'skipped');
+            
+            if (failedTasks.length > 0) {
+              inspectionStatus = 'failed';
+            } else if (skippedTasks.length > 0) {
+              inspectionStatus = 'partial';
+            } else {
+              inspectionStatus = 'passed';
+            }
+          } else if (tasks.length > 0 && completedTasks.length > 0) {
+            // Partially completed but not finished
+            inspectionStatus = 'pending';
+            // Don't skip pending inspections - we want to show them
+          } else {
+            continue; // Skip if no tasks at all
+          }
           
           const completionDate = inspectionData.completionStatus?.completedAt || 
                                 fs.statSync(sessionPath).mtime.toISOString();
@@ -2961,6 +3030,7 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
             if (!maintenanceHistory.lastOnsiteTI || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastOnsiteTI)) {
               maintenanceHistory.lastOnsiteTI = completionDate;
+              maintenanceHistory.lastOnsiteTIStatus = inspectionStatus;
               maintenanceHistory.lastOnsiteTISession = `${hangarId}/${sessionName}`;
             }
           } 
@@ -2969,6 +3039,7 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
             if (!maintenanceHistory.lastExtendedTI || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastExtendedTI)) {
               maintenanceHistory.lastExtendedTI = completionDate;
+              maintenanceHistory.lastExtendedTIStatus = inspectionStatus;
               maintenanceHistory.lastExtendedTISession = `${hangarId}/${sessionName}`;
             }
           } 
@@ -2980,6 +3051,7 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
             if (!maintenanceHistory.lastFullRemoteTI || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastFullRemoteTI)) {
               maintenanceHistory.lastFullRemoteTI = completionDate;
+              maintenanceHistory.lastFullRemoteTIStatus = inspectionStatus;
               maintenanceHistory.lastFullRemoteTISession = `${hangarId}/${sessionName}`;
             }
           }
@@ -2992,6 +3064,7 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
             if (!maintenanceHistory.lastService || 
                 new Date(completionDate) > new Date(maintenanceHistory.lastService)) {
               maintenanceHistory.lastService = completionDate;
+              maintenanceHistory.lastServiceStatus = inspectionStatus;
               maintenanceHistory.lastServiceSession = `${hangarId}/${sessionName}`;
             }
           }

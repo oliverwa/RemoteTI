@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/button';
 import { getRelativeTime, formatDateTime } from '../../utils/timeFormatting';
+import { API_CONFIG } from '../../config/api.config';
 
 // Types
 interface Session {
@@ -12,6 +13,7 @@ interface Session {
   hasInspection?: boolean;
   inspectionType?: string | null;
   inspectionStatus?: string | null;
+  inspectionDetailedStatus?: 'passed' | 'failed' | 'partial' | 'pending' | null;
   inspectionCategory?: string;
   hangarId?: string;
   hangarName?: string;
@@ -221,7 +223,68 @@ const getAgeCategory = (dateString: string): { category: 'recent' | 'today' | 'o
   }
 };
 
-export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
+// Helper function to get colors based on detailed inspection status
+const getInspectionStatusColors = (detailedStatus: 'passed' | 'failed' | 'partial' | 'pending' | null | undefined, status: string | null | undefined) => {
+  // If we have detailed status, use it
+  if (detailedStatus) {
+    switch (detailedStatus) {
+      case 'passed':
+        return {
+          dot: 'bg-green-500',
+          text: 'text-green-600',
+          label: 'Passed'
+        };
+      case 'failed':
+        return {
+          dot: 'bg-red-500',
+          text: 'text-red-600',
+          label: 'Failed'
+        };
+      case 'partial':
+        return {
+          dot: 'bg-yellow-500',
+          text: 'text-yellow-600',
+          label: 'Partial'
+        };
+      case 'pending':
+        return {
+          dot: 'bg-amber-500',
+          text: 'text-amber-600',
+          label: 'Pending'
+        };
+    }
+  }
+  
+  // Fall back to basic status
+  switch (status) {
+    case 'completed':
+      return {
+        dot: 'bg-green-500',
+        text: 'text-green-600',
+        label: 'Completed'
+      };
+    case 'in_progress':
+      return {
+        dot: 'bg-amber-500',
+        text: 'text-amber-600',
+        label: 'In Progress'
+      };
+    case 'not_started':
+      return {
+        dot: 'bg-red-500',
+        text: 'text-red-600',
+        label: 'Not Started'
+      };
+    default:
+      return {
+        dot: 'bg-gray-300',
+        text: 'text-gray-400',
+        label: ''
+      };
+  }
+};
+
+const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
   isOpen,
   onClose,
   loadingFolders,
@@ -231,6 +294,8 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
   const [hoveredSession, setHoveredSession] = useState<string | null>(null);
   const [expandedHangars, setExpandedHangars] = useState<Set<string>>(new Set());
   const [expandedDrones, setExpandedDrones] = useState<Set<string>>(new Set());
+  const [deletingSession, setDeletingSession] = useState<string | null>(null);
+  const [sessionsToHide, setSessionsToHide] = useState<Set<string>>(new Set());
   
   const toggleHangarExpansion = (hangarId: string) => {
     const newExpanded = new Set(expandedHangars);
@@ -252,6 +317,39 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
     setExpandedDrones(newExpanded);
   };
   
+  const handleDeleteSession = async (e: React.MouseEvent, hangarId: string, sessionName: string) => {
+    e.stopPropagation(); // Prevent session from opening
+    
+    if (!window.confirm(`Are you sure you want to delete the session "${sessionName}"? This cannot be undone.`)) {
+      return;
+    }
+    
+    setDeletingSession(`${hangarId}/${sessionName}`);
+    
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/inspection/${hangarId}/${sessionName}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        // Hide the session immediately
+        setSessionsToHide(prev => {
+          const newSet = new Set(prev);
+          newSet.add(`${hangarId}/${sessionName}`);
+          return newSet;
+        });
+        console.log('Session deleted successfully');
+      } else {
+        alert('Failed to delete session');
+      }
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      alert('Error deleting session');
+    } finally {
+      setDeletingSession(null);
+    }
+  };
+  
   if (!isOpen) return null;
 
   // Extract hangars array from the data structure
@@ -259,7 +357,8 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
     ? (availableFolders as any).hangars 
     : (Array.isArray(availableFolders) ? availableFolders : []);
 
-  const renderSession = (session: Session, hangarId: string) => {
+  // Remove renderSession function as we'll inline the rendering
+  const renderSessionOLD = (session: Session, hangarId: string) => {
     const ageInfo = getAgeCategory(session.created);
     const inspectionInfo = getInspectionTypeInfo(session.name, session.inspectionType);
     
@@ -323,10 +422,7 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
           <div className="flex items-center gap-3 text-sm">
             {/* Status Indicator Dot */}
             <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-              session.inspectionStatus === 'completed' ? 'bg-green-500' :
-              session.inspectionStatus === 'in_progress' ? 'bg-amber-500' :
-              session.inspectionStatus === 'not_started' ? 'bg-red-500' :
-              'bg-gray-300'
+              getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).dot
             }`} />
             
             {/* Inspection Type Badge */}
@@ -347,12 +443,10 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
             {/* Status Text - Subtle */}
             {session.hasInspection && (
               <div className="text-xs text-gray-600">
-                {session.inspectionStatus === 'completed' ? 'Completed' :
-                 session.inspectionStatus === 'in_progress' ? `In Progress (${session.inspectionProgress?.percentage || 0}%)` :
-                 session.inspectionStatus === 'not_started' ? 'Not Started' : ''}
-                {session.inspectionProgress && session.inspectionStatus === 'in_progress' && (
-                  <span className="ml-1 text-gray-400">
-                    - {session.inspectionProgress.completed}/{session.inspectionProgress.total} tasks
+                {getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).label}
+                {session.inspectionStatus === 'in_progress' && (
+                  <span className="ml-1">
+                    ({session.inspectionProgress?.percentage || 0}%) - {session.inspectionProgress?.completed}/{session.inspectionProgress?.total} tasks
                   </span>
                 )}
               </div>
@@ -374,27 +468,9 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
     );
   };
 
-  // Sort sessions by priority (incomplete first) then by date
-  const sortSessions = (sessions: Session[]) => {
+  // Sort sessions by date only (newest first) for chronological order
+  const sortSessionsChronologically = (sessions: Session[]) => {
     return [...sessions].sort((a, b) => {
-      // First sort by completion status (incomplete first)
-      const getPriority = (status: string | null | undefined) => {
-        switch(status) {
-          case 'in_progress': return 1;
-          case 'not_started': return 2;
-          case 'completed': return 3;
-          default: return 4;
-        }
-      };
-      
-      const aPriority = getPriority(a.inspectionStatus);
-      const bPriority = getPriority(b.inspectionStatus);
-      
-      if (aPriority !== bPriority) {
-        return aPriority - bPriority;
-      }
-      
-      // Then sort by date (newest first)
       return new Date(b.created).getTime() - new Date(a.created).getTime();
     });
   };
@@ -492,7 +568,8 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
               
               return sortedDrones.map(droneName => {
                 const drone = droneData[droneName];
-                const sortedSessions = sortSessions(drone.sessions);
+                const sortedSessions = sortSessionsChronologically(drone.sessions)
+                  .filter(session => !sessionsToHide.has(`${session.hangarId}/${session.name}`));
                 
                 // Get latest inspection of each type
                 const latestByType: Record<string, Session> = {};
@@ -538,59 +615,68 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                       </div>
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                         {!isExpanded ? (
                           // Show latest of each type
                           ['initial-remote', 'full-remote', 'onsite', 'extended', 'service', 'basic'].map(type => {
                             const session = latestByType[type];
-                            if (!session) return null;
+                            if (!session || sessionsToHide.has(`${session.hangarId}/${session.name}`)) return null;
                             
                             const inspectionInfo = getInspectionTypeInfo(session.name, session.inspectionType);
+                            const isDeleting = deletingSession === `${session.hangarId}/${session.name}`;
                             
                             return (
                               <div
                                 key={`${droneName}-${type}`}
-                                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                                onClick={() => onLoadSession(session.hangarId!, session.name, session.images)}
+                                className={`group flex items-center justify-between py-2 px-3 hover:bg-gray-50 cursor-pointer transition-all border-b border-gray-100 last:border-b-0 ${
+                                  isDeleting ? 'opacity-50' : ''
+                                }`}
+                                onClick={() => !isDeleting && onLoadSession(session.hangarId!, session.name, session.images)}
                               >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3 flex-1">
                                   {/* Status dot */}
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    session.inspectionStatus === 'completed' ? 'bg-green-500' :
-                                    session.inspectionStatus === 'in_progress' ? 'bg-amber-500' :
-                                    session.inspectionStatus === 'not_started' ? 'bg-red-500' :
-                                    'bg-gray-300'
+                                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                    getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).dot
                                   }`} />
                                   
-                                  {/* Type badge */}
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${inspectionInfo.bgColor} ${inspectionInfo.color}`}>
+                                  {/* Type badge - more compact */}
+                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${inspectionInfo.bgColor} ${inspectionInfo.color} border ${inspectionInfo.borderColor}`}>
                                     {inspectionInfo.label}
                                   </span>
                                   
                                   {/* Hangar name */}
-                                  <span className="text-sm font-medium text-gray-700">
+                                  <span className="text-sm text-gray-700">
                                     {session.hangarName}
                                   </span>
                                   
-                                  {/* Time */}
+                                  {/* Date and time - more compact */}
                                   <span className="text-xs text-gray-500">
-                                    {getRelativeTime(session.created)}
+                                    {formatDateTime(session.created)}
+                                  </span>
+                                  
+                                  {/* Status - inline */}
+                                  <span className={`text-xs ${
+                                    getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).text
+                                  }`}>
+                                    {getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).label}
+                                    {session.inspectionStatus === 'in_progress' && ` (${session.inspectionProgress?.percentage || 0}%)`}
                                   </span>
                                 </div>
                                 
-                                <div className="flex items-center gap-3">
-                                  {/* Status */}
-                                  <span className={`text-sm ${
-                                    session.inspectionStatus === 'completed' ? 'text-green-600' :
-                                    session.inspectionStatus === 'in_progress' ? 'text-amber-600' :
-                                    session.inspectionStatus === 'not_started' ? 'text-red-600' :
-                                    'text-gray-400'
-                                  }`}>
-                                    {session.inspectionStatus === 'completed' ? 'Completed' :
-                                     session.inspectionStatus === 'in_progress' ? `In Progress (${session.inspectionProgress?.percentage || 0}%)` :
-                                     session.inspectionStatus === 'not_started' ? 'Not Started' : ''}
-                                  </span>
+                                <div className="flex items-center gap-2">
+                                  {/* Delete button - only show on hover */}
+                                  <button
+                                    onClick={(e) => handleDeleteSession(e, session.hangarId!, session.name)}
+                                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded transition-all"
+                                    disabled={isDeleting}
+                                    title="Delete inspection"
+                                  >
+                                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
                                   
+                                  {/* Arrow */}
                                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                   </svg>
@@ -601,54 +687,65 @@ export const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                         ) : (
                           // Show all inspections chronologically
                           <>
-                            <div className="text-base font-semibold text-gray-700 mb-3">All Inspections</div>
                             {sortedSessions.map((session, idx) => {
                               const inspectionInfo = getInspectionTypeInfo(session.name, session.inspectionType);
+                              const isDeleting = deletingSession === `${session.hangarId}/${session.name}`;
+                              const sessionKey = `${droneName}-all-${idx}`;
                               
                               return (
                                 <div
-                                  key={`${droneName}-all-${idx}`}
-                                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                                  onClick={() => onLoadSession(session.hangarId!, session.name, session.images)}
+                                  key={sessionKey}
+                                  className={`group flex items-center justify-between py-2 px-3 hover:bg-gray-50 cursor-pointer transition-all border-b border-gray-100 last:border-b-0 ${
+                                    isDeleting ? 'opacity-50' : ''
+                                  }`}
+                                  onClick={() => !isDeleting && onLoadSession(session.hangarId!, session.name, session.images)}
+                                  onMouseEnter={() => setHoveredSession(session.id)}
+                                  onMouseLeave={() => setHoveredSession(null)}
                                 >
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-3 flex-1">
                                     {/* Status dot */}
-                                    <div className={`w-2 h-2 rounded-full ${
-                                      session.inspectionStatus === 'completed' ? 'bg-green-500' :
-                                      session.inspectionStatus === 'in_progress' ? 'bg-amber-500' :
-                                      session.inspectionStatus === 'not_started' ? 'bg-red-500' :
-                                      'bg-gray-300'
+                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                      getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).dot
                                     }`} />
                                     
-                                    {/* Type badge */}
-                                    <span className={`px-2 py-1 rounded text-xs font-medium ${inspectionInfo.bgColor} ${inspectionInfo.color}`}>
+                                    {/* Type badge - more compact */}
+                                    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${inspectionInfo.bgColor} ${inspectionInfo.color} border ${inspectionInfo.borderColor}`}>
                                       {inspectionInfo.label}
                                     </span>
                                     
                                     {/* Hangar name */}
-                                    <span className="text-sm font-medium text-gray-700">
+                                    <span className="text-sm text-gray-700">
                                       {session.hangarName}
                                     </span>
                                     
-                                    {/* Time */}
+                                    {/* Date and time - more compact */}
                                     <span className="text-xs text-gray-500">
-                                      {getRelativeTime(session.created)}
+                                      {formatDateTime(session.created)}
+                                    </span>
+                                    
+                                    {/* Status - inline */}
+                                    <span className={`text-xs ${
+                                      getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).text
+                                    }`}>
+                                      {getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).label}
+                                      {session.inspectionStatus === 'in_progress' && ` (${session.inspectionProgress?.percentage || 0}%)`}
                                     </span>
                                   </div>
                                   
-                                  <div className="flex items-center gap-3">
-                                    {/* Status */}
-                                    <span className={`text-sm ${
-                                      session.inspectionStatus === 'completed' ? 'text-green-600' :
-                                      session.inspectionStatus === 'in_progress' ? 'text-amber-600' :
-                                      session.inspectionStatus === 'not_started' ? 'text-red-600' :
-                                      'text-gray-400'
-                                    }`}>
-                                      {session.inspectionStatus === 'completed' ? 'Completed' :
-                                       session.inspectionStatus === 'in_progress' ? `In Progress (${session.inspectionProgress?.percentage || 0}%)` :
-                                       session.inspectionStatus === 'not_started' ? 'Not Started' : ''}
-                                    </span>
+                                  <div className="flex items-center gap-2">
+                                    {/* Delete button - only show on hover */}
+                                    <button
+                                      onClick={(e) => handleDeleteSession(e, session.hangarId!, session.name)}
+                                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded transition-all"
+                                      disabled={isDeleting}
+                                      title="Delete inspection"
+                                    >
+                                      <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                      </svg>
+                                    </button>
                                     
+                                    {/* Arrow */}
                                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>

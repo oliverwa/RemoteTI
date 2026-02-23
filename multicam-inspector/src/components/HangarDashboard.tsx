@@ -34,9 +34,13 @@ interface HangarStatusData {
   alarmSession?: any;
   maintenanceHistory?: {
     lastOnsiteTI: string | null;
+    lastOnsiteTIStatus?: 'passed' | 'failed' | 'partial' | 'pending' | null;
     lastExtendedTI: string | null;
+    lastExtendedTIStatus?: 'passed' | 'failed' | 'partial' | 'pending' | null;
     lastService: string | null;
+    lastServiceStatus?: 'passed' | 'failed' | 'partial' | 'pending' | null;
     lastFullRemoteTI: string | null;
+    lastFullRemoteTIStatus?: 'passed' | 'failed' | 'partial' | 'pending' | null;
   };
   lights?: {
     enabled: boolean;
@@ -97,6 +101,44 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     const diffTime = Math.abs(now.getTime() - date.getTime());
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  // Helper function to get colors based on inspection status
+  const getInspectionStatusColors = (status: 'passed' | 'failed' | 'partial' | 'pending' | null | undefined, hasData: boolean) => {
+    if (!hasData) {
+      return {
+        bg: 'bg-gray-50',
+        text: 'text-gray-400'
+      };
+    }
+    
+    switch (status) {
+      case 'passed':
+        return {
+          bg: 'bg-green-50',
+          text: 'text-green-600'
+        };
+      case 'failed':
+        return {
+          bg: 'bg-red-50',
+          text: 'text-red-600'
+        };
+      case 'partial':
+        return {
+          bg: 'bg-yellow-50',
+          text: 'text-yellow-600'
+        };
+      case 'pending':
+        return {
+          bg: 'bg-amber-50',
+          text: 'text-amber-600'
+        };
+      default:
+        return {
+          bg: 'bg-gray-50',
+          text: 'text-gray-400'
+        };
+    }
   };
 
   // Helper function to format time since with more granularity
@@ -253,9 +295,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           // Fetch maintenance history for this specific hangar (only for admin and everdrone users)
           let hangarMaintenanceData = {
             lastOnsiteTI: null,
+            lastOnsiteTIStatus: null,
             lastExtendedTI: null,
+            lastExtendedTIStatus: null,
             lastService: null,
-            lastFullRemoteTI: null
+            lastServiceStatus: null,
+            lastFullRemoteTI: null,
+            lastFullRemoteTIStatus: null
           };
           
           if (userType === 'admin' || userType === 'everdrone') {
@@ -265,9 +311,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 const data = await historyResponse.json();
                 hangarMaintenanceData = {
                   lastOnsiteTI: data.lastOnsiteTI,
+                  lastOnsiteTIStatus: data.lastOnsiteTIStatus,
                   lastExtendedTI: data.lastExtendedTI,
+                  lastExtendedTIStatus: data.lastExtendedTIStatus,
                   lastService: data.lastService,
-                  lastFullRemoteTI: data.lastFullRemoteTI
+                  lastServiceStatus: data.lastServiceStatus,
+                  lastFullRemoteTI: data.lastFullRemoteTI,
+                  lastFullRemoteTIStatus: data.lastFullRemoteTIStatus
                 };
               }
             } catch (err) {
@@ -1667,8 +1717,15 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         {/* Hangar Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 auto-rows-fr">
           {hangarStatuses.map(hangar => {
+            // Check if maintenance is required (failed inspections or overdue maintenance)
+            const hasFailedInspection = (
+              hangar.maintenanceHistory?.lastOnsiteTIStatus === 'failed' ||
+              hangar.maintenanceHistory?.lastFullRemoteTIStatus === 'failed'
+            );
+            
             // Check if maintenance is overdue (only for admin/everdrone users and when in standby state)
             const isMaintenanceOverdue = (userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && hangar.assignedDrone && hangar.state === 'standby' && (
+              hasFailedInspection ||
               (hangar.maintenanceHistory?.lastOnsiteTI && getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30) ||
               (hangar.maintenanceHistory?.lastExtendedTI && getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60) ||
               (hangar.maintenanceHistory?.lastService && getDaysSince(hangar.maintenanceHistory.lastService) > 90) ||
@@ -1859,17 +1916,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   <div className="grid grid-cols-4 gap-2">
                     <div 
                       className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
-                        hangar.maintenanceHistory?.lastOnsiteTI 
-                          ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'bg-red-50' : 'bg-green-50'
-                          : 'bg-gray-50'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastOnsiteTIStatus, !!hangar.maintenanceHistory?.lastOnsiteTI).bg
                       }`}
                       onClick={() => hangar.maintenanceHistory?.lastOnsiteTI && handleOpenInspectionSummary(hangar.id, 'onsite')}>
                       <div className="text-[10px] font-medium text-gray-600">Onsite TI</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
-                        hangar.maintenanceHistory?.lastOnsiteTI 
-                          ? getDaysSince(hangar.maintenanceHistory.lastOnsiteTI) > 30 ? 'text-red-600' : 'text-green-600'
-                          : 'text-gray-400'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastOnsiteTIStatus, !!hangar.maintenanceHistory?.lastOnsiteTI).text
                       }`}>
                         {hangar.maintenanceHistory?.lastOnsiteTI 
                           ? formatTimeSince(hangar.maintenanceHistory.lastOnsiteTI)
@@ -1878,17 +1931,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     </div>
                     <div 
                       className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
-                        hangar.maintenanceHistory?.lastFullRemoteTI 
-                          ? getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45 ? 'bg-red-50' : 'bg-green-50'
-                          : 'bg-gray-50'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastFullRemoteTIStatus, !!hangar.maintenanceHistory?.lastFullRemoteTI).bg
                       }`}
                       onClick={() => hangar.maintenanceHistory?.lastFullRemoteTI && handleOpenInspectionSummary(hangar.id, 'full_remote')}>
                       <div className="text-[10px] font-medium text-gray-600">Full Remote</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
-                        hangar.maintenanceHistory?.lastFullRemoteTI 
-                          ? getDaysSince(hangar.maintenanceHistory.lastFullRemoteTI) > 45 ? 'text-red-600' : 'text-green-600'
-                          : 'text-gray-400'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastFullRemoteTIStatus, !!hangar.maintenanceHistory?.lastFullRemoteTI).text
                       }`}>
                         {hangar.maintenanceHistory?.lastFullRemoteTI 
                           ? formatTimeSince(hangar.maintenanceHistory.lastFullRemoteTI)
@@ -1897,17 +1946,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     </div>
                     <div 
                       className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
-                        hangar.maintenanceHistory?.lastExtendedTI 
-                          ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'bg-red-50' : 'bg-green-50'
-                          : 'bg-gray-50'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastExtendedTIStatus, !!hangar.maintenanceHistory?.lastExtendedTI).bg
                       }`}
                       onClick={() => hangar.maintenanceHistory?.lastExtendedTI && handleOpenInspectionSummary(hangar.id, 'extended')}>
                       <div className="text-[10px] font-medium text-gray-600">Extended</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
-                        hangar.maintenanceHistory?.lastExtendedTI 
-                          ? getDaysSince(hangar.maintenanceHistory.lastExtendedTI) > 60 ? 'text-red-600' : 'text-green-600'
-                          : 'text-gray-400'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastExtendedTIStatus, !!hangar.maintenanceHistory?.lastExtendedTI).text
                       }`}>
                         {hangar.maintenanceHistory?.lastExtendedTI 
                           ? formatTimeSince(hangar.maintenanceHistory.lastExtendedTI)
@@ -1916,17 +1961,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     </div>
                     <div 
                       className={`p-2 rounded-lg text-center cursor-pointer hover:opacity-80 transition-opacity ${
-                        hangar.maintenanceHistory?.lastService 
-                          ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'bg-red-50' : 'bg-green-50'
-                          : 'bg-gray-50'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastServiceStatus, !!hangar.maintenanceHistory?.lastService).bg
                       }`}
                       onClick={() => hangar.maintenanceHistory?.lastService && handleOpenInspectionSummary(hangar.id, 'service')}>
                       <div className="text-[10px] font-medium text-gray-600">Service</div>
                       <div className="text-[8px] text-gray-400 mt-0.5">Last performed:</div>
                       <div className={`text-xs font-bold ${
-                        hangar.maintenanceHistory?.lastService 
-                          ? getDaysSince(hangar.maintenanceHistory.lastService) > 90 ? 'text-red-600' : 'text-green-600'
-                          : 'text-gray-400'
+                        getInspectionStatusColors(hangar.maintenanceHistory?.lastServiceStatus, !!hangar.maintenanceHistory?.lastService).text
                       }`}>
                         {hangar.maintenanceHistory?.lastService 
                           ? formatTimeSince(hangar.maintenanceHistory.lastService)
