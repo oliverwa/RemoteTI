@@ -180,6 +180,7 @@ export default function MultiCamInspector({
   const [pendingImages, setPendingImages] = useState<Map<string, string>>(new Map());
   const [isWaitingToDisplay, setIsWaitingToDisplay] = useState(false);
   const [captureStartTime, setCaptureStartTime] = useState<number | null>(null);
+  const [capturePhase, setCapturePhase] = useState<string>('');
   const [showNoImagesModal, setShowNoImagesModal] = useState(false);
 
   // Dark image detection state
@@ -1148,6 +1149,7 @@ export default function MultiCamInspector({
     setPendingImages(new Map());
     setIsWaitingToDisplay(false);
     setCaptureStartTime(Date.now());
+    setCapturePhase('Turning on lights...');
     
     // Set all cameras to loading state and clear existing images
     setCams(prev => prev.map(cam => ({ ...cam, isLoading: true, src: "" })));
@@ -1193,26 +1195,15 @@ export default function MultiCamInspector({
           
           const status = await statusResponse.json();
           
-          // Update progress text based on current camera(s) and phase
-          const currentCameras = status.currentCameras || (status.currentCamera ? [status.currentCamera] : []);
-          
-          if (currentCameras.length > 0) {
-            const cameraList = currentCameras.join(', ');
-            const isParallel = currentCameras.length > 1;
-            
-            if (status.currentPhase?.startsWith('batch_')) {
-              setProgressText(`Parallel batch ${status.currentPhase.replace('batch_', '').replace('_of_', '/')} - Processing: [${cameraList}]`);
-            } else if (status.currentPhase === 'autofocus') {
-              setProgressText(isParallel ? `Step 4/6: Triggering autofocus - [${cameraList}]` : `Step 4/6: Triggering autofocus - ${cameraList}`);
-            } else if (status.currentPhase === 'capture') {
-              setProgressText(isParallel ? `Step 5/6: Capturing image - [${cameraList}]` : `Step 5/6: Capturing image - ${cameraList}`);
-            } else if (status.currentPhase === 'connecting') {
-              setProgressText(isParallel ? `Step 1-3/6: Establishing connections - [${cameraList}]` : `Step 1-3/6: Establishing connections - ${cameraList}`);
-            } else {
-              setProgressText(isParallel ? `Processing: [${cameraList}] (${status.currentStep}/8)` : `Processing ${cameraList} (${status.currentStep}/8)`);
-            }
-          } else if (status.status === 'running') {
-            setProgressText(`Parallel capture in progress...`);
+          // Update capture phase based on server status
+          if (status.currentPhase === 'lights') {
+            setCapturePhase('Turning on lights...');
+          } else if (status.currentPhase === 'connecting' || status.currentPhase?.includes('batch')) {
+            setCapturePhase('Connecting to cameras...');
+          } else if (status.currentPhase === 'capture' || status.status === 'running') {
+            setCapturePhase('Fetching images...');
+          } else if (status.status === 'completed') {
+            setCapturePhase('Processing images...');
           }
           
           // Update ETA countdown based on progress
@@ -1361,6 +1352,7 @@ export default function MultiCamInspector({
                 
                 setIsCapturing(false);
                 setIsWaitingToDisplay(false);
+                setCapturePhase('');
                 
                 // Set inspection start time when images are ready for inspection
                 setInspectionMeta(prev => ({
@@ -1401,7 +1393,7 @@ export default function MultiCamInspector({
             setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
             setIsCapturing(false);
             setCaptureStartTime(null);
-            setProgressText("");
+            setCapturePhase('');
           }
           
         } catch (error) {
@@ -1421,7 +1413,7 @@ export default function MultiCamInspector({
           setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
           setIsCapturing(false);
           setCaptureStartTime(null);
-          setProgressText("");
+          setCapturePhase('');
         }
       }, 360000); // 6 minutes timeout
       
@@ -1435,6 +1427,7 @@ export default function MultiCamInspector({
       setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
       setIsCapturing(false);
       setCaptureStartTime(null);
+      setCapturePhase('');
     }
   };
 
@@ -2217,11 +2210,16 @@ export default function MultiCamInspector({
 
 
       {/* Capture Status Display */}
-      {isCapturing && (
+      {isCapturing && capturePhase && (
         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center space-x-2">
+            {/* Animated spinner */}
+            <svg className="animate-spin h-4 w-4 text-blue-600 dark:text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Fetching images...
+              {capturePhase}
             </span>
           </div>
         </div>

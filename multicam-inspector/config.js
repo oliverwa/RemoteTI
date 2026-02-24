@@ -63,7 +63,7 @@ const baseConfig = {
   // See data/hangars.json for hangar configuration
   
   capture: {
-    batchSize: 4,
+    batchSize: 8, // Run all 8 cameras in parallel for faster capture
     timeouts: {
       perCameraSequential: 120000,
       perCameraParallel: 90000,
@@ -71,7 +71,7 @@ const baseConfig = {
     },
     ports: {
       start: 8083,
-      count: 4
+      count: 8 // Need 8 ports for parallel capture
     },
     delays: {
       betweenCameras: 1500,

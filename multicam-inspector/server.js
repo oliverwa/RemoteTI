@@ -432,7 +432,9 @@ async function captureInParallel(requestId, hangar, drone, sessionFolder) {
   
   try {
     // Turn on hangar lights before starting capture
+    global.captureProcesses[requestId].currentPhase = 'lights';
     await turnOnHangarLights(hangar);
+    global.captureProcesses[requestId].currentPhase = 'connecting';
     
     const cameras = config.cameras.ids;
   const batchSize = config.capture.batchSize;

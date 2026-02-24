@@ -251,7 +251,7 @@ trigger_autofocus() {
 # Main execution
 echo "Fetching ${CAMERA_NAME} from ${CAM_IP} via ${HANGAR_HOST} on port ${FORWARD_PORT}"
 echo "Start time: $(date '+%H:%M:%S')"
-echo "Step 1/6: Establishing SSH connection"
+echo "Step 1/5: Establishing SSH connection"
 
 # Establish SSH connection
 ssh ${SSH_OPTS} "${HANGAR_HOST}" true || {
@@ -261,7 +261,7 @@ ssh ${SSH_OPTS} "${HANGAR_HOST}" true || {
 echo "SSH connection established ($(date '+%H:%M:%S'))"
 
 # Kill any existing socat processes on our port
-echo "Step 2/6: Cleaning up existing processes"
+echo "Step 2/5: Cleaning up existing processes"
 kill_existing_socat
 
 # Check if port is still busy after cleanup
@@ -271,20 +271,15 @@ if port_busy; then
 fi
 
 # Start tunnel
-echo "Step 3/6: Starting tunnel for ${CAM_IP}"
+echo "Step 3/5: Starting tunnel for ${CAM_IP}"
 pidfile=$(start_tunnel)
 echo "Tunnel started ($(date '+%H:%M:%S'))"
 
 # Wait a moment for tunnel to establish
 sleep 1
 
-# Trigger autofocus before capturing image
-echo "Step 4/6: Triggering autofocus"
-trigger_autofocus "${CAMERA_NAME}"
-echo "Autofocus completed ($(date '+%H:%M:%S'))"
-
-# Fetch the image
-echo "Step 5/6: Capturing image from ${CAMERA_NAME}"
+# Fetch the image (skipping autofocus for speed)
+echo "Step 4/5: Capturing image from ${CAMERA_NAME}"
 if fetch_image; then
     echo "SUCCESS: ${OUTFILE}"
     file_size=$(stat -f%z "${OUTFILE}" 2>/dev/null || stat -c%s "${OUTFILE}" 2>/dev/null || echo "unknown")
@@ -296,7 +291,7 @@ else
 fi
 
 # Clean up tunnel
-echo "Step 6/6: Cleaning up tunnel"
+echo "Step 5/5: Cleaning up tunnel"
 stop_tunnel "$pidfile"
 echo "Cleanup completed ($(date '+%H:%M:%S'))"
 
