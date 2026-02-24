@@ -382,12 +382,12 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
 
   if (!routeData && !telemetryPoints) {
     return (
-      <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Map className="w-4 h-4 text-gray-400" />
-          <h3 className="font-medium text-sm text-gray-700">Flight Route</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-300">Flight Route</h3>
         </div>
-        <p className="text-xs text-gray-500">No route data available</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">No route data available</p>
       </div>
     );
   }
@@ -397,19 +397,19 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
   const hasTelemetry = telemetryPoints && telemetryPoints.length > 0;
 
   return (
-    <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Map className="w-4 h-4 text-blue-600" />
-          <h3 className="font-medium text-sm text-gray-700">Flight Route</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-300">Flight Route</h3>
         </div>
-        <div className="text-gray-500 text-xs">
+        <div className="text-gray-500 dark:text-gray-400 text-xs">
           Total: {formatDistance((routeData?.outDistance || 0) + (routeData?.homeDistance || 0))}
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-3 space-y-3">
+      <div className="bg-white dark:bg-gray-700 rounded-lg p-3 space-y-3">
         {/* Route Map Visualization */}
         {(hasOutRoute || hasHomeRoute || hasTelemetry) && bounds ? (
           <div className="bg-gray-50 rounded-lg p-2 relative overflow-hidden">

@@ -49,10 +49,10 @@ const calculateTransformScaleFactor = (imageDrawnWidth: number, imageDrawnHeight
 
 function tone(s?: string) {
   return s === "pass"
-    ? "bg-green-50 border-green-200"
+    ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700"
     : s === "fail"
-    ? "bg-red-50 border-red-200"
-    : "bg-white border-neutral-200";
+    ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700"
+    : "bg-white dark:bg-gray-800 border-neutral-200 dark:border-gray-600";
 }
 
 
@@ -2238,54 +2238,54 @@ export default function MultiCamInspector({
   // --- Render ---
   if (isLoadingInspection) {
     return (
-      <div className="w-full min-h-screen max-h-screen flex items-center justify-center bg-white text-black">
+      <div className="w-full min-h-screen max-h-screen flex items-center justify-center bg-white dark:bg-gray-800 text-black dark:text-white">
         <div className="text-center">
           <div className="text-xl font-semibold mb-2">Loading inspection data...</div>
-          <div className="text-sm text-gray-500">Please wait</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">Please wait</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white text-black">
+    <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white dark:bg-gray-800 text-black dark:text-white">
       {/* Header – main controls */}
 
 
       {/* ETA Countdown Display */}
       {(isCapturing || isWaitingToDisplay) && (
-        <div className="bg-gray-100 rounded-lg p-2">
+        <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
           <div className="flex items-center justify-center">
             {isWaitingToDisplay ? (
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Preparing images for display...
               </span>
             ) : estimatedTimeRemaining !== null && estimatedTimeRemaining > 0 ? (
               <div className="flex flex-col items-center space-y-1">
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {progressText || "Parallel capture in progress"}
                   </span>
-                  <span className="text-lg font-bold text-blue-600">
+                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                     {estimatedTimeRemaining}s
                   </span>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     remaining
                   </span>
                 </div>
               </div>
             ) : isCapturing ? (
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Capture completed - processing images...
               </span>
             ) : (
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Starting capture...
               </span>
             )}
           </div>
           {isWaitingToDisplay && (
-            <div className="text-xs text-gray-600 mt-2 text-center">
+            <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 text-center">
               All images captured successfully. Waiting 2 seconds for image stabilization before display...
             </div>
           )}
@@ -2380,13 +2380,13 @@ export default function MultiCamInspector({
             <div className="">
               {/* Task Title first */}
               <div className="text-center mb-4 px-4">
-                <h2 className="text-lg md:text-xl font-semibold text-gray-900 flex items-center justify-center gap-2">
+                <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
                   <span className="truncate max-w-[90%]">
                     {items[idx].title}
                   </span>
                   <button 
                     onClick={() => setShowTaskDescriptionModal(true)}
-                    className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 text-sm font-medium"
+                    className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-300 text-sm font-medium"
                     title="Task details"
                   >
                     ?
@@ -2394,7 +2394,7 @@ export default function MultiCamInspector({
                 </h2>
                 {/* Instructions below title */}
                 {items[idx].instructions && items[idx].instructions.length > 0 && (
-                  <div className="mt-3 text-sm text-gray-600">
+                  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
                     <ul className="list-disc list-inside space-y-1">
                       {items[idx].instructions.map((instruction: string, i: number) => (
                         <li key={i} className="text-left max-w-3xl mx-auto">
@@ -2425,7 +2425,7 @@ export default function MultiCamInspector({
                         className={`py-3 px-16 text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[200px] ${
                           items[idx].status === "fail" 
                             ? "bg-red-500 text-white hover:bg-red-600 shadow-md" 
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                            : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
                         }`}
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2445,7 +2445,7 @@ export default function MultiCamInspector({
                           items[idx].status === "pass" 
                             ? "bg-green-500 text-white hover:bg-green-600 shadow-md" 
                             : isValidationComplete
-                              ? "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+                              ? "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
                               : "bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
                         }`}
                       >
@@ -2496,16 +2496,16 @@ export default function MultiCamInspector({
             </div>
             
             {/* Notes Section - Always visible */}
-            <div className="px-4 py-3 bg-gray-50 rounded-lg">
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-2 text-sm text-gray-600">
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                   </svg>
                   <span>Notes (Optional)</span>
                 </label>
                 
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer hover:text-gray-800">
+                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-800 dark:hover:text-gray-200">
                   <input 
                     type="radio" 
                     name={`task-${idx}`}
@@ -2518,7 +2518,7 @@ export default function MultiCamInspector({
               </div>
               
               <textarea
-                className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm resize-none bg-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-md px-3 py-2 text-sm resize-none bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
                 rows={3}
                 placeholder="Add any observations or notes about this task..."
                 value={items[idx].comment || ''}
@@ -2533,17 +2533,17 @@ export default function MultiCamInspector({
 
       {/* Completion Section */}
       {isDataLoaded && items.length > 0 && !items.some(item => !item.status) && (
-        <div className="bg-white py-3">
+        <div className="bg-white dark:bg-gray-800 py-3">
           <div className="text-center">
-            <div className="text-lg font-semibold text-green-700 mb-4">🎉 Inspection Complete!</div>
-            <div className="text-sm text-green-600 mb-6">All {items.length} tasks have been processed.</div>
+            <div className="text-lg font-semibold text-green-700 dark:text-green-400 mb-4">🎉 Inspection Complete!</div>
+            <div className="text-sm text-green-600 dark:text-green-400 mb-6">All {items.length} tasks have been processed.</div>
             
             <button
               onClick={() => {
                 // Navigate back to dashboard with auth preserved
                 window.location.href = `/?returnToDashboard=true&userType=${userType}`;
               }}
-              className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+              className="px-6 py-2 bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
             >
               Complete Inspection
             </button>
@@ -2552,21 +2552,21 @@ export default function MultiCamInspector({
       )}
 
       {/* Image Enhancement Controls - iPad friendly */}
-      <div className="bg-white px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 px-6 py-4">
         <div className="flex justify-center items-center gap-8">
           {/* Brightness Control */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 font-medium">BRIGHTNESS</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">BRIGHTNESS</span>
             <button
               onClick={() => adjustBrightness(-10)}
-              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
+              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
             >
               −
             </button>
-            <span className="text-base font-bold text-gray-800 w-16 text-center">{brightness}%</span>
+            <span className="text-base font-bold text-gray-800 dark:text-gray-200 w-16 text-center">{brightness}%</span>
             <button
               onClick={() => adjustBrightness(10)}
-              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
+              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
             >
               +
             </button>
@@ -2574,17 +2574,17 @@ export default function MultiCamInspector({
           
           {/* Contrast Control */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 font-medium">CONTRAST</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">CONTRAST</span>
             <button
               onClick={() => adjustContrast(-10)}
-              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
+              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
             >
               −
             </button>
-            <span className="text-base font-bold text-gray-800 w-16 text-center">{contrast}%</span>
+            <span className="text-base font-bold text-gray-800 dark:text-gray-200 w-16 text-center">{contrast}%</span>
             <button
               onClick={() => adjustContrast(10)}
-              className="w-12 h-12 text-xl bg-white hover:bg-gray-100 rounded-lg border border-gray-300 transition-colors font-medium"
+              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
             >
               +
             </button>
@@ -2593,29 +2593,29 @@ export default function MultiCamInspector({
       </div>
       
       {/* Session Info and Help - Bottom bar */}
-      <div className="bg-white border-t border-gray-200 px-6 py-3">
+      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600 px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Session Info */}
           <div className="flex items-center gap-2 text-sm">
             {currentSession ? (
               <>
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                 </svg>
-                <span className="font-medium text-gray-700">{currentSession.name}</span>
-                <span className="text-gray-400">({currentSession.hangar})</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">{currentSession.name}</span>
+                <span className="text-gray-400 dark:text-gray-500">({currentSession.hangar})</span>
               </>
             ) : (
-              <span className="text-gray-400">No session loaded</span>
+              <span className="text-gray-400 dark:text-gray-500">No session loaded</span>
             )}
           </div>
           
           {/* Help button */}
           <div className="relative group">
-            <button className="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors">
+            <button className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
               Help
             </button>
-            <div className="absolute right-0 bottom-10 bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-xs text-gray-700 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
+            <div className="absolute right-0 bottom-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg p-3 text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50">
               <div className="font-semibold mb-2">Keyboard Shortcuts</div>
               <div className="space-y-1">
                 <div>Scroll = zoom</div>
@@ -2712,15 +2712,15 @@ export default function MultiCamInspector({
       {showCalibrateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-4 w-[1100px] max-w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-2">🎯 Camera Calibration - {inspectionData?.cameras?.[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
-            <p className="text-sm text-gray-600 mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">🎯 Camera Calibration - {inspectionData?.cameras?.[calibrateCamera]?.name || 'Camera'} in {HANGARS.find(h => h.id === calibrateHangar)?.label || 'Hangar'}</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Align the {HANGARS.find(h => h.id === calibrateHangar)?.label || 'hangar'} image with the Mölndal baseline. Drag to pan or use controls.
             </p>
 
             {loadingImages ? (
               <div className="text-center py-8">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <p className="text-sm text-gray-600 mt-4">Loading images...</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">Loading images...</p>
               </div>
             ) : molndalImage && hangarImage ? (
               <div className="space-y-6">
@@ -2729,7 +2729,7 @@ export default function MultiCamInspector({
                   {/* Image Comparison - Larger */}
                   <div className="col-span-3">
                     <div 
-                      className="relative bg-black rounded overflow-hidden border-2 border-gray-300" 
+                      className="relative bg-black rounded overflow-hidden border-2 border-gray-300 dark:border-gray-600" 
                       style={{ height: '500px' }}
                       onMouseDown={(e) => {
                         const rect = e.currentTarget.getBoundingClientRect();
@@ -2790,7 +2790,7 @@ export default function MultiCamInspector({
                     
                     {/* Instructions */}
                     <div className="mt-3 text-center">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         <span className="font-medium">Drag to pan</span> • 
                         <span className="font-medium"> Use sliders for precision</span> • 
                         <span className="font-medium"> Gray = Baseline</span> • 
@@ -2819,7 +2819,7 @@ export default function MultiCamInspector({
                             if (overlay) overlay.style.opacity = (opacity / 100).toString();
                           }}
                         />
-                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.opacity || 70}%</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-center">{calibrationTransform.opacity || 70}%</div>
                       </div>
 
                       <div>
@@ -2832,7 +2832,7 @@ export default function MultiCamInspector({
                           className="w-full"
                           onChange={(e) => setCalibrationTransform(prev => ({ ...prev, x: parseInt(e.target.value) }))}
                         />
-                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.x}px</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-center">{calibrationTransform.x}px</div>
                       </div>
 
                       <div>
@@ -2845,7 +2845,7 @@ export default function MultiCamInspector({
                           className="w-full"
                           onChange={(e) => setCalibrationTransform(prev => ({ ...prev, y: parseInt(e.target.value) }))}
                         />
-                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.y}px</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-center">{calibrationTransform.y}px</div>
                       </div>
 
                       <div>
@@ -2859,7 +2859,7 @@ export default function MultiCamInspector({
                           className="w-full"
                           onChange={(e) => setCalibrationTransform(prev => ({ ...prev, rotation: parseFloat(e.target.value) }))}
                         />
-                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.rotation.toFixed(1)}°</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-center">{calibrationTransform.rotation.toFixed(1)}°</div>
                       </div>
 
                       <div>
@@ -2873,20 +2873,20 @@ export default function MultiCamInspector({
                           className="w-full"
                           onChange={(e) => setCalibrationTransform(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
                         />
-                        <div className="text-xs text-gray-500 text-center">{calibrationTransform.scale.toFixed(2)}x</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 text-center">{calibrationTransform.scale.toFixed(2)}x</div>
                       </div>
                     </div>
 
                     {/* Quick Actions */}
                     <div className="grid grid-cols-2 gap-2">
                       <button
-                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-medium"
+                        className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium"
                         onClick={() => setCalibrationTransform(prev => ({ ...prev, flipped: !prev.flipped }))}
                       >
                         {calibrationTransform.flipped ? '↔ Unflip' : '↔ Flip'}
                       </button>
                       <button
-                        className="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-xs font-medium"
+                        className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium"
                         onClick={() => setCalibrationTransform({ x: 0, y: 0, scale: 1, rotation: 0, flipped: false })}
                       >
                         ↺ Reset
@@ -2894,9 +2894,9 @@ export default function MultiCamInspector({
                     </div>
 
                     {/* Current Values - Compact */}
-                    <div className="bg-gray-50 p-2 rounded text-xs">
+                    <div className="bg-gray-50 dark:bg-gray-900 p-2 rounded text-xs">
                       <div className="font-medium mb-1">📊 Values</div>
-                      <div className="text-xs text-gray-600 font-mono leading-tight space-y-1">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-mono leading-tight space-y-1">
                         <div className="grid grid-cols-2 gap-x-2">
                           <div>X: {calibrationTransform.x}px</div>
                           <div>Y: {calibrationTransform.y}px</div>
@@ -2910,7 +2910,7 @@ export default function MultiCamInspector({
                     </div>
                     
                     {/* Save Actions in controls panel to avoid scrolling */}
-                    <div className="pt-2 border-t space-y-2">
+                    <div className="pt-2 border-t border-gray-200 dark:border-gray-600 space-y-2">
                       <Button
                         variant="outline"
                         onClick={() => {
@@ -2919,7 +2919,7 @@ export default function MultiCamInspector({
                           setMolndalImage("");
                           setHangarImage("");
                         }}
-                        className="w-full text-xs py-1"
+                        className="w-full text-xs py-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
                       >
                         Cancel
                       </Button>
@@ -2951,7 +2951,7 @@ export default function MultiCamInspector({
                             setMolndalImage("");
                             setHangarImage("");
                           }}
-                          className="w-full bg-blue-600 hover:bg-blue-700 text-xs py-1"
+                          className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white text-xs py-1"
                         >
                           💾 Save Calibration
                         </Button>
@@ -2961,7 +2961,7 @@ export default function MultiCamInspector({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <p>Failed to load images. Please try again.</p>
               </div>
             )}
@@ -2984,8 +2984,8 @@ export default function MultiCamInspector({
 
       {/* No Images Modal */}
       {showNoImagesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md mx-4">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4">
             <div className="text-center">
               <div className="text-2xl mb-4">📷</div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Images Required</h3>
@@ -3012,7 +3012,7 @@ export default function MultiCamInspector({
 
       {/* Image Analysis Results Modal */}
       {showDarkImageModal && darkImageDetails && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-4 max-w-lg mx-4 max-h-[80vh] overflow-y-auto">
             <div className="text-center">
               <div className="text-3xl mb-2">

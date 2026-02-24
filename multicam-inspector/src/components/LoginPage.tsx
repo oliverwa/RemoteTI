@@ -69,7 +69,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative">
+    <div className="min-h-screen flex items-center justify-center relative bg-gray-50 dark:bg-gray-900">
       {/* Background image with opacity */}
       <div 
         className="absolute inset-0"
@@ -82,13 +82,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         }}
       />
       {/* Content */}
-      <div className="bg-white/95 backdrop-blur-sm p-8 rounded-lg shadow-xl w-96 relative z-10">
+      <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-8 rounded-lg shadow-xl w-96 relative z-10">
         {/* Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
             Everdrone Inspection
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
             Technical Inspection System
           </p>
         </div>
@@ -101,7 +101,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               placeholder="Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:bg-white dark:focus:bg-gray-600"
             />
           </div>
           
@@ -111,13 +111,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white"
+              className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:bg-white dark:focus:bg-gray-600"
             />
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm">
+            <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-3 py-2 rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -125,7 +125,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
@@ -134,10 +134,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         {/* Demo notice */}
         {demoMode && (
           <div className="text-center mt-6">
-            <p className="text-gray-400 text-xs">
+            <p className="text-gray-400 dark:text-gray-500 text-xs">
               Demo mode - no credentials required
             </p>
-            <p className="text-gray-400 text-xs mt-1">
+            <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
               Username with 'remote' = Remote user, otherwise Everdrone user
             </p>
           </div>

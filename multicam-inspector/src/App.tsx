@@ -6,6 +6,7 @@ import UnifiedInspectionScreen from './components/UnifiedInspectionScreen';
 import HangarDashboard from './components/HangarDashboard';
 import BackendConnectionCheck from './components/BackendConnectionCheck';
 import InspectionSummaryModal from './components/modals/InspectionSummaryModal';
+import { ThemeProvider } from './contexts/ThemeContext';
 import authService from './services/authService';
 import { API_CONFIG } from './config/api.config';
 import './App.css';
@@ -258,8 +259,9 @@ function App() {
   };
 
   return (
-    <BackendConnectionCheck>
-      <div className="App">
+    <ThemeProvider>
+      <BackendConnectionCheck>
+        <div className="App">
         {!isAuthenticated ? (
           <LoginPage onLogin={handleLogin} />
         ) : showDashboard ? (
@@ -275,7 +277,7 @@ function App() {
             {/* Back to Dashboard button */}
             <button
               onClick={handleBackToDashboard}
-              className="fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all"
+              className="fixed top-4 left-4 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
               title="Back to dashboard"
             >
               ← Dashboard
@@ -291,7 +293,7 @@ function App() {
           {/* Minimal back button in bottom-left corner */}
           <button
             onClick={startedFromDashboard ? handleBackToDashboard : handleBackToSelection}
-            className="fixed bottom-4 left-4 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all"
+            className="fixed bottom-4 left-4 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
             title={startedFromDashboard ? "Back to dashboard" : "Back to selection"}
           >
             ← Back
@@ -319,19 +321,20 @@ function App() {
           )}
         </div>
       )}
-      </div>
-      
-      {/* Inspection Summary Modal */}
-      {summaryModalSession && (
-        <InspectionSummaryModal
-          isOpen={true}
-          onClose={() => setSummaryModalSession(null)}
-          sessionPath={summaryModalSession.sessionPath}
-          hangarId={summaryModalSession.hangarId}
-          showImages={true}
-        />
-      )}
-    </BackendConnectionCheck>
+        </div>
+        
+        {/* Inspection Summary Modal */}
+        {summaryModalSession && (
+          <InspectionSummaryModal
+            isOpen={true}
+            onClose={() => setSummaryModalSession(null)}
+            sessionPath={summaryModalSession.sessionPath}
+            hangarId={summaryModalSession.hangarId}
+            showImages={true}
+          />
+        )}
+      </BackendConnectionCheck>
+    </ThemeProvider>
   );
 }
 

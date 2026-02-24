@@ -224,8 +224,8 @@ const TemplateManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Template Management</h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Template Management</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Edit inspection checklist templates that will be used for all future inspections
           </p>
         </div>
@@ -251,7 +251,7 @@ const TemplateManagement: React.FC = () => {
       {/* Message */}
       {message && (
         <div className={`p-4 rounded-lg flex items-center gap-2 ${
-          message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+          message.type === 'success' ? 'bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400'
         }`}>
           {message.type === 'success' ? <Check className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
           {message.text}
@@ -259,14 +259,14 @@ const TemplateManagement: React.FC = () => {
       )}
 
       {/* Template Selector */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Select Template
         </label>
         <select
           value={selectedTemplate}
           onChange={(e) => setSelectedTemplate(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {Object.keys(templates).map((key) => (
             <option key={key} value={key}>
@@ -280,11 +280,11 @@ const TemplateManagement: React.FC = () => {
       {currentTemplate && (
         <div className="space-y-4">
           {/* Template Info */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
-            <h4 className="font-medium text-gray-900">Template Information</h4>
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-4">
+            <h4 className="font-medium text-gray-900 dark:text-gray-100">Template Information</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Name</label>
                 <input
                   type="text"
                   value={currentTemplate.name}
@@ -292,11 +292,11 @@ const TemplateManagement: React.FC = () => {
                     ...prev,
                     [selectedTemplate]: { ...prev[selectedTemplate], name: e.target.value }
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Version</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Version</label>
                 <input
                   type="text"
                   value={currentTemplate.version}
@@ -304,12 +304,12 @@ const TemplateManagement: React.FC = () => {
                     ...prev,
                     [selectedTemplate]: { ...prev[selectedTemplate], version: e.target.value }
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
               <textarea
                 value={currentTemplate.description}
                 onChange={(e) => setTemplates(prev => ({
@@ -317,17 +317,17 @@ const TemplateManagement: React.FC = () => {
                   [selectedTemplate]: { ...prev[selectedTemplate], description: e.target.value }
                 }))}
                 rows={2}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
           {/* Metadata */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
-            <h4 className="font-medium text-gray-900">Metadata</h4>
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 space-y-4">
+            <h4 className="font-medium text-gray-900 dark:text-gray-100">Metadata</h4>
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Author</label>
                 <input
                   type="text"
                   value={currentTemplate.metadata?.author || ''}
@@ -341,11 +341,11 @@ const TemplateManagement: React.FC = () => {
                       }
                     }
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Created Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Created Date</label>
                 <input
                   type="text"
                   value={currentTemplate.metadata?.created || ''}
@@ -359,11 +359,11 @@ const TemplateManagement: React.FC = () => {
                       }
                     }
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Inspection Mode</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Inspection Mode</label>
                 <select
                   value={currentTemplate.metadata?.inspectionMode || 'remote'}
                   onChange={(e) => setTemplates(prev => ({
@@ -376,7 +376,7 @@ const TemplateManagement: React.FC = () => {
                       }
                     }
                   }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="remote">Remote</option>
                   <option value="onsite">Onsite</option>
@@ -387,9 +387,9 @@ const TemplateManagement: React.FC = () => {
           </div>
 
           {/* Tasks */}
-          <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-gray-900">Tasks ({currentTemplate.tasks?.length || 0})</h4>
+              <h4 className="font-medium text-gray-900 dark:text-gray-100">Tasks ({currentTemplate.tasks?.length || 0})</h4>
               <button
                 onClick={addTask}
                 className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 text-sm"
@@ -403,14 +403,14 @@ const TemplateManagement: React.FC = () => {
               {(currentTemplate.tasks || []).map((task, index) => (
                 <div
                   key={task.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
+                  className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden"
                 >
                   {/* Task Header */}
-                  <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
+                  <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => toggleTaskExpanded(task.id)}
-                        className="p-1 hover:bg-gray-200 rounded"
+                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                       >
                         {expandedTasks.has(task.id) ? (
                           <ChevronUp className="w-4 h-4" />
@@ -418,7 +418,7 @@ const TemplateManagement: React.FC = () => {
                           <ChevronDown className="w-4 h-4" />
                         )}
                       </button>
-                      <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">#{index + 1}</span>
                       {editingTask === task.id ? (
                         <input
                           type="text"
@@ -428,15 +428,15 @@ const TemplateManagement: React.FC = () => {
                           onKeyDown={(e) => e.key === 'Enter' && setEditingTask(null)}
                         />
                       ) : (
-                        <span className="font-medium text-gray-900">{task.title}</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{task.title}</span>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setEditingTask(editingTask === task.id ? null : task.id)}
-                        className="p-1.5 hover:bg-gray-200 rounded"
+                        className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                       >
-                        <Edit2 className="w-4 h-4 text-gray-600" />
+                        <Edit2 className="w-4 h-4 text-gray-600 dark:text-gray-400" />
                       </button>
                       <button
                         onClick={() => moveTask(task.id, 'up')}
@@ -454,7 +454,7 @@ const TemplateManagement: React.FC = () => {
                       </button>
                       <button
                         onClick={() => deleteTask(task.id)}
-                        className="p-1.5 hover:bg-red-100 rounded text-red-600"
+                        className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/20 rounded text-red-600 dark:text-red-400"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -463,41 +463,41 @@ const TemplateManagement: React.FC = () => {
 
                   {/* Task Details */}
                   {expandedTasks.has(task.id) && (
-                    <div className="p-4 space-y-3 bg-gray-50">
+                    <div className="p-4 space-y-3 bg-gray-50 dark:bg-gray-700">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Task ID</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Task ID</label>
                         <input
                           type="text"
                           value={task.id}
                           onChange={(e) => updateTask(task.id, 'id', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">Description</label>
                         <textarea
                           value={task.description}
                           onChange={(e) => updateTask(task.id, 'description', e.target.value)}
                           rows={3}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Detailed description of what needs to be inspected..."
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 dark:text-gray-300 mb-1">
                           Instructions (one per line)
                         </label>
                         <textarea
                           value={task.instructions.join('\n')}
                           onChange={(e) => updateTask(task.id, 'instructions', e.target.value.split('\n').filter(Boolean))}
                           rows={4}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm font-mono bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Step 1: Check...
 Step 2: Verify...
 Step 3: Document..."
                         />
                       </div>
-                      <div className="text-xs text-gray-500 mt-2">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         Note: Validation boxes can be configured during inspection setup
                       </div>
                     </div>

@@ -486,9 +486,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="text-lg font-semibold text-gray-700">Loading inspection...</div>
+          <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">Loading inspection...</div>
         </div>
       </div>
     );
@@ -496,9 +496,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
   if (!inspectionData || !inspectionData.tasks || inspectionData.tasks.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="text-lg font-semibold text-gray-700">No tasks found in this inspection</div>
+          <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">No tasks found in this inspection</div>
         </div>
       </div>
     );
@@ -509,22 +509,22 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   const progressPercentage = (completedTasksCount / inspectionData.tasks.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Simplified Header */}
-      <div className="bg-white border-b">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="px-6 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-gray-900">{getInspectionDisplayName()}</h1>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{getInspectionDisplayName()}</h1>
               <button
                 onClick={() => setShowSidebar(!showSidebar)}
-                className="p-1 rounded hover:bg-gray-100"
+                className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                 title="Toggle task list"
               >
-                <ListTodo className="w-4 h-4 text-gray-500" />
+                <ListTodo className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <Clock className="w-3.5 h-3.5" />
               <span>{completedTasksCount} / {inspectionData.tasks.length} completed</span>
               <span className="mx-2">•</span>
@@ -563,7 +563,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
             
             {/* Thin Progress Bar */}
             <div className="mt-3 mx-auto max-w-xl">
-              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-blue-500 transition-all duration-300"
                   style={{ width: `${progressPercentage}%` }}
@@ -576,16 +576,16 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
       <div className="flex h-[calc(100vh-120px)] relative">
         {/* Collapsible Sidebar - Task List */}
-        <div className={`absolute left-0 top-0 h-full bg-white border-r shadow-lg overflow-y-auto transition-all duration-300 z-10 ${
+        <div className={`absolute left-0 top-0 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-lg overflow-y-auto transition-all duration-300 z-10 ${
           showSidebar ? 'w-80' : 'w-0'
         }`}>
           {showSidebar && (
             <div className="p-4">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-semibold text-gray-800">All Tasks</h3>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200">All Tasks</h3>
                 <button
                   onClick={() => setShowSidebar(false)}
-                  className="p-1 rounded hover:bg-gray-100"
+                  className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -605,12 +605,12 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                         isCurrent
                           ? 'bg-blue-50 text-blue-900 font-medium'
                           : status !== 'pending'
-                          ? 'text-gray-600'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'text-gray-600 dark:text-gray-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                       }`}
                     >
                       <div className="flex items-center gap-2 flex-1">
-                        <span className="text-xs text-gray-500 font-mono">{idx + 1}.</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">{idx + 1}.</span>
                         <span className={`truncate ${
                           status !== 'pending' && !isCurrent ? 'line-through opacity-60' : ''
                         }`}>
@@ -618,9 +618,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                         </span>
                       </div>
                       <div className="flex-shrink-0">
-                        {status === 'pass' && <div className="w-4 h-4 bg-green-500 rounded-full" />}
-                        {status === 'fail' && <div className="w-4 h-4 bg-red-500 rounded-full" />}
-                        {status === 'pending' && <div className="w-4 h-4 bg-gray-300 rounded-full" />}
+                        {status === 'pass' && <div className="w-4 h-4 bg-green-500 dark:bg-green-400 rounded-full" />}
+                        {status === 'fail' && <div className="w-4 h-4 bg-red-500 dark:bg-red-400 rounded-full" />}
+                        {status === 'pending' && <div className="w-4 h-4 bg-gray-300 dark:bg-gray-600 rounded-full" />}
                       </div>
                     </button>
                   );
@@ -637,45 +637,45 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-700">{currentTaskIndex + 1}</span>
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{currentTaskIndex + 1}</span>
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">{currentTask.taskName}</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{currentTask.taskName}</h2>
                   </div>
                 </div>
                 {taskStatuses[currentTask.taskNumber] === 'pass' && (
-                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-green-500 dark:bg-green-400 rounded-full flex items-center justify-center">
                     <Check className="w-4 h-4 text-white" />
                   </div>
                 )}
                 {taskStatuses[currentTask.taskNumber] === 'fail' && (
-                  <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-red-500 dark:bg-red-400 rounded-full flex items-center justify-center">
                     <X className="w-4 h-4 text-white" />
                   </div>
                 )}
                 {taskStatuses[currentTask.taskNumber] === 'pending' && (
-                  <div className="w-6 h-6 border border-gray-300 rounded-full" />
+                  <div className="w-6 h-6 border border-gray-300 dark:border-gray-600 rounded-full" />
                 )}
               </div>
               
               {/* Task Description */}
               <div className="mb-6">
-                <div className="text-gray-600 leading-relaxed whitespace-pre-line">
+                <div className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">
                   {currentTask.description}
                 </div>
               </div>
 
               {/* Instructions with Checkboxes */}
               {currentTask.instructions && currentTask.instructions.length > 0 && (
-                <div className="mb-6 bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Instructions:</h3>
+                <div className="mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Instructions:</h3>
                   <div className="space-y-2">
                     {currentTask.instructions.map((instruction, index) => (
-                      <label key={index} className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 rounded p-2 transition-colors">
+                      <label key={index} className="flex items-start gap-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded p-2 transition-colors">
                         <input
                           type="checkbox"
-                          className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="mt-1 w-4 h-4 text-blue-600 dark:text-blue-400 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400 bg-white dark:bg-gray-700"
                           checked={checkedInstructions[currentTask.taskNumber]?.[index] || false}
                           onChange={(e) => {
                             const newChecked = [...(checkedInstructions[currentTask.taskNumber] || [])];
@@ -686,7 +686,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                             }));
                           }}
                         />
-                        <span className="text-gray-700 text-sm leading-relaxed">{instruction}</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{instruction}</span>
                       </label>
                     ))}
                   </div>
@@ -712,8 +712,8 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                         currentTask.instructions.length > 0 && 
                         (!checkedInstructions[currentTask.taskNumber] || 
                          checkedInstructions[currentTask.taskNumber].filter(Boolean).length < currentTask.instructions.length)
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white hover:bg-green-50 text-green-600 border border-green-500'
+                      ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                      : 'bg-white dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-500 dark:border-green-600'
                   }`}
                 >
                   <Check className="w-5 h-5 mr-2" />
@@ -724,7 +724,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                   className={`flex-1 py-4 text-lg font-medium transition-all ${
                     taskStatuses[currentTask.taskNumber] === 'fail'
                       ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : 'bg-white hover:bg-red-50 text-red-600 border border-red-500'
+                      : 'bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500 dark:border-red-600'
                   }`}
                 >
                   <X className="w-5 h-5 mr-2" />
@@ -734,7 +734,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
               {/* Notes Section */}
               <div className="mt-4">
-                <label className="block text-sm text-gray-600 mb-2">
+                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
                   Notes (Optional)
                 </label>
                 <textarea
@@ -765,7 +765,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                       }
                     }
                   }}
-                  className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 resize-none"
+                  className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 resize-none bg-white dark:bg-gray-800 text-black dark:text-white"
                   rows={3}
                   placeholder="Add any observations or notes about this task..."
                 />
@@ -785,21 +785,21 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               </Button>
 
               <div className="text-center">
-                <div className="text-xs text-gray-400">← → Navigate | P Pass | F Fail | S Sidebar</div>
+                <div className="text-xs text-gray-400 dark:text-gray-500">← → Navigate | P Pass | F Fail | S Sidebar</div>
               </div>
 
               {currentTaskIndex === inspectionData.tasks.length - 1 ? (
                 <Button
                   onClick={handleCompleteInspection}
                   disabled={completedTasksCount !== inspectionData.tasks.length}
-                  className="bg-green-600 hover:bg-green-700 px-6 py-2 font-medium"
+                  className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white px-6 py-2 font-medium"
                 >
                   Complete Inspection
                 </Button>
               ) : (
                 <Button
                   onClick={handleNext}
-                  className="flex items-center gap-1 px-6 py-2 bg-blue-600 hover:bg-blue-700"
+                  className="flex items-center gap-1 px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
                 >
                   Next
                   <ChevronRight className="w-4 h-4" />

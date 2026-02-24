@@ -510,9 +510,9 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
   return (
     <div className="space-y-4">
       {/* Controls */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-blue-600" />
             Metrics Analysis
           </h3>
@@ -521,11 +521,11 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Metric Selection */}
           <div>
-            <label className="text-xs font-medium text-gray-700 block mb-1">Select Metric</label>
+            <label className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">Select Metric</label>
             <select
               value={selectedMetric}
               onChange={(e) => setSelectedMetric(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <optgroup label="Time Metrics">
                 <option value="calibratedDeliveryTime">Delivery Time</option>
@@ -659,11 +659,11 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
       )}
 
       {/* Chart */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         {/* Info about clicking dots */}
         {groupBy === 'flight' && chartData.length > 0 && (
           <div className="mb-2">
-            <p className="text-xs text-gray-600">
+            <p className="text-xs text-gray-600 dark:text-gray-400">
               💡 Click on any dot in the chart to hide/show that data point
             </p>
           </div>
@@ -671,7 +671,7 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
         <ResponsiveContainer width="100%" height={400}>
           {chartType === 'line' ? (
             <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
               <XAxis 
                 dataKey={groupBy === 'date' ? 'timestamp' : 'name'}
                 angle={-45} 
@@ -685,7 +685,7 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
                   undefined
                 }
               />
-              <YAxis tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} className="dark:text-gray-400" />
               <Tooltip 
                 content={<CustomTooltip />}
                 cursor={{ fill: 'transparent' }}
@@ -789,7 +789,7 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
             </LineChart>
           ) : chartType === 'bar' ? (
             <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
               <XAxis 
                 dataKey={groupBy === 'date' ? 'timestamp' : 'name'}
                 angle={-45} 
@@ -803,7 +803,7 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
                   undefined
                 }
               />
-              <YAxis tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} className="dark:text-gray-400" />
               <Tooltip 
                 content={<CustomTooltip />}
                 cursor={{ fill: 'transparent' }}
@@ -830,7 +830,7 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
             </BarChart>
           ) : (
             <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-600" />
               <XAxis 
                 dataKey={groupBy === 'date' ? 'timestamp' : 'name'}
                 angle={-45} 
@@ -844,7 +844,7 @@ const FlightsMetricsGraph: React.FC<FlightsMetricsGraphProps> = ({ flights }) =>
                   undefined
                 }
               />
-              <YAxis tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} className="dark:text-gray-400" />
               <Tooltip 
                 content={<CustomTooltip />}
                 cursor={{ fill: 'transparent' }}

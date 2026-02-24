@@ -279,9 +279,9 @@ const UserManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Users className="w-6 h-6 text-gray-600" />
-          <h3 className="text-xl font-semibold text-gray-800">User Management</h3>
-          <span className="text-gray-500 text-sm">({users.length} users)</span>
+          <Users className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">User Management</h3>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">({users.length} users)</span>
         </div>
         <button
           onClick={() => {
@@ -297,47 +297,47 @@ const UserManagement: React.FC = () => {
 
       {/* User Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-600 font-medium">Admin & Everdrone</p>
-          <p className="text-2xl font-bold text-blue-700">{users.filter(u => u.type === 'admin' || u.type === 'everdrone').length}</p>
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Admin & Everdrone</p>
+          <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{users.filter(u => u.type === 'admin' || u.type === 'everdrone').length}</p>
         </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-600 font-medium">Service Partner Users</p>
-          <p className="text-2xl font-bold text-green-700">{users.filter(u => u.type === 'service_partner').length}</p>
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+          <p className="text-sm text-green-600 dark:text-green-400 font-medium">Service Partner Users</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300">{users.filter(u => u.type === 'service_partner').length}</p>
         </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600 font-medium">Total Users</p>
-          <p className="text-2xl font-bold text-gray-700">{users.length}</p>
+        <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Users</p>
+          <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{users.length}</p>
         </div>
       </div>
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="text-gray-500">Loading users...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading users...</div>
         </div>
       ) : (
         /* Users Table */
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Login</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
               {users.map(user => (
-                <tr key={user.id} className="hover:bg-gray-50">
+                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{user.username}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.username}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {user.email && <div>{user.email}</div>}
                         {user.phone && <div>{user.phone}</div>}
-                        {!user.email && !user.phone && <div className="text-gray-400 italic">No contact info</div>}
+                        {!user.email && !user.phone && <div className="text-gray-400 dark:text-gray-500 italic">No contact info</div>}
                       </div>
                     </div>
                   </td>
@@ -352,31 +352,31 @@ const UserManagement: React.FC = () => {
                       {user.type === 'admin' ? 'Admin' : user.type === 'everdrone' ? 'Everdrone' : 'Service Partner'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(user.createdAt)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {user.lastLogin ? formatDate(user.lastLogin) : 'Never'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openEditModal(user)}
-                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                         title="Edit user"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => openPasswordModal(user)}
-                        className="text-green-600 hover:text-green-900 p-1 hover:bg-green-50 rounded"
+                        className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 p-1 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
                         title="Change password"
                       >
                         <Key className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => openDeleteModal(user)}
-                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                         title="Delete user"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -393,16 +393,16 @@ const UserManagement: React.FC = () => {
       {/* Add User Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Add New User</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Add New User</h3>
                 <button
                   onClick={() => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -410,62 +410,62 @@ const UserManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
                   <input
                     type="text"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter username"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (optional)</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter email (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone (optional)</label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter phone number (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
                   <input
                     type="password"
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter password (min 8 characters)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User Type</label>
                   <div className="relative">
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value as 'admin' | 'everdrone' | 'service_partner' })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="service_partner">Service Partner</option>
                       <option value="everdrone">Everdrone</option>
                       <option value="admin">Admin</option>
                     </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
                   </div>
                 </div>
 
@@ -483,7 +483,7 @@ const UserManagement: React.FC = () => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -504,17 +504,17 @@ const UserManagement: React.FC = () => {
       {/* Edit User Modal */}
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Edit User</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit User</h3>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     resetForm();
                     setSelectedUser(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -522,50 +522,50 @@ const UserManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
                   <input
                     type="text"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email (optional)</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter email (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone (optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone (optional)</label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter phone number (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User Type</label>
                   <div className="relative">
                     <select
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value as 'admin' | 'everdrone' | 'service_partner' })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="service_partner">Service Partner</option>
                       <option value="everdrone">Everdrone</option>
                       <option value="admin">Admin</option>
                     </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
                   </div>
                 </div>
 
@@ -584,7 +584,7 @@ const UserManagement: React.FC = () => {
                     resetForm();
                     setSelectedUser(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -605,36 +605,36 @@ const UserManagement: React.FC = () => {
       {/* Change Password Modal */}
       {showPasswordModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Change Password</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Change Password</h3>
                 <button
                   onClick={() => {
                     setShowPasswordModal(false);
                     resetForm();
                     setSelectedUser(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="mb-4">
-                <p className="text-sm text-gray-600">
-                  Changing password for: <span className="font-semibold text-gray-900">{selectedUser.username}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Changing password for: <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedUser.username}</span>
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter new password (min 8 characters)"
                   />
                 </div>
@@ -654,7 +654,7 @@ const UserManagement: React.FC = () => {
                     resetForm();
                     setSelectedUser(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -675,16 +675,16 @@ const UserManagement: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Delete User</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete User</h3>
                 <button
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedUser(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -693,10 +693,10 @@ const UserManagement: React.FC = () => {
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-3">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
-                  <p className="text-gray-900 font-medium">Are you sure you want to delete this user?</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-medium">Are you sure you want to delete this user?</p>
                 </div>
-                <p className="text-sm text-gray-600 ml-9">
-                  User: <span className="font-semibold text-gray-900">{selectedUser.username}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400 ml-9">
+                  User: <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedUser.username}</span>
                   {(selectedUser.email || selectedUser.phone) && (
                     <span> ({selectedUser.email}{selectedUser.email && selectedUser.phone ? ', ' : ''}{selectedUser.phone})</span>
                   )}
@@ -719,7 +719,7 @@ const UserManagement: React.FC = () => {
                     setShowDeleteModal(false);
                     setSelectedUser(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel

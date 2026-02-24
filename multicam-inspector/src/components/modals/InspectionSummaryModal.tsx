@@ -235,22 +235,22 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
   const getStatusIcon = (status: 'completed' | 'failed' | 'skipped') => {
     switch (status) {
       case 'completed':
-        return <Check className="w-3 h-3 text-green-600" />;
+        return <Check className="w-3 h-3 text-green-600 dark:text-green-400" />;
       case 'failed':
-        return <X className="w-3 h-3 text-red-600" />;
+        return <X className="w-3 h-3 text-red-600 dark:text-red-400" />;
       case 'skipped':
-        return <AlertTriangle className="w-3 h-3 text-yellow-600" />;
+        return <AlertTriangle className="w-3 h-3 text-yellow-600 dark:text-yellow-400" />;
     }
   };
 
   const getStatusColor = (status: 'completed' | 'failed' | 'skipped') => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100';
+        return 'bg-green-100 dark:bg-green-900/30';
       case 'failed':
-        return 'bg-red-100';
+        return 'bg-red-100 dark:bg-red-900/30';
       case 'skipped':
-        return 'bg-yellow-100';
+        return 'bg-yellow-100 dark:bg-yellow-900/30';
     }
   };
 
@@ -318,7 +318,7 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100000] p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -357,16 +357,16 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading inspection summary...</p>
+                <p className="text-gray-600 dark:text-gray-400">Loading inspection summary...</p>
               </div>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 rounded-lg p-4">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-6 h-6 text-red-600" />
                 <div>
-                  <div className="font-semibold text-red-900">Error Loading Summary</div>
-                  <div className="text-sm text-red-700 mt-1">{error}</div>
+                  <div className="font-semibold text-red-900 dark:text-red-400">Error Loading Summary</div>
+                  <div className="text-sm text-red-700 dark:text-red-400 mt-1">{error}</div>
                 </div>
               </div>
             </div>
@@ -375,10 +375,10 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
               {/* Compact Header with all key info */}
               <div className={`border rounded-lg p-3 ${
                 summaryData.overallStatus === 'passed' 
-                  ? 'bg-green-50 border-green-200' 
+                  ? 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-600' 
                   : summaryData.overallStatus === 'failed'
-                  ? 'bg-red-50 border-red-200'
-                  : 'bg-yellow-50 border-yellow-200'
+                  ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-600'
+                  : 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-600'
               }`}>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -390,14 +390,14 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                       <AlertTriangle className="w-5 h-5 text-yellow-600" />
                     )}
                     <span className={`font-semibold text-sm ${
-                      summaryData.overallStatus === 'passed' ? 'text-green-900' : 
-                      summaryData.overallStatus === 'failed' ? 'text-red-900' : 'text-yellow-900'
+                      summaryData.overallStatus === 'passed' ? 'text-green-900 dark:text-green-400' : 
+                      summaryData.overallStatus === 'failed' ? 'text-red-900 dark:text-red-400' : 'text-yellow-900 dark:text-yellow-400'
                     }`}>
                       {summaryData.overallStatus === 'passed' ? 'Inspection Passed' : 
                        summaryData.overallStatus === 'failed' ? 'Inspection Failed' : 'Partially Completed'}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     Duration: {formatDuration(summaryData.duration)}
                   </span>
                 </div>
@@ -405,24 +405,24 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                 {/* Key details in compact format */}
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-gray-600">Type:</span>
-                    <span className="font-medium ml-1">{summaryData.inspectionType}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Type:</span>
+                    <span className="font-medium ml-1 text-gray-900 dark:text-gray-100">{summaryData.inspectionType}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Inspector:</span>
-                    <span className="font-medium ml-1">{summaryData.operator}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Inspector:</span>
+                    <span className="font-medium ml-1 text-gray-900 dark:text-gray-100">{summaryData.operator}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Location:</span>
-                    <span className="font-medium ml-1">{summaryData.hangarName || summaryData.hangarId}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Location:</span>
+                    <span className="font-medium ml-1 text-gray-900 dark:text-gray-100">{summaryData.hangarName || summaryData.hangarId}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600">Drone:</span>
-                    <span className="font-medium ml-1">{summaryData.droneId}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Drone:</span>
+                    <span className="font-medium ml-1 text-gray-900 dark:text-gray-100">{summaryData.droneId}</span>
                   </div>
                   <div className="col-span-2">
-                    <span className="text-gray-600">Date:</span>
-                    <span className="font-medium ml-1">
+                    <span className="text-gray-600 dark:text-gray-400">Date:</span>
+                    <span className="font-medium ml-1 text-gray-900 dark:text-gray-100">
                       {new Date(summaryData.completedAt).toLocaleDateString()} at {new Date(summaryData.completedAt).toLocaleTimeString()}
                     </span>
                   </div>
@@ -431,15 +431,15 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
 
               {/* Images section - moved up */}
               {showImages && Object.keys(summaryData.images).length > 0 && (
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <h3 className="font-semibold text-xs text-gray-700 mb-2">Inspection Images</h3>
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                  <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-300 mb-2">Inspection Images</h3>
                   <div className="grid grid-cols-4 gap-2">
                     {Object.entries(summaryData.images).map(([camId, imagePath]) => (
                       <div key={camId} className="relative group cursor-pointer" onClick={() => setSelectedImage({ camId, path: imagePath })}>
                         <img 
                           src={`/api/image/${summaryData.hangarId}/${summaryData.sessionId}/${imagePath}`}
                           alt={`Camera ${camId}`}
-                          className="w-full h-20 object-cover rounded border border-gray-200 hover:border-blue-400 transition-colors"
+                          className="w-full h-20 object-cover rounded border border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 transition-colors"
                         />
                         <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-1 py-0.5 rounded-b">
                           {camId}
@@ -453,8 +453,8 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
               {/* Compact Tasks Summary */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-xs text-gray-700">Tasks Summary</h3>
-                  <span className="text-xs text-gray-500">
+                  <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-300">Tasks Summary</h3>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {summaryData.tasks.filter(t => t.status === 'completed').length}/{summaryData.tasks.length} completed
                   </span>
                 </div>
@@ -470,16 +470,16 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                       {/* Failed tasks */}
                       {failedTasks.length > 0 && (
                         <div className="mb-3">
-                          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                            <h4 className="text-xs font-semibold text-red-900 mb-2">Failed Tasks ({failedTasks.length})</h4>
+                          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-600 rounded-lg p-3">
+                            <h4 className="text-xs font-semibold text-red-900 dark:text-red-400 mb-2">Failed Tasks ({failedTasks.length})</h4>
                             <div className="space-y-1">
                               {failedTasks.map(task => (
                                 <div key={task.id} className="flex items-start gap-2">
-                                  <X className="w-3 h-3 text-red-600 mt-0.5 flex-shrink-0" />
+                                  <X className="w-3 h-3 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
                                   <div className="flex-1">
-                                    <div className="text-xs font-medium text-red-800">{task.title}</div>
+                                    <div className="text-xs font-medium text-red-800 dark:text-red-200">{task.title}</div>
                                     {task.notes && (
-                                      <div className="text-xs text-red-600 mt-0.5">→ {task.notes}</div>
+                                      <div className="text-xs text-red-600 dark:text-red-400 mt-0.5">→ {task.notes}</div>
                                     )}
                                   </div>
                                 </div>
@@ -492,16 +492,16 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                       {/* Skipped/N/A tasks */}
                       {skippedTasks.length > 0 && (
                         <div className="mb-3">
-                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                            <h4 className="text-xs font-semibold text-yellow-900 mb-2">N/A Tasks ({skippedTasks.length})</h4>
+                          <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-600 rounded-lg p-3">
+                            <h4 className="text-xs font-semibold text-yellow-900 dark:text-yellow-400 mb-2">N/A Tasks ({skippedTasks.length})</h4>
                             <div className="space-y-1">
                               {skippedTasks.map(task => (
                                 <div key={task.id} className="flex items-start gap-2">
-                                  <AlertTriangle className="w-3 h-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                  <AlertTriangle className="w-3 h-3 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
                                   <div className="flex-1">
-                                    <div className="text-xs font-medium text-yellow-800">{task.title}</div>
+                                    <div className="text-xs font-medium text-yellow-800 dark:text-yellow-200">{task.title}</div>
                                     {task.notes && (
-                                      <div className="text-xs text-yellow-600 mt-0.5">→ {task.notes}</div>
+                                      <div className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">→ {task.notes}</div>
                                     )}
                                   </div>
                                 </div>
@@ -514,12 +514,12 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                       {/* Passed tasks in compact 2-column grid */}
                       {passedTasks.length > 0 && (
                         <div>
-                          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-600 rounded-lg p-3">
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-xs font-semibold text-green-900">Passed Tasks ({passedTasks.length})</h4>
+                              <h4 className="text-xs font-semibold text-green-900 dark:text-green-400">Passed Tasks ({passedTasks.length})</h4>
                               <button
                                 onClick={() => setExpandedTasks(!expandedTasks)}
-                                className="text-xs text-green-700 hover:text-green-800"
+                                className="text-xs text-green-700 dark:text-green-300 hover:text-green-800 dark:hover:text-green-200"
                               >
                                 {expandedTasks ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                               </button>
@@ -528,11 +528,11 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                               <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                                 {passedTasks.map(task => (
                                   <div key={task.id} className="flex items-start gap-1">
-                                    <Check className="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <Check className="w-3 h-3 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                                     <div className="flex-1">
-                                      <div className="text-xs text-gray-700">{task.title}</div>
+                                      <div className="text-xs text-gray-700 dark:text-gray-300">{task.title}</div>
                                       {task.notes && (
-                                        <div className="text-xs text-gray-500 italic mt-0.5">→ {task.notes}</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 italic mt-0.5">→ {task.notes}</div>
                                       )}
                                     </div>
                                   </div>
@@ -567,9 +567,9 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
             <div className="absolute top-2 right-2">
               <button
                 onClick={() => setSelectedImage(null)}
-                className="bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-colors"
+                className="bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-full p-2 shadow-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-700" />
+                <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
               </button>
             </div>
             <div className="absolute bottom-2 left-2 bg-black/70 text-white px-3 py-1 rounded-lg">

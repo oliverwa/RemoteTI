@@ -51,22 +51,22 @@ export const CameraCalibrationSelectionModal: React.FC<CameraCalibrationSelectio
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-6 w-[600px] max-w-full mx-4">
-        <h2 className="text-lg font-semibold mb-4">🎯 Select Camera to Calibrate</h2>
-        <p className="text-sm text-gray-600 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[600px] max-w-full mx-4">
+        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">🎯 Select Camera to Calibrate</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           Choose which hangar and camera you want to calibrate against the Mölndal baseline.
         </p>
 
         <div className="space-y-4">
           {/* Hangar Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Hangar:
             </label>
             <select
               value={calibrateHangar}
               onChange={(e) => setCalibrateHangar(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               <option value="">Choose a hangar...</option>
               {HANGARS.map((hangar) => (
@@ -79,13 +79,13 @@ export const CameraCalibrationSelectionModal: React.FC<CameraCalibrationSelectio
 
           {/* Camera Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Select Camera:
             </label>
             <select
               value={calibrateCamera}
               onChange={(e) => setCalibrateCamera(parseInt(e.target.value))}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             >
               {cameras.map((camera, index) => (
                 <option key={camera.id} value={index}>
@@ -107,7 +107,7 @@ export const CameraCalibrationSelectionModal: React.FC<CameraCalibrationSelectio
           <Button
             onClick={onStartCalibration}
             disabled={!calibrateHangar}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Start Calibration
           </Button>
@@ -163,18 +163,18 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-lg p-4 w-[1100px] max-w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-2">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 w-[1100px] max-w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
           🎯 Camera Calibration - {selectedCamera?.name || 'Camera'} in {selectedHangar?.label || 'Hangar'}
         </h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Align the {selectedHangar?.label || 'hangar'} image with the Mölndal baseline. Drag to pan or use controls.
         </p>
 
         {loadingImages ? (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="text-sm text-gray-600 mt-4">Loading images...</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">Loading images...</p>
           </div>
         ) : molndalImage && hangarImage ? (
           <div className="space-y-6">
@@ -183,7 +183,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
               {/* Image Comparison */}
               <div className="col-span-3">
                 <div 
-                  className="relative bg-black rounded overflow-hidden border-2 border-gray-300" 
+                  className="relative bg-black rounded overflow-hidden border-2 border-gray-300 dark:border-gray-600" 
                   style={{ height: '500px' }}
                   onMouseDown={handleMouseDown}
                 >
@@ -216,7 +216,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
                 
                 {/* Instructions */}
                 <div className="mt-3 text-center">
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
                     <span className="font-medium">Drag to pan</span> • 
                     <span className="font-medium"> Use sliders for precision</span> • 
                     <span className="font-medium"> Gray = Baseline</span> • 
@@ -229,7 +229,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
               <div className="space-y-4">
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium mb-1">🔍 Opacity</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-300">🔍 Opacity</label>
                     <input
                       type="range"
                       min="10"
@@ -244,7 +244,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium mb-1">📐 Scale</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-300">📐 Scale</label>
                     <input
                       type="range"
                       min="0.5"
@@ -260,7 +260,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium mb-1">🔄 Rotation</label>
+                    <label className="block text-xs font-medium mb-1 text-gray-700 dark:text-gray-300">🔄 Rotation</label>
                     <input
                       type="range"
                       min="-10"
@@ -277,7 +277,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="space-y-2 pt-4 border-t">
+                <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-600">
                   <Button
                     variant="outline"
                     onClick={onClose}
@@ -287,7 +287,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
                   </Button>
                   <Button
                     onClick={onSave}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-xs py-1"
+                    className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-xs py-1"
                   >
                     💾 Save Calibration
                   </Button>
@@ -297,7 +297,7 @@ export const CameraCalibrationModal: React.FC<CameraCalibrationModalProps> = ({
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-500">No images available for calibration</p>
+            <p className="text-gray-500 dark:text-gray-400">No images available for calibration</p>
           </div>
         )}
       </div>

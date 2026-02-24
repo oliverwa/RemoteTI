@@ -56,7 +56,7 @@ const KPITimeline: React.FC<KPITimelineProps> = ({
   return (
     <div className="relative">
       {/* Timeline bar */}
-      <div className="relative h-8 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 shadow-inner">
+      <div className="relative h-8 bg-slate-100 dark:bg-gray-600 rounded-lg overflow-hidden border border-slate-200 dark:border-gray-500 shadow-inner">
           
         {/* Phase 1: Alarm to Takeoff */}
         {alarm > 0 && (

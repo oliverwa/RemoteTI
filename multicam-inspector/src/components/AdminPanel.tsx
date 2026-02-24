@@ -19,7 +19,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
           <div className="p-6 flex justify-between items-center">
@@ -43,8 +43,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 onClick={() => setActiveTab('users')}
                 className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
                   activeTab === 'users'
-                    ? 'bg-white text-blue-700'
-                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10 dark:hover:bg-gray-700/20'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -54,8 +54,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 onClick={() => setActiveTab('hangars')}
                 className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
                   activeTab === 'hangars'
-                    ? 'bg-white text-blue-700'
-                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10 dark:hover:bg-gray-700/20'
                 }`}
               >
                 <MapPin className="w-4 h-4" />
@@ -65,8 +65,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 onClick={() => setActiveTab('drones')}
                 className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
                   activeTab === 'drones'
-                    ? 'bg-white text-blue-700'
-                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10 dark:hover:bg-gray-700/20'
                 }`}
               >
                 <Plane className="w-4 h-4" />
@@ -76,8 +76,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 onClick={() => setActiveTab('templates')}
                 className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
                   activeTab === 'templates'
-                    ? 'bg-white text-blue-700'
-                    : 'text-blue-200 hover:text-white hover:bg-white/10'
+                    ? 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10 dark:hover:bg-gray-700/20'
                 }`}
               >
                 <FileText className="w-4 h-4" />

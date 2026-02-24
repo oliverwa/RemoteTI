@@ -320,7 +320,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
   };
 
   return (
-    <div className="bg-white p-8">
+    <div className="bg-white dark:bg-gray-800 p-8">
       {/* Header with close button */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -330,17 +330,17 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           </div>
           <div>
-            <h2 className="text-3xl font-semibold">Telemetry Data Analysis</h2>
-            <p className="text-gray-500 text-sm mt-1">Analyzing flight data for {droneId}</p>
+            <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Telemetry Data Analysis</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Analyzing flight data for {droneId}</p>
           </div>
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="Close"
           >
-            <X className="w-5 h-5 text-gray-400" />
+            <X className="w-5 h-5 text-gray-400 dark:text-gray-300" />
           </button>
         )}
       </div>
@@ -348,18 +348,18 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
       {/* File Selection/Confirmation Stage */}
       {(stage === 'selecting' || stage === 'confirming') && (
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
+          <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-600 rounded-lg p-4">
+            <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-900 dark:text-gray-100">
               <FileText className="w-5 h-5" />
               {stage === 'confirming' ? 'Confirm Telemetry File' : 'Select Telemetry File'}
             </h3>
             
             {stage === 'confirming' && (
-              <div className="mb-4 p-3 bg-white rounded border border-blue-300">
+              <div className="mb-4 p-3 bg-white dark:bg-gray-700 rounded border border-blue-300 dark:border-blue-600">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">{selectedFile?.filename}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{selectedFile?.filename}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {selectedFile && formatTimestamp(selectedFile.timestamp)} • {selectedFile?.size}
                     </p>
                   </div>
@@ -389,15 +389,15 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                     key={file.id}
                     className={`p-3 rounded border cursor-pointer transition-colors ${
                       selectedFile?.id === file.id 
-                        ? 'bg-blue-100 border-blue-400' 
-                        : 'bg-white border-gray-300 hover:border-blue-300'
+                        ? 'bg-blue-100 dark:bg-blue-900 border-blue-400 dark:border-blue-600' 
+                        : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600'
                     }`}
                     onClick={() => setSelectedFile(file)}
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-medium">{file.filename}</p>
-                        <p className="text-sm text-gray-600">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.filename}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           {formatTimestamp(file.timestamp)} • {file.size}
                         </p>
                       </div>
@@ -433,17 +433,17 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
             <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
               <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">Analyzing Telemetry Data</h3>
-            <p className="text-gray-600 mb-4">Extracting and validating flight parameters...</p>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Analyzing Telemetry Data</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Extracting and validating flight parameters...</p>
             
             <div className="w-full max-w-md mx-auto">
-              <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
                 <div 
                   className="bg-blue-600 h-full transition-all duration-300"
                   style={{ width: `${analysisProgress}%` }}
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-600">{analysisProgress}% Complete</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{analysisProgress}% Complete</p>
             </div>
           </div>
         </div>
@@ -455,45 +455,45 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
           {/* Summary Stats */}
           <div className="flex gap-8 justify-center mb-8">
             <div className="text-center">
-              <p className="text-4xl font-bold">{results.summary.totalChecks}</p>
-              <p className="text-sm text-gray-500 mt-1">Checks</p>
+              <p className="text-4xl font-bold text-gray-900 dark:text-gray-100">{results.summary.totalChecks}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Checks</p>
             </div>
             <div className="text-center">
               <p className="text-4xl font-bold text-green-500">{results.summary.passed}</p>
-              <p className="text-sm text-gray-500 mt-1">Passed</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Passed</p>
             </div>
             <div className="text-center">
               <p className="text-4xl font-bold text-yellow-500">{results.summary.warnings}</p>
-              <p className="text-sm text-gray-500 mt-1">Warnings</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Warnings</p>
             </div>
             <div className="text-center">
               <p className="text-4xl font-bold text-red-500">{results.summary.failed}</p>
-              <p className="text-sm text-gray-500 mt-1">Failed</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Failed</p>
             </div>
           </div>
 
           {/* Flight Mission Details */}
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-6">Flight Mission Details</h3>
+            <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-gray-100">Flight Mission Details</h3>
             <div className="grid grid-cols-4 gap-8">
               <div>
-                <p className="text-sm text-gray-500 mb-1">Total Flight Time:</p>
-                <p className="text-lg font-semibold">{results.flightData.flightTime}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Flight Time:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.flightTime}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Max Altitude:</p>
-                <p className="text-lg font-semibold">{results.flightData.maxAltitude}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Max Altitude:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.maxAltitude}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Delivery Time:</p>
-                <p className="text-lg font-semibold">{results.flightData.deliveryTime}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Delivery Time:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.deliveryTime}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Battery Used:</p>
-                <p className="text-lg font-semibold">{results.flightData.batteryUsed}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Battery Used:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.batteryUsed}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Status:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status:</p>
                 <p className={`text-lg font-semibold ${
                   results.flightData.completionStatus === 'completed' ? 'text-green-500' : 
                   results.flightData.completionStatus === 'aborted' ? 'text-red-500' : 'text-yellow-500'
@@ -502,16 +502,16 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Weather:</p>
-                <p className="text-lg font-semibold">{results.flightData.weatherConditions}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Weather:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.weatherConditions}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Total Distance:</p>
-                <p className="text-lg font-semibold">{results.flightData.totalDistance}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Distance:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.totalDistance}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 mb-1">Abnormal Events:</p>
-                <p className="text-lg font-semibold">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Abnormal Events:</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {results.flightData.abnormalEvents.length > 0 
                     ? results.flightData.abnormalEvents.join(', ') 
                     : 'None'}
@@ -522,23 +522,23 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
 
           {/* Detailed Analysis */}
           <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-6">Detailed Analysis</h3>
+            <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-gray-100">Detailed Analysis</h3>
             <div className="space-y-3">
               {results.metrics.map((metric, idx) => (
                 <div 
                   key={idx}
-                  className={`flex items-center justify-between p-4 rounded-lg ${getStatusColor(metric.status)}`}
+                  className={`flex items-center justify-between p-4 rounded-lg ${getStatusColor(metric.status).replace('bg-green-50', 'bg-green-50 dark:bg-green-900').replace('bg-red-50', 'bg-red-50 dark:bg-red-900').replace('bg-yellow-50', 'bg-yellow-50 dark:bg-yellow-900')}`}
                 >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(metric.status)}
-                    <span className="font-medium text-gray-700">{metric.name}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">{metric.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-semibold">
+                    <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {metric.value}
                     </span>
                     {metric.unit && (
-                      <span className="ml-2 text-gray-500">
+                      <span className="ml-2 text-gray-500 dark:text-gray-400">
                         {metric.unit}
                       </span>
                     )}
@@ -550,13 +550,13 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
 
           {/* Action Buttons */}
           {!viewOnly && (
-            <div className="flex justify-between items-center pt-4 border-t">
+            <div className="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-600">
               <div>
                 {results.summary.warnings > 0 && onRequestOnsite && (
                   <Button 
                     variant="outline"
                     onClick={() => onRequestOnsite?.(results)}
-                    className="border-yellow-500 text-yellow-600 hover:bg-yellow-50"
+                    className="border-yellow-500 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900"
                   >
                     <Wrench className="w-4 h-4 mr-2" />
                     Request Onsite Inspection
@@ -586,7 +586,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
             </div>
           )}
           {viewOnly && (
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-600">
               <Button
                 onClick={() => onClose?.()}
                 variant="outline"

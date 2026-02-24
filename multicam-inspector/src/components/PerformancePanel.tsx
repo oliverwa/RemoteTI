@@ -22,12 +22,12 @@ interface PerformancePanelProps {
 const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) => {
   if (!performanceData) {
     return (
-      <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Gauge className="w-4 h-4 text-gray-400" />
-          <h3 className="font-medium text-sm text-gray-700">Performance Metrics</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-300">Performance Metrics</h3>
         </div>
-        <p className="text-xs text-gray-500">No performance data available</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400">No performance data available</p>
       </div>
     );
   }
@@ -103,16 +103,16 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
   const vibStatus = getVibrationStatus();
 
   return (
-    <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Gauge className="w-4 h-4 text-purple-600" />
-          <h3 className="font-medium text-sm text-gray-700">Performance Metrics</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-300">Performance Metrics</h3>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg p-3 space-y-3">
+      <div className="bg-white dark:bg-gray-700 rounded-lg p-3 space-y-3">
         {/* Power & Thrust Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {/* Average Current Out */}
@@ -121,8 +121,8 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
               <Zap className="w-3 h-3 text-yellow-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Current WP Out</p>
-              <p className="text-sm font-semibold text-gray-900">{formatCurrent(performanceData.averageCurrentWPOut)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Current WP Out</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrent(performanceData.averageCurrentWPOut)}</p>
             </div>
           </div>
 
@@ -132,8 +132,8 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
               <Zap className="w-3 h-3 text-yellow-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Current WP Home</p>
-              <p className="text-sm font-semibold text-gray-900">{formatCurrent(performanceData.averageCurrentWPHome)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Current WP Home</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatCurrent(performanceData.averageCurrentWPHome)}</p>
             </div>
           </div>
 
@@ -143,16 +143,16 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
               <TrendingUp className="w-3 h-3 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Thrust to Hover</p>
-              <p className="text-sm font-semibold text-gray-900">{formatThrust(performanceData.thrustToHover)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Thrust to Hover</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{formatThrust(performanceData.thrustToHover)}</p>
             </div>
           </div>
         </div>
 
         {/* Vibration Metrics */}
-        <div className="border-t pt-3">
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-medium text-gray-600 flex items-center gap-1">
+            <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 flex items-center gap-1">
               <Activity className="w-3 h-3" />
               Vibration Levels
             </h4>
@@ -163,39 +163,39 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
           
           <div className="grid grid-cols-2 gap-3">
             {/* Average Vibrations */}
-            <div className="bg-gray-50 rounded p-2">
-              <p className="text-xs text-gray-500 mb-1">Average</p>
+            <div className="bg-gray-50 dark:bg-gray-600 rounded p-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Average</p>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-400">X:</span>
-                  <span className="ml-1 font-medium">{formatVibration(performanceData.avgVibX)}</span>
+                  <span className="text-gray-400 dark:text-gray-500">X:</span>
+                  <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{formatVibration(performanceData.avgVibX)}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Y:</span>
-                  <span className="ml-1 font-medium">{formatVibration(performanceData.avgVibY)}</span>
+                  <span className="text-gray-400 dark:text-gray-500">Y:</span>
+                  <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{formatVibration(performanceData.avgVibY)}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Z:</span>
-                  <span className="ml-1 font-medium">{formatVibration(performanceData.avgVibZ)}</span>
+                  <span className="text-gray-400 dark:text-gray-500">Z:</span>
+                  <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{formatVibration(performanceData.avgVibZ)}</span>
                 </div>
               </div>
             </div>
 
             {/* Max Vibrations */}
-            <div className="bg-gray-50 rounded p-2">
-              <p className="text-xs text-gray-500 mb-1">Maximum</p>
+            <div className="bg-gray-50 dark:bg-gray-600 rounded p-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Maximum</p>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
-                  <span className="text-gray-400">X:</span>
-                  <span className="ml-1 font-medium">{formatVibration(performanceData.maxVibX)}</span>
+                  <span className="text-gray-400 dark:text-gray-500">X:</span>
+                  <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{formatVibration(performanceData.maxVibX)}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Y:</span>
-                  <span className="ml-1 font-medium">{formatVibration(performanceData.maxVibY)}</span>
+                  <span className="text-gray-400 dark:text-gray-500">Y:</span>
+                  <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{formatVibration(performanceData.maxVibY)}</span>
                 </div>
                 <div>
-                  <span className="text-gray-400">Z:</span>
-                  <span className="ml-1 font-medium">{formatVibration(performanceData.maxVibZ)}</span>
+                  <span className="text-gray-400 dark:text-gray-500">Z:</span>
+                  <span className="ml-1 font-medium text-gray-900 dark:text-gray-100">{formatVibration(performanceData.maxVibZ)}</span>
                 </div>
               </div>
             </div>
@@ -204,10 +204,10 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
 
         {/* Realsense Calibration Chart */}
         {calibrationData.length > 0 && (
-          <div className="border-t pt-2">
-            <h4 className="text-xs font-medium text-gray-600 mb-1">RealSense Calibration</h4>
+          <div className="border-t border-gray-200 dark:border-gray-600 pt-2">
+            <h4 className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">RealSense Calibration</h4>
             <div style={{ width: '160px', height: '160px' }} className="mx-auto">
-              <div className="h-full bg-gray-50 rounded p-1">
+              <div className="h-full bg-gray-50 dark:bg-gray-600 rounded p-1">
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 10, bottom: 30, left: 30 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -240,10 +240,10 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
                         if (!active || !payload?.[0]) return null;
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-white p-2 border rounded shadow text-xs">
-                            <p className="font-semibold">Calibration Point {data.index}</p>
-                            <p>Expected: {data.expected?.toFixed(2)}m</p>
-                            <p>Measured: {data.measured?.toFixed(2)}m</p>
+                          <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-600 rounded shadow text-xs">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">Calibration Point {data.index}</p>
+                            <p className="text-gray-700 dark:text-gray-300">Expected: {data.expected?.toFixed(2)}m</p>
+                            <p className="text-gray-700 dark:text-gray-300">Measured: {data.measured?.toFixed(2)}m</p>
                             <p className={`font-medium ${data.error < 1 ? 'text-green-600' : data.error < 3 ? 'text-yellow-600' : 'text-red-600'}`}>
                               Error: {data.error?.toFixed(2)}m
                             </p>
@@ -278,8 +278,8 @@ const PerformancePanel: React.FC<PerformancePanelProps> = ({ performanceData }) 
             
             {/* Calibration Summary */}
             <div className="mt-2 flex items-center justify-between text-xs">
-              <span className="text-gray-500">Calibration Points: {calibrationData.length}</span>
-              <span className="text-gray-500">
+              <span className="text-gray-500 dark:text-gray-400">Calibration Points: {calibrationData.length}</span>
+              <span className="text-gray-500 dark:text-gray-400">
                 Avg Error: {calibrationData.length > 0 ? (calibrationData.reduce((sum, d) => sum + d.error, 0) / calibrationData.length).toFixed(2) : '0.00'}m
               </span>
             </div>

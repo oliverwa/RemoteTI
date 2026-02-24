@@ -591,24 +591,24 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-[95vw] h-[95vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-[95vw] h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="border-b">
+        <div className="border-b border-gray-200 dark:border-gray-600">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
-              <h2 className="text-2xl font-bold flex items-center gap-2">
+              <h2 className="text-2xl font-bold flex items-center gap-2 text-gray-900 dark:text-gray-100">
                 <Activity className="w-6 h-6" />
                 Telemetry Analysis
               </h2>
               {/* View mode toggle */}
               {flights.length > 0 && (
-                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('summary')}
                     className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-sm font-medium transition-all ${
                       viewMode === 'summary' 
-                        ? 'bg-white text-blue-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' 
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <LayoutGrid className="w-4 h-4" />
@@ -618,8 +618,8 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     onClick={() => setViewMode('detail')}
                     className={`px-3 py-1.5 rounded flex items-center gap-1.5 text-sm font-medium transition-all ${
                       viewMode === 'detail' 
-                        ? 'bg-white text-blue-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' 
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                     }`}
                   >
                     <FileText className="w-4 h-4" />
@@ -630,9 +630,9 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
           </div>
           {/* Inline Filters */}
@@ -651,7 +651,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
         {/* Content */}
         <div className="flex flex-1 overflow-hidden">
           {/* Sidebar - Flight List */}
-          <div className="w-80 border-r bg-gray-50 p-4 overflow-y-auto">
+          <div className="w-80 border-r border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 p-4 overflow-y-auto">
             {/* Upload Controls */}
             <div className="mb-4 space-y-2">
               <input
@@ -674,22 +674,22 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
             
             {/* Flight List */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Flights ({filteredFlights.length} of {flights.length})
               </h3>
               {filteredFlights.map(flight => (
                 <div 
                   key={flight.id} 
-                  className={`bg-white rounded-md p-2 border cursor-pointer transition-all ${
-                    selectedFlight === flight.id ? 'border-blue-500 shadow-md bg-blue-50' : 'hover:border-gray-300'
+                  className={`bg-white dark:bg-gray-700 rounded-md p-2 border border-gray-200 dark:border-gray-600 cursor-pointer transition-all ${
+                    selectedFlight === flight.id ? 'border-blue-500 shadow-md bg-blue-50 dark:bg-blue-900' : 'hover:border-gray-300 dark:hover:border-gray-500'
                   }`}
                   onClick={() => setSelectedFlight(flight.id)}
                 >
                   {/* Header with drone, date, and status */}
                   <div className="flex items-center justify-between mb-0.5">
                     <div className="flex items-center gap-1.5 flex-1">
-                      <span className="font-semibold text-xs">{flight.droneName}</span>
-                      <span className="text-xs text-gray-500">• {flight.date}</span>
+                      <span className="font-semibold text-xs text-gray-900 dark:text-gray-100">{flight.droneName}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">• {flight.date}</span>
                     </div>
                     <span className={`px-1 py-0.5 rounded text-xs font-medium ${
                       flight.completionStatus === 'normal' || flight.completionStatus === 'complete'
@@ -705,36 +705,36 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </div>
                   
                   {/* Alarm type */}
-                  <div className="text-xs text-gray-600 mb-1">
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">
                     <span className="font-medium">{flight.alarmType}</span>
                   </div>
                   
                   {/* Four KPIs in compact grid with color coding */}
                   <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
                     <div className="flex items-center gap-0.5">
-                      <Zap className="w-2.5 h-2.5 text-gray-400" />
-                      <span className="text-gray-500 text-xs">A→T:</span>
+                      <Zap className="w-2.5 h-2.5 text-gray-400 dark:text-gray-500" />
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">A→T:</span>
                       <span className={`font-semibold ${getKPIColor('alarmToTakeoff', flight.alarmToTakeoffTime, 'text')}`}>
                         {formatDuration(flight.alarmToTakeoffTime)}
                       </span>
                     </div>
                     <div className="flex items-center gap-0.5">
-                      <Pause className="w-2.5 h-2.5 text-gray-400" />
-                      <span className="text-gray-500 text-xs">Wait:</span>
+                      <Pause className="w-2.5 h-2.5 text-gray-400 dark:text-gray-500" />
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">Wait:</span>
                       <span className={`font-semibold ${getKPIColor('awaitingClearance', flight.awaitingClearanceTime, 'text')}`}>
                         {formatDuration(flight.awaitingClearanceTime)}
                       </span>
                     </div>
                     <div className="flex items-center gap-0.5">
-                      <Activity className="w-2.5 h-2.5 text-gray-400" />
-                      <span className="text-gray-500 text-xs">WP:</span>
+                      <Activity className="w-2.5 h-2.5 text-gray-400 dark:text-gray-500" />
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">WP:</span>
                       <span className={`font-semibold ${getKPIColor('wpOut', flight.wpOutCalibratedTime, 'text')}`}>
                         {formatDuration(flight.wpOutCalibratedTime)}
                       </span>
                     </div>
                     <div className="flex items-center gap-0.5">
-                      <MapPin className="w-2.5 h-2.5 text-gray-400" />
-                      <span className="text-gray-500 text-xs">Del:</span>
+                      <MapPin className="w-2.5 h-2.5 text-gray-400 dark:text-gray-500" />
+                      <span className="text-gray-500 dark:text-gray-400 text-xs">Del:</span>
                       <span className={`font-semibold ${getKPIColor('delivery', flight.calibratedDeliveryTime, 'text')}`}>
                         {formatDuration(flight.calibratedDeliveryTime)}
                       </span>
@@ -754,7 +754,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
               ))}
               {flights.length === 0 && (
-                <div className="text-center text-gray-500 text-sm py-8">
+                <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
                   No flights loaded. Upload JSON files to begin analysis.
                 </div>
               )}
@@ -777,16 +777,16 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
               <div className="space-y-6">
                 {/* Simplified Header */}
                 <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-gray-800">{selectedFlightData.droneName}</h3>
-                  <p className="text-sm text-gray-500 mt-1">Date: {selectedFlightData.date} · File: {selectedFlightData.fileName}</p>
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-100">{selectedFlightData.droneName}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Date: {selectedFlightData.date} · File: {selectedFlightData.fileName}</p>
                 </div>
 
                 {/* PRIMARY METRICS SECTION - Mission Critical KPIs */}
-                <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-6 mb-6 shadow-sm">
+                <div className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-900 dark:to-gray-800 border border-blue-200 dark:border-blue-600 rounded-xl p-6 mb-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-5">
                     <Activity className="w-6 h-6 text-blue-600" />
-                    <h3 className="text-lg font-semibold text-blue-900">Mission Performance Indicators</h3>
-                    <span className="ml-auto text-sm px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full font-medium">PRIMARY</span>
+                    <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100">Mission Performance Indicators</h3>
+                    <span className="ml-auto text-sm px-3 py-1.5 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full font-medium">PRIMARY</span>
                   </div>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedDropTime > 0 ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-4`}>
                     <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
@@ -871,40 +871,40 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* FLIGHT STATISTICS SECTION */}
-                <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-5 mb-6 shadow-sm">
+                <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl p-5 mb-6 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
-                    <Clock className="w-5 h-5 text-gray-600" />
-                    <h3 className="text-base font-semibold text-gray-800">Flight Statistics</h3>
+                    <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Flight Statistics</h3>
                   </div>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-4`}>
-                  <div className="bg-gray-50 rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm">Flight Duration</span>
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {formatDuration(selectedFlightData.flightDuration)}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <Battery className="w-4 h-4" />
                       <span className="text-sm">Battery Used</span>
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {selectedFlightData.batteryUsed > 0 
                         ? `${selectedFlightData.batteryUsed}%` 
                         : 'No data'}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <MapPin className="w-4 h-4" />
                       <span className="text-sm">Alarm Distance</span>
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {formatDistance(selectedFlightData.alarmDistance)}
                     </div>
                   </div>
@@ -922,18 +922,18 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     </div>
                   )}
 
-                  <div className="bg-gray-50 rounded-lg border p-4">
-                    <div className="flex items-center gap-2 text-gray-500 mb-2">
+                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <AlertCircle className="w-4 h-4" />
                       <span className="text-sm">Alarm Type</span>
                     </div>
-                    <div className="text-2xl font-bold capitalize">
+                    <div className="text-2xl font-bold capitalize text-gray-900 dark:text-gray-100">
                       {selectedFlightData.alarmType}
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-lg border p-3">
-                    <div className="flex items-center gap-2 text-gray-500 mb-1">
+                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-3">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
                       {selectedFlightData.completionStatus === 'normal' ? (
                         <CheckCircle className="w-3 h-3 text-green-600" />
                       ) : selectedFlightData.completionStatus === 'complete' ? (
@@ -1076,7 +1076,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 })()}
 
                 {/* Raw Data Toggle */}
-                <div className="border-t pt-4">
+                <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
                   <Button
                     onClick={() => setShowRawData(!showRawData)}
                     variant="outline"
@@ -1086,7 +1086,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                   </Button>
                   
                   {showRawData && (
-                    <div className="mt-4 bg-gray-900 text-gray-100 p-4 rounded-lg overflow-auto max-h-96">
+                    <div className="mt-4 bg-gray-900 dark:bg-gray-800 text-gray-100 dark:text-gray-200 p-4 rounded-lg overflow-auto max-h-96">
                       <pre className="text-xs">
                         {JSON.stringify(selectedFlightData.rawData, null, 2)}
                       </pre>
@@ -1095,15 +1095,15 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                 </div>
 
                 {/* Data Quality Notice */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-sm text-yellow-800">
+                <div className="bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 dark:border-yellow-600 rounded-lg p-4">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     <strong>Note:</strong> This simplified view shows only the most essential telemetry data. 
                     Some values may show "No data" if the information is not available in the uploaded file.
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
+              <div className="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
                 <div className="text-center">
                   <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Select a flight to view its telemetry data</p>

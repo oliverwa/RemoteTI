@@ -83,12 +83,12 @@ const BackendConnectionCheck: React.FC<BackendConnectionCheckProps> = ({ childre
       {/* Initial loading overlay - only shows during first check */}
       {isChecking && isConnected === null && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-xl border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-3">
               <Wifi className="w-6 h-6 text-blue-600 animate-pulse" />
               <div>
-                <p className="font-semibold text-gray-900">Connecting to Backend</p>
-                <p className="text-sm text-gray-600">Checking connection...</p>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">Connecting to Backend</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Checking connection...</p>
               </div>
             </div>
           </div>
@@ -136,10 +136,10 @@ const BackendConnectionCheck: React.FC<BackendConnectionCheckProps> = ({ childre
       {/* Small connection status indicator when connected - moved up to avoid overlap */}
       {isConnected && (
         <div className="fixed bottom-16 right-4 z-40">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/90 backdrop-blur-sm rounded-full shadow-sm border border-gray-200">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-sm border border-gray-200 dark:border-gray-600">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-gray-600">Backend Connected</span>
+              <span className="text-xs text-gray-600 dark:text-gray-200">Backend Connected</span>
             </div>
           </div>
         </div>

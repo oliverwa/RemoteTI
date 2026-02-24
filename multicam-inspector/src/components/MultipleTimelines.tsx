@@ -277,11 +277,11 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           {icon}
-          <h4 className="font-medium text-sm text-gray-700">{title}</h4>
-          <span className="text-xs text-gray-400">({events.length} events)</span>
+          <h4 className="font-medium text-sm text-gray-700 dark:text-gray-300">{title}</h4>
+          <span className="text-xs text-gray-400 dark:text-gray-500">({events.length} events)</span>
         </div>
         {/* Time labels */}
-        <div className="flex gap-4 text-xs text-gray-400">
+        <div className="flex gap-4 text-xs text-gray-400 dark:text-gray-500">
           <span>0:00</span>
           <span>{formatTime(flightDurationSeconds / 2)}</span>
           <span>{formatTime(flightDurationSeconds)}</span>
@@ -289,7 +289,7 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
       </div>
 
       {/* Timeline bar */}
-      <div className="relative h-2 bg-gray-100 rounded-full">
+      <div className="relative h-2 bg-gray-100 dark:bg-gray-600 rounded-full">
         <div className={`absolute inset-0 ${barColor} rounded-full opacity-10`}></div>
         
         {/* Event markers */}
@@ -306,12 +306,12 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
               {/* Marker dot with better hover */}
               <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm cursor-pointer transform -translate-x-1/2 transition-all group-hover:scale-150 group-hover:z-20 ${event.color}`}>
                 {/* Compact tooltip */}
-                <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white rounded px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg text-2xs" style={{ zIndex: 9999, minWidth: 'max-content' }}>
+                <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 bg-gray-900 dark:bg-gray-800 text-white dark:text-gray-200 rounded px-2 py-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none shadow-lg text-2xs" style={{ zIndex: 9999, minWidth: 'max-content' }}>
                   <div className="font-medium whitespace-nowrap">{event.label}</div>
-                  <div className="text-gray-400 text-3xs whitespace-nowrap">{timeStr}</div>
+                  <div className="text-gray-400 dark:text-gray-500 text-3xs whitespace-nowrap">{timeStr}</div>
                   {/* Small arrow */}
                   <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                    <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[3px] border-t-gray-900"></div>
+                    <div className="w-0 h-0 border-l-[3px] border-l-transparent border-r-[3px] border-r-transparent border-t-[3px] border-t-gray-900 dark:border-t-gray-800"></div>
                   </div>
                 </div>
               </div>
@@ -324,18 +324,18 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
   );
 
   return (
-    <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium text-sm flex items-center gap-2 text-gray-700">
+        <h3 className="font-medium text-sm flex items-center gap-2 text-gray-700 dark:text-gray-300">
           <Clock className="w-4 h-4" />
           Flight Timelines
         </h3>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           Duration: {formatTime(flightDurationSeconds)}
         </span>
       </div>
 
-      <div className="space-y-3 bg-white rounded-lg p-3">
+      <div className="space-y-3 bg-white dark:bg-gray-700 rounded-lg p-3">
         {/* Mission Timeline */}
         {renderTimeline(
           'Mission Events',
@@ -346,7 +346,7 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
 
         {/* Pilot Timeline (Camera Switches and Manual Control) */}
         {pilotEvents.length > 0 && (
-          <div className="border-t pt-3">
+          <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
             {renderTimeline(
               'Pilot Timeline',
               <User className="w-3 h-3 text-purple-600" />,
@@ -355,25 +355,25 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
               true // Show legend for pilot timeline
             )}
             {/* Legend for Pilot Timeline */}
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-700">
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-700 dark:text-gray-300">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-purple-600 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-purple-600 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">Manual Control</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-amber-500 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-amber-500 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">COLOR Camera</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-red-500 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-red-500 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">IR Camera</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-blue-500 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-blue-500 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">DOWN Camera</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-emerald-500 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-emerald-500 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">FRONT Camera</span>
               </div>
             </div>
@@ -382,7 +382,7 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
 
         {/* iPad Interactions Timeline */}
         {ipadEvents.length > 0 && (
-          <div className="border-t pt-3">
+          <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
             {renderTimeline(
               'iPad Interactions',
               <Tablet className="w-3 h-3 text-purple-600" />,
@@ -394,7 +394,7 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
         
         {/* Console Messages Timeline */}
         {consoleEvents.length > 0 && (
-          <div className="border-t pt-3">
+          <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
             {renderTimeline(
               'Console Messages',
               <Terminal className="w-3 h-3 text-gray-600" />,
@@ -403,20 +403,20 @@ const MultipleTimelines: React.FC<MultipleTimelinesProps> = ({
               true // Show legend
             )}
             {/* Legend for Console Messages */}
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-700">
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-700 dark:text-gray-300">
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-yellow-500 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-yellow-500 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">WARNING</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-red-600 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-red-600 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">SEVERE</span>
               </div>
               <div className="flex items-center gap-1">
-                <div className="w-3 h-3 rounded-full bg-orange-600 border border-gray-300"></div>
+                <div className="w-3 h-3 rounded-full bg-orange-600 border border-gray-300 dark:border-gray-600"></div>
                 <span className="font-medium">ERROR</span>
               </div>
-              <div className="text-xs text-gray-500 ml-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                 <AlertTriangle className="w-3 h-3 inline mr-1" />
                 Hover for full message
               </div>

@@ -267,9 +267,9 @@ const DronesManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Plane className="w-6 h-6 text-gray-600" />
-          <h3 className="text-xl font-semibold text-gray-800">Drone Fleet Management</h3>
-          <span className="text-gray-500 text-sm">({drones.length} drones)</span>
+          <Plane className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Drone Fleet Management</h3>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">({drones.length} drones)</span>
         </div>
         <button
           onClick={() => {
@@ -285,55 +285,55 @@ const DronesManagement: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-600 font-medium">Available</p>
-          <p className="text-2xl font-bold text-green-700">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+          <p className="text-sm text-green-600 dark:text-green-400 font-medium">Available</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300">
             {drones.filter(d => d.status === 'available').length}
           </p>
         </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-600 font-medium">Assigned</p>
-          <p className="text-2xl font-bold text-blue-700">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
+          <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Assigned</p>
+          <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
             {drones.filter(d => d.status === 'assigned').length}
           </p>
         </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-600 font-medium">Maintenance</p>
-          <p className="text-2xl font-bold text-yellow-700">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+          <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Maintenance</p>
+          <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
             {drones.filter(d => d.status === 'maintenance').length}
           </p>
         </div>
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <p className="text-sm text-gray-600 font-medium">Total Fleet</p>
-          <p className="text-2xl font-bold text-gray-700">{drones.length}</p>
+        <div className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Total Fleet</p>
+          <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{drones.length}</p>
         </div>
       </div>
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="text-gray-500">Loading drones...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading drones...</div>
         </div>
       ) : (
         /* Drones Table */
-        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Drone</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Location</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Drone</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current Location</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
               {drones.map(drone => (
-                <tr key={drone.id} className="hover:bg-gray-50">
+                <tr key={drone.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{drone.label}</div>
-                      <div className="text-xs text-gray-500">{drone.id}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">{drone.label}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">{drone.id}</div>
                       {drone.serialNumber && (
-                        <div className="text-xs text-gray-400">SN: {drone.serialNumber}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500">SN: {drone.serialNumber}</div>
                       )}
                     </div>
                   </td>
@@ -343,27 +343,27 @@ const DronesManagement: React.FC = () => {
                       {drone.status.charAt(0).toUpperCase() + drone.status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {drone.currentHangar ? (
-                      <span className="font-medium text-gray-700">
+                      <span className="font-medium text-gray-700 dark:text-gray-300">
                         {hangars.find(h => h.id === drone.currentHangar)?.label || drone.currentHangar}
                       </span>
                     ) : (
-                      <span className="text-gray-400 italic">Not assigned</span>
+                      <span className="text-gray-400 dark:text-gray-500 italic">Not assigned</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => openEditModal(drone)}
-                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                         title="Edit drone"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => openDeleteModal(drone)}
-                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                        className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                         title="Delete drone"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -380,16 +380,16 @@ const DronesManagement: React.FC = () => {
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Add New Drone</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Add New Drone</h3>
                 <button
                   onClick={() => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -397,44 +397,44 @@ const DronesManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Drone Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Drone Name</label>
                   <input
                     type="text"
                     value={formData.label}
                     onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter drone name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Serial Number</label>
                   <input
                     type="text"
                     value={formData.serialNumber}
                     onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter serial number (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
                   <input
                     type="text"
                     value={formData.model}
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Everdrone X1 (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as Drone['status'] })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="available">Available</option>
                     <option value="assigned">Assigned</option>
@@ -459,7 +459,7 @@ const DronesManagement: React.FC = () => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -480,17 +480,17 @@ const DronesManagement: React.FC = () => {
       {/* Edit Modal */}
       {showEditModal && selectedDrone && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Edit Drone</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Drone</h3>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     resetForm();
                     setSelectedDrone(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -498,43 +498,43 @@ const DronesManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Drone Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Drone Name</label>
                   <input
                     type="text"
                     value={formData.label}
                     onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Serial Number</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Serial Number</label>
                   <input
                     type="text"
                     value={formData.serialNumber}
                     onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter serial number (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Model</label>
                   <input
                     type="text"
                     value={formData.model}
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Everdrone X1 (optional)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as Drone['status'] })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="available">Available</option>
                     <option value="assigned">Assigned</option>
@@ -560,7 +560,7 @@ const DronesManagement: React.FC = () => {
                     resetForm();
                     setSelectedDrone(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -581,16 +581,16 @@ const DronesManagement: React.FC = () => {
       {/* Delete Modal */}
       {showDeleteModal && selectedDrone && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Delete Drone</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete Drone</h3>
                 <button
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedDrone(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -599,10 +599,10 @@ const DronesManagement: React.FC = () => {
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-3">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
-                  <p className="text-gray-900 font-medium">Are you sure you want to delete this drone?</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-medium">Are you sure you want to delete this drone?</p>
                 </div>
-                <p className="text-sm text-gray-600 ml-9">
-                  Drone: <span className="font-semibold text-gray-900">{selectedDrone.label}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400 ml-9">
+                  Drone: <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedDrone.label}</span>
                   {selectedDrone.serialNumber && <span> (SN: {selectedDrone.serialNumber})</span>}
                 </p>
                 <p className="text-sm text-red-600 ml-9 mt-2">
@@ -623,7 +623,7 @@ const DronesManagement: React.FC = () => {
                     setShowDeleteModal(false);
                     setSelectedDrone(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel

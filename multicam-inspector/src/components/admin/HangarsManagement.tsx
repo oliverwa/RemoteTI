@@ -321,9 +321,9 @@ const HangarsManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <MapPin className="w-6 h-6 text-gray-600" />
-          <h3 className="text-xl font-semibold text-gray-800">Hangar Management</h3>
-          <span className="text-gray-500 text-sm">({hangars.length} locations)</span>
+          <MapPin className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Hangar Management</h3>
+          <span className="text-gray-500 dark:text-gray-400 text-sm">({hangars.length} locations)</span>
         </div>
         <button
           onClick={() => {
@@ -339,21 +339,21 @@ const HangarsManagement: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-600 font-medium">Operational</p>
-          <p className="text-2xl font-bold text-green-700">
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
+          <p className="text-sm text-green-600 dark:text-green-400 font-medium">Operational</p>
+          <p className="text-2xl font-bold text-green-700 dark:text-green-300">
             {hangars.filter(h => h.status === 'operational').length}
           </p>
         </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-600 font-medium">Maintenance</p>
-          <p className="text-2xl font-bold text-yellow-700">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4">
+          <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Maintenance</p>
+          <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
             {hangars.filter(h => h.status === 'maintenance').length}
           </p>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <p className="text-sm text-orange-600 font-medium">Under Construction</p>
-          <p className="text-2xl font-bold text-orange-700">
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-4">
+          <p className="text-sm text-orange-600 dark:text-orange-400 font-medium">Under Construction</p>
+          <p className="text-2xl font-bold text-orange-700 dark:text-orange-300">
             {hangars.filter(h => h.status === 'construction').length}
           </p>
         </div>
@@ -361,7 +361,7 @@ const HangarsManagement: React.FC = () => {
 
       {loading ? (
         <div className="text-center py-8">
-          <div className="text-gray-500">Loading hangars...</div>
+          <div className="text-gray-500 dark:text-gray-400">Loading hangars...</div>
         </div>
       ) : (
         /* Hangars Grid */
@@ -369,27 +369,27 @@ const HangarsManagement: React.FC = () => {
           {hangars.map(hangar => (
             <div
               key={hangar.id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h4 className="font-semibold text-gray-900">{hangar.label}</h4>
-                  <p className="text-xs text-gray-500 mt-1">{hangar.id}</p>
+                  <h4 className="font-semibold text-gray-900 dark:text-gray-100">{hangar.label}</h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{hangar.id}</p>
                   {hangar.ipAddress && (
-                    <p className="text-sm font-mono text-gray-600 mt-1">IP: {hangar.ipAddress}</p>
+                    <p className="text-sm font-mono text-gray-600 dark:text-gray-400 mt-1">IP: {hangar.ipAddress}</p>
                   )}
                 </div>
                 <div className="flex gap-1">
                   <button
                     onClick={() => openEditModal(hangar)}
-                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                    className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
                     title="Edit hangar"
                   >
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => openDeleteModal(hangar)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                    className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
                     title="Delete hangar"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -399,7 +399,7 @@ const HangarsManagement: React.FC = () => {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Status:</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Status:</span>
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(hangar.status || 'operational')}`}>
                     {getStatusIcon(hangar.status || 'operational')}
                     {(hangar.status || 'operational').charAt(0).toUpperCase() + (hangar.status || 'operational').slice(1)}
@@ -408,8 +408,8 @@ const HangarsManagement: React.FC = () => {
 
                 {hangar.assignedDrone && (
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Drone:</span>
-                    <span className="text-sm font-medium text-blue-600">{hangar.assignedDrone}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Drone:</span>
+                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">{hangar.assignedDrone}</span>
                   </div>
                 )}
 
@@ -422,16 +422,16 @@ const HangarsManagement: React.FC = () => {
       {/* Add Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Add New Hangar</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Add New Hangar</h3>
                 <button
                   onClick={() => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -439,23 +439,23 @@ const HangarsManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hangar Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hangar Name</label>
                   <input
                     type="text"
                     value={formData.label}
                     onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter hangar name"
                   />
                 </div>
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as Hangar['status'] })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="operational">Operational</option>
                     <option value="maintenance">Maintenance</option>
@@ -464,23 +464,23 @@ const HangarsManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IP Address</label>
                   <input
                     type="text"
                     value={formData.ipAddress}
                     onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                     placeholder="e.g., 10.0.10.113"
                   />
                 </div>
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Drone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned Drone</label>
                   <select
                     value={formData.assignedDrone || ''}
                     onChange={(e) => setFormData({ ...formData, assignedDrone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">No drone assigned</option>
                     {drones.filter(drone => {
@@ -511,7 +511,7 @@ const HangarsManagement: React.FC = () => {
                     setShowAddModal(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -532,17 +532,17 @@ const HangarsManagement: React.FC = () => {
       {/* Edit Modal */}
       {showEditModal && selectedHangar && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Edit Hangar</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Hangar</h3>
                 <button
                   onClick={() => {
                     setShowEditModal(false);
                     resetForm();
                     setSelectedHangar(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -550,34 +550,34 @@ const HangarsManagement: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hangar ID</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hangar ID</label>
                   <input
                     type="text"
                     value={formData.id || selectedHangar.id}
                     onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                     placeholder="e.g., hangar_uddevalla_vpn"
                   />
                   <p className="text-xs text-gray-500 mt-1">Unique identifier used in system (be careful changing this)</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Hangar Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hangar Name</label>
                   <input
                     type="text"
                     value={formData.label}
                     onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value as Hangar['status'] })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="operational">Operational</option>
                     <option value="maintenance">Maintenance</option>
@@ -586,23 +586,23 @@ const HangarsManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">IP Address</label>
                   <input
                     type="text"
                     value={formData.ipAddress}
                     onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                     placeholder="e.g., 10.0.10.113"
                   />
                 </div>
 
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Drone</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assigned Drone</label>
                   <select
                     value={formData.assignedDrone || ''}
                     onChange={(e) => setFormData({ ...formData, assignedDrone: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">No drone assigned</option>
                     {drones.filter(drone => {
@@ -634,7 +634,7 @@ const HangarsManagement: React.FC = () => {
                     resetForm();
                     setSelectedHangar(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel
@@ -655,16 +655,16 @@ const HangarsManagement: React.FC = () => {
       {/* Delete Modal */}
       {showDeleteModal && selectedHangar && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Delete Hangar</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Delete Hangar</h3>
                 <button
                   onClick={() => {
                     setShowDeleteModal(false);
                     setSelectedHangar(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -673,10 +673,10 @@ const HangarsManagement: React.FC = () => {
               <div className="mb-6">
                 <div className="flex items-center gap-3 mb-3">
                   <AlertTriangle className="w-6 h-6 text-red-600" />
-                  <p className="text-gray-900 font-medium">Are you sure you want to delete this hangar?</p>
+                  <p className="text-gray-900 dark:text-gray-100 font-medium">Are you sure you want to delete this hangar?</p>
                 </div>
-                <p className="text-sm text-gray-600 ml-9">
-                  Hangar: <span className="font-semibold text-gray-900">{selectedHangar.label}</span>
+                <p className="text-sm text-gray-600 dark:text-gray-400 ml-9">
+                  Hangar: <span className="font-semibold text-gray-900 dark:text-gray-100">{selectedHangar.label}</span>
                   {selectedHangar.ipAddress && <span> (IP: {selectedHangar.ipAddress})</span>}
                 </p>
                 <p className="text-sm text-red-600 ml-9 mt-2">
@@ -697,7 +697,7 @@ const HangarsManagement: React.FC = () => {
                     setShowDeleteModal(false);
                     setSelectedHangar(null);
                   }}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
                   disabled={submitLoading}
                 >
                   Cancel

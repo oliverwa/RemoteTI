@@ -27,12 +27,12 @@ interface SpeedPanelProps {
 const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
   if (!speeds) {
     return (
-      <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg border border-gray-200 p-4 shadow-sm">
+      <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm">
         <div className="flex items-center gap-2 mb-3">
           <Gauge className="h-6 w-6 text-gray-400" />
-          <h3 className="font-semibold text-gray-900 text-lg">Speed Performance</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Speed Performance</h3>
         </div>
-        <p className="text-sm text-gray-500">No speed data available</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">No speed data available</p>
       </div>
     );
   }
@@ -60,13 +60,13 @@ const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
 
 
   return (
-    <div className="bg-gradient-to-br from-orange-50 to-white rounded-lg border border-orange-200 p-6 shadow-sm">
+    <div className="bg-gradient-to-br from-orange-50 to-white dark:from-orange-900 dark:to-gray-800 rounded-lg border border-orange-200 dark:border-orange-600 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Gauge className="h-6 w-6 text-orange-600" />
-          <h3 className="font-semibold text-gray-900 text-lg">Speed Performance</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Speed Performance</h3>
         </div>
-        <span className="text-sm px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full font-medium">
+        <span className="text-sm px-3 py-1.5 bg-orange-100 dark:bg-orange-800 text-orange-700 dark:text-orange-200 rounded-full font-medium">
           PRIMARY METRIC
         </span>
       </div>
@@ -161,7 +161,7 @@ const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
             </div>
             <p className={`text-xl font-bold ${getSpeedColor((speeds.averageSpeedDuringWPOut || speeds.outboundSpeed || 0) * 3.6)}`}>
               {((speeds.averageSpeedDuringWPOut || speeds.outboundSpeed || 0) * 3.6).toFixed(1)}
-              <span className="text-sm text-gray-500 ml-1">km/h</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">km/h</span>
             </p>
           </div>
           
@@ -172,7 +172,7 @@ const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
             </div>
             <p className={`text-xl font-bold ${getSpeedColor((speeds.averageSpeedDuringWPHome || 0) * 3.6)}`}>
               {((speeds.averageSpeedDuringWPHome || 0) * 3.6).toFixed(1)}
-              <span className="text-sm text-gray-500 ml-1">km/h</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">km/h</span>
             </p>
           </div>
           
@@ -183,7 +183,7 @@ const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
             </div>
             <p className={`text-xl font-bold ${getSpeedColor((speeds.maxSpeed || 0) * 3.6)}`}>
               {((speeds.maxSpeed || 0) * 3.6).toFixed(1)}
-              <span className="text-sm text-gray-500 ml-1">km/h</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">km/h</span>
             </p>
           </div>
         </div>
@@ -227,8 +227,8 @@ const SpeedPanel: React.FC<SpeedPanelProps> = ({ speeds, flightDuration }) => {
         {speeds.averageSpeedDuringWPHome && speeds.averageSpeedDuringWPOut && (
           <div className={`rounded-lg p-3 mt-3 border ${
             speeds.averageSpeedDuringWPHome > speeds.averageSpeedDuringWPOut 
-              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200' 
-              : 'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200'
+              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900 dark:to-indigo-900 border-blue-200 dark:border-blue-600' 
+              : 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900 dark:to-orange-900 border-amber-200 dark:border-amber-600'
           }`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
