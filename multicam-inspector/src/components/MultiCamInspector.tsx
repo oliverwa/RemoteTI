@@ -178,10 +178,8 @@ export default function MultiCamInspector({
   
   // Delayed display state
   const [pendingImages, setPendingImages] = useState<Map<string, string>>(new Map());
-  const [progressText, setProgressText] = useState("");
   const [isWaitingToDisplay, setIsWaitingToDisplay] = useState(false);
   const [captureStartTime, setCaptureStartTime] = useState<number | null>(null);
-  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<number | null>(null);
   const [showNoImagesModal, setShowNoImagesModal] = useState(false);
 
   // Dark image detection state
@@ -251,23 +249,6 @@ export default function MultiCamInspector({
     }
   };
 
-  // Countdown timer effect - decreases estimate every second when capturing
-  useEffect(() => {
-    if (!isCapturing || estimatedTimeRemaining === null) {
-      return;
-    }
-
-    const countdownInterval = setInterval(() => {
-      setEstimatedTimeRemaining(prev => {
-        if (prev === null || prev <= 0) {
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(countdownInterval);
-  }, [isCapturing]); // Only depend on isCapturing, not estimatedTimeRemaining
   
   // Using innovative mode only
   
@@ -1165,10 +1146,8 @@ export default function MultiCamInspector({
     
     // Reset delayed display state
     setPendingImages(new Map());
-    setProgressText("");
     setIsWaitingToDisplay(false);
     setCaptureStartTime(Date.now());
-    setEstimatedTimeRemaining(30); // Initial estimate: 30 seconds for parallel processing
     
     // Set all cameras to loading state and clear existing images
     setCams(prev => prev.map(cam => ({ ...cam, isLoading: true, src: "" })));
@@ -1248,17 +1227,7 @@ export default function MultiCamInspector({
               const remainingCameras = totalCameras - capturedCount;
               const newEstimate = Math.round((remainingCameras * avgTimePerCamera) / 1000);
               
-              // Only update estimate if it's significantly different (more than 3 seconds difference)
-              // or if we don't have an estimate yet, to avoid disrupting the countdown
-              setEstimatedTimeRemaining(prev => {
-                if (prev === null) return Math.max(newEstimate, 0);
-                const diff = Math.abs(newEstimate - prev);
-                if (diff > 3) return Math.max(newEstimate, 0);
-                return prev; // Keep current countdown going
-              });
-            } else if (elapsed > 10000 && estimatedTimeRemaining === null) {
-              // Only set fallback estimate if we don't have one yet
-              setEstimatedTimeRemaining(Math.max(15, Math.round((25000 - elapsed) / 1000)));
+              // Timer logic removed
             }
           }
 
@@ -1272,8 +1241,7 @@ export default function MultiCamInspector({
             currentCameras: status.currentCameras,
             currentStep: status.currentStep,
             currentPhase: status.currentPhase,
-            isParallel: (status.currentCameras?.length || 0) > 1,
-            etaRemaining: estimatedTimeRemaining
+            isParallel: (status.currentCameras?.length || 0) > 1
           });
           
           // Store new images in pending state instead of displaying immediately
@@ -1330,7 +1298,6 @@ export default function MultiCamInspector({
           if (status.status === 'completed') {
             clearInterval(pollInterval);
             clearTimeout(frontendTimeout);
-            setEstimatedTimeRemaining(null); // Clear ETA timer
             addLog(`🎉 All cameras completed! Loading latest images...`);
             
             // Load the latest images from the server since capture is complete
@@ -1434,7 +1401,6 @@ export default function MultiCamInspector({
             setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
             setIsCapturing(false);
             setCaptureStartTime(null);
-            setEstimatedTimeRemaining(null);
             setProgressText("");
           }
           
@@ -1455,7 +1421,6 @@ export default function MultiCamInspector({
           setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
           setIsCapturing(false);
           setCaptureStartTime(null);
-          setEstimatedTimeRemaining(null);
           setProgressText("");
         }
       }, 360000); // 6 minutes timeout
@@ -1470,7 +1435,6 @@ export default function MultiCamInspector({
       setCams(prev => prev.map(cam => ({ ...cam, isLoading: false })));
       setIsCapturing(false);
       setCaptureStartTime(null);
-      setEstimatedTimeRemaining(null);
     }
   };
 
@@ -2252,43 +2216,14 @@ export default function MultiCamInspector({
       {/* Header – main controls */}
 
 
-      {/* ETA Countdown Display */}
-      {(isCapturing || isWaitingToDisplay) && (
+      {/* Capture Status Display */}
+      {isCapturing && (
         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
           <div className="flex items-center justify-center">
-            {isWaitingToDisplay ? (
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Preparing images for display...
-              </span>
-            ) : estimatedTimeRemaining !== null && estimatedTimeRemaining > 0 ? (
-              <div className="flex flex-col items-center space-y-1">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {progressText || "Parallel capture in progress"}
-                  </span>
-                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                    {estimatedTimeRemaining}s
-                  </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    remaining
-                  </span>
-                </div>
-              </div>
-            ) : isCapturing ? (
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Capture completed - processing images...
-              </span>
-            ) : (
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Starting capture...
-              </span>
-            )}
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Fetching images...
+            </span>
           </div>
-          {isWaitingToDisplay && (
-            <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 text-center">
-              All images captured successfully. Waiting 2 seconds for image stabilization before display...
-            </div>
-          )}
         </div>
       )}
 
