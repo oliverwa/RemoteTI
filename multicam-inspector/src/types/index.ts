@@ -7,6 +7,7 @@ export interface Cam {
   zoom: number;
   pan: { x: number; y: number };
   isLoading?: boolean;
+  isFocusing?: boolean;
   name: string;
 }
 

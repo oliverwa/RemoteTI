@@ -1339,6 +1339,223 @@ app.post('/api/alarm-session/:hangarId/update-phase', async (req, res) => {
   }
 });
 
+// Single camera autofocus endpoint
+app.post('/api/camera/autofocus', async (req, res) => {
+  const { hangar, cameraName, cameraIp } = req.body;
+  
+  if (!hangar || !cameraName || !cameraIp) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Missing required parameters' 
+    });
+  }
+  
+  try {
+    log('info', `Triggering autofocus for camera ${cameraName} at ${cameraIp} in ${hangar}`);
+    
+    // Execute autofocus script
+    const scriptPath = path.join(__dirname, 'camera_autofocus.sh');
+    const command = `${scriptPath} ${hangar} ${cameraName} ${cameraIp}`;
+    
+    const { stdout, stderr } = await execAsync(command, {
+      timeout: 30000, // 30 second timeout for autofocus
+      maxBuffer: 10 * 1024 * 1024
+    });
+    
+    if (stderr && !stderr.includes('Warning')) {
+      log('error', `Autofocus error for ${cameraName}: ${stderr}`);
+      return res.status(500).json({ 
+        success: false, 
+        error: stderr 
+      });
+    }
+    
+    log('info', `Autofocus completed for ${cameraName}`);
+    res.json({ 
+      success: true, 
+      message: `Autofocus completed for ${cameraName}`,
+      output: stdout
+    });
+  } catch (error) {
+    log('error', `Autofocus failed for ${cameraName}:`, error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Single camera retake with autofocus endpoint
+app.post('/api/camera/retake-with-focus', async (req, res) => {
+  const { hangar, session, cameraName, cameraId } = req.body;
+  
+  if (!hangar || !session || !cameraName) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Missing required parameters' 
+    });
+  }
+  
+  try {
+    log('info', `Starting retake with focus for camera ${cameraName} in session ${session}`);
+    
+    // Get camera IP from configuration
+    const cameraIPs = {
+      'RUR': '10.20.1.201', 'FUR': '10.20.1.202', 'FUL': '10.20.1.203', 'RUL': '10.20.1.204',
+      'RDR': '10.20.1.205', 'FDR': '10.20.1.206', 'FDL': '10.20.1.207', 'RDL': '10.20.1.208'
+    };
+    
+    const cameraIp = cameraIPs[cameraName];
+    if (!cameraIp) {
+      return res.status(400).json({ 
+        success: false, 
+        error: `Unknown camera: ${cameraName}` 
+      });
+    }
+    
+    // Step 1: Trigger autofocus
+    log('info', `Step 1/2: Triggering autofocus for ${cameraName}`);
+    const autofocusScript = path.join(__dirname, 'camera_autofocus.sh');
+    const autofocusCmd = `${autofocusScript} ${hangar} ${cameraName} ${cameraIp}`;
+    
+    try {
+      const { stdout: afStdout, stderr: afStderr } = await execAsync(autofocusCmd, {
+        timeout: 30000, // 30 second timeout for autofocus
+        maxBuffer: 10 * 1024 * 1024
+      });
+      
+      if (afStderr && !afStderr.includes('Warning') && !afStderr.includes('✅')) {
+        log('warn', `Autofocus warning for ${cameraName}: ${afStderr}`);
+      }
+      log('info', `Autofocus completed for ${cameraName}`);
+    } catch (afError) {
+      log('error', `Autofocus failed for ${cameraName}: ${afError.message}`);
+      // Continue anyway - might still get a decent image
+    }
+    
+    // Step 2: Capture new image
+    log('info', `Step 2/2: Capturing new image for ${cameraName}`);
+    const sessionPath = `${hangar}/${session}`;
+    const captureCmd = `${CAMERA_SCRIPT_PATH} ${hangar} ${session.split('_')[2]} ${cameraName} ${cameraIp} ${sessionPath}`;
+    
+    log('debug', `Executing capture command: ${captureCmd}`);
+    
+    const { stdout, stderr } = await execAsync(captureCmd, {
+      timeout: 30000, // 30 second timeout
+      maxBuffer: 10 * 1024 * 1024
+    });
+    
+    if (stderr && !stderr.includes('Warning') && !stderr.includes('SUCCESS')) {
+      log('error', `Capture error for ${cameraName}: ${stderr}`);
+      return res.status(500).json({ 
+        success: false, 
+        error: stderr 
+      });
+    }
+    
+    // Step 3: Update session JSON data
+    const sessionFile = path.join(SNAPSHOTS_DIR, hangar, session, 'inspection.json');
+    let sessionUpdated = false;
+    
+    try {
+      if (fs.existsSync(sessionFile)) {
+        const sessionData = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+        
+        // Update timestamp for this camera in the session data
+        if (!sessionData.cameraRetakes) {
+          sessionData.cameraRetakes = {};
+        }
+        sessionData.cameraRetakes[cameraName] = {
+          timestamp: new Date().toISOString(),
+          cameraId: cameraId
+        };
+        
+        fs.writeFileSync(sessionFile, JSON.stringify(sessionData, null, 2));
+        sessionUpdated = true;
+        log('info', `Session data updated for retake of ${cameraName}`);
+      }
+    } catch (jsonError) {
+      log('warn', `Could not update session JSON: ${jsonError.message}`);
+    }
+    
+    log('info', `Retake with focus completed successfully for ${cameraName}`);
+    res.json({ 
+      success: true, 
+      message: `Image retaken with focus for ${cameraName}`,
+      sessionUpdated: sessionUpdated,
+      output: stdout
+    });
+  } catch (error) {
+    log('error', `Retake with focus failed for ${cameraName}:`, error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
+// Single camera retake endpoint (without autofocus - keeping for backwards compatibility)
+app.post('/api/camera/retake', async (req, res) => {
+  const { hangar, session, cameraName, cameraId } = req.body;
+  
+  if (!hangar || !session || !cameraName) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Missing required parameters' 
+    });
+  }
+  
+  try {
+    log('info', `Retaking image for camera ${cameraName} in session ${session}`);
+    
+    // Get camera IP from configuration
+    const cameraIPs = {
+      'RUR': '10.20.1.201', 'FUR': '10.20.1.202', 'FUL': '10.20.1.203', 'RUL': '10.20.1.204',
+      'RDR': '10.20.1.205', 'FDR': '10.20.1.206', 'FDL': '10.20.1.207', 'RDL': '10.20.1.208'
+    };
+    
+    const cameraIp = cameraIPs[cameraName];
+    if (!cameraIp) {
+      return res.status(400).json({ 
+        success: false, 
+        error: `Unknown camera: ${cameraName}` 
+      });
+    }
+    
+    // Execute camera fetch script for single camera
+    const sessionPath = `${hangar}/${session}`;
+    const command = `${CAMERA_SCRIPT_PATH} ${hangar} ${session.split('_')[2]} ${cameraName} ${cameraIp} ${sessionPath}`;
+    
+    log('debug', `Executing retake command: ${command}`);
+    
+    const { stdout, stderr } = await execAsync(command, {
+      timeout: 30000, // 30 second timeout
+      maxBuffer: 10 * 1024 * 1024
+    });
+    
+    if (stderr && !stderr.includes('Warning')) {
+      log('error', `Retake error for ${cameraName}: ${stderr}`);
+      return res.status(500).json({ 
+        success: false, 
+        error: stderr 
+      });
+    }
+    
+    log('info', `Image retaken successfully for ${cameraName}`);
+    res.json({ 
+      success: true, 
+      message: `Image retaken for ${cameraName}`,
+      output: stdout
+    });
+  } catch (error) {
+    log('error', `Retake failed for ${cameraName}:`, error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Light control endpoint - manually control lights for a hangar (no auth required - lights have their own auth)
 app.post('/api/hangar/:hangarId/lights', async (req, res) => {
   try {

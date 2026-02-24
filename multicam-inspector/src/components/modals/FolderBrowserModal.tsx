@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { getRelativeTime, formatDateTime } from '../../utils/timeFormatting';
 import { API_CONFIG } from '../../config/api.config';
@@ -39,10 +39,10 @@ interface FolderBrowserModalProps {
   onLoadSession: (hangarId: string, sessionName: string, images: any[]) => void;
 }
 
+// Global variable to store fetched drone list
+let knownDrones: string[] = [];
+
 const formatSessionName = (name: string): string => {
-  // List of actual drones in the system - updated with real drone IDs
-  const knownDrones = ['e3001', 'e3002', 'marvin'];
-  
   // Try multiple patterns to extract drone name
   // New naming convention: type_hangar_drone_date_time
   // Old naming convention: type_drone_date_time or type_hangar_date_time
@@ -83,9 +83,17 @@ const formatSessionName = (name: string): string => {
   // Fallback: try to find known drone name in any position
   const parts = name.toLowerCase().split('_');
   for (const part of parts) {
-    if (knownDrones.includes(part)) {
+    // First check if it's in our known drones list
+    if (knownDrones.length > 0 && knownDrones.includes(part)) {
       // Return uppercase for drone IDs like E3002
       if (part.match(/^[a-z]\d+$/)) {
+        return part.toUpperCase();
+      }
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    }
+    // Also check for common drone patterns even if not in the list
+    if (part.match(/^(e\d{4}|marvin|bender|maggie|lisa|bart|homer|marge|lancelot)$/)) {
+      if (part.match(/^e\d{4}$/)) {
         return part.toUpperCase();
       }
       return part.charAt(0).toUpperCase() + part.slice(1);
@@ -296,6 +304,37 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
   const [expandedDrones, setExpandedDrones] = useState<Set<string>>(new Set());
   const [deletingSession, setDeletingSession] = useState<string | null>(null);
   const [sessionsToHide, setSessionsToHide] = useState<Set<string>>(new Set());
+  const [loadingDrones, setLoadingDrones] = useState(false);
+  const [dronesLoaded, setDronesLoaded] = useState(false);
+  
+  // Fetch available drones when modal opens
+  useEffect(() => {
+    if (isOpen && !dronesLoaded) {
+      setLoadingDrones(true);
+      fetch(`${API_CONFIG.BASE_URL}/api/drones`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.drones) {
+            knownDrones = data.drones.map((drone: any) => drone.id.toLowerCase());
+            console.log('Loaded drones:', knownDrones);
+            // Add some additional common drone names that might be missing
+            const additionalDrones = ['e3001', 'e3002', 'e3003', 'e3004', 'marvin'];
+            additionalDrones.forEach(d => {
+              if (!knownDrones.includes(d)) knownDrones.push(d);
+            });
+          }
+          setDronesLoaded(true);
+          setLoadingDrones(false);
+        })
+        .catch(err => {
+          console.error('Failed to fetch drones:', err);
+          // Fallback to a more complete list if API fails
+          knownDrones = ['bender', 'maggie', 'lisa', 'bart', 'homer', 'marge', 'lancelot', 'e3001', 'e3002', 'e3003', 'e3004', 'marvin'];
+          setDronesLoaded(true);
+          setLoadingDrones(false);
+        });
+    }
+  }, [isOpen, dronesLoaded]);
   
   const toggleHangarExpansion = (hangarId: string) => {
     const newExpanded = new Set(expandedHangars);
@@ -502,11 +541,11 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
           </div>
         </div>
         
-        {loadingFolders ? (
+        {(loadingFolders || loadingDrones) ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="w-12 h-12 border-3 border-gray-300 border-t-gray-600 rounded-full animate-spin mb-4"></div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Loading inspection data...</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">{loadingDrones ? 'Loading drones...' : 'Loading inspection data...'}</div>
             </div>
           </div>
         ) : hangarsList.length === 0 ? (
@@ -543,10 +582,22 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
               
               hangarsList.forEach((hangar: HangarData) => {
                 hangar.sessions.forEach((session: Session) => {
-                  const droneName = formatSessionName(session.name);
-                  // Skip if we couldn't identify the drone
+                  let droneName = formatSessionName(session.name);
+                  // If we couldn't identify the drone, still include it but with a fallback name
                   if (droneName === 'Unknown') {
-                    return;
+                    // Try to extract any drone-like identifier from the session name
+                    const match = session.name.match(/([a-zA-Z]*\d+|marvin|bender|maggie|lisa|bart|homer|marge|lancelot)/i);
+                    if (match) {
+                      droneName = match[1].toLowerCase();
+                      if (droneName.match(/^[a-z]\d+$/)) {
+                        droneName = droneName.toUpperCase();
+                      } else {
+                        droneName = droneName.charAt(0).toUpperCase() + droneName.slice(1);
+                      }
+                    } else {
+                      // Use hangar name as a fallback grouping
+                      droneName = `Sessions (${hangar.name})`;
+                    }
                   }
                   if (!droneData[droneName]) {
                     droneData[droneName] = {

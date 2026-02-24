@@ -131,19 +131,6 @@ export default function MultiCamInspector({
   const [hangarImage, setHangarImage] = useState<string>("");
   const [loadingImages, setLoadingImages] = useState(false);
   
-  // Image enhancement controls
-  const [brightness, setBrightness] = useState(100); // 100 = normal (100%)
-  const [contrast, setContrast] = useState(100); // 100 = normal (100%)
-  
-  
-  // Brightness and contrast adjustment functions
-  const adjustBrightness = (delta: number) => {
-    setBrightness(prev => Math.max(50, Math.min(150, prev + delta)));
-  };
-  
-  const adjustContrast = (delta: number) => {
-    setContrast(prev => Math.max(50, Math.min(150, prev + delta)));
-  };
 
 
   // Debug effect for calibration state
@@ -1431,6 +1418,61 @@ export default function MultiCamInspector({
     }
   };
 
+  // Retake image for a single camera (with autofocus) - DISABLED
+  const retakeCameraImage = async (cameraId: number) => {
+    return; // Feature disabled
+    const cameraNames = ['RUR', 'FUR', 'FUL', 'RUL', 'RDR', 'FDR', 'FDL', 'RDL'];
+    const cameraName = cameraNames[cameraId];
+    
+    const currentHangar = currentSession?.hangar || HANGARS[0].id;
+    const sessionName = currentSession?.name || sessionRef.current;
+    
+    if (!sessionName) {
+      addLog(`❌ No active session for retake`);
+      return;
+    }
+    
+    // Clear the current image immediately
+    setCams(prev => prev.map(c => c.id === cameraId ? { ...c, src: '', isLoading: true } : c));
+    addLog(`🔄 Starting retake sequence for ${cameraName}...`);
+    addLog(`🎯 Focusing ${cameraName}...`);
+    
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/api/camera/retake-with-focus`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hangar: currentHangar,
+          session: sessionName,
+          cameraName: cameraName,
+          cameraId: cameraId
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        addLog(`✅ Image retaken successfully for ${cameraName}`);
+        
+        // Reload the image with cache busting
+        const newImageUrl = `${API_CONFIG.BASE_URL}/api/image/${currentHangar}/${sessionName}/${cameraName}_${sessionName.split('_').pop()}.jpg?t=${Date.now()}`;
+        setCams(prev => prev.map(c => c.id === cameraId ? { ...c, src: newImageUrl, isLoading: false } : c));
+        
+        // Update the session data if needed
+        if (result.sessionUpdated) {
+          addLog(`📝 Session data updated for ${cameraName}`);
+        }
+      } else {
+        addLog(`❌ Retake failed for ${cameraName}`);
+        // Try to restore the original image
+        const originalUrl = `${API_CONFIG.BASE_URL}/api/image/${currentHangar}/${sessionName}/${cameraName}_${sessionName.split('_').pop()}.jpg`;
+        setCams(prev => prev.map(c => c.id === cameraId ? { ...c, src: originalUrl, isLoading: false } : c));
+      }
+    } catch (error) {
+      addLog(`❌ Error during retake: ${error}`);
+      setCams(prev => prev.map(c => c.id === cameraId ? { ...c, isLoading: false } : c));
+    }
+  };
+
   // Load the latest folder across ALL hangars
   const loadLatestFolderGlobally = async () => {
     try {
@@ -2260,8 +2302,6 @@ export default function MultiCamInspector({
                   <CamTile
                     cam={cam}
                     transform={transform}
-                    brightness={brightness}
-                    contrast={contrast}
                     onWheel={(e) => onWheel(cam.id, e)}
                     onDragStart={(e) => onDrag(cam.id, e)}
                     onDropFile={(f) => onDropFile(cam.id, f)}
@@ -2299,6 +2339,7 @@ export default function MultiCamInspector({
                   validationBoxCreation={validationBoxCreation}
                   onValidationBoxCreation={handleValidationBoxCreation}
                   onValidationBoxUpdate={handleValidationBoxUpdate}
+                  // retakeCameraImage={retakeCameraImage} // Feature disabled
                 />
               </CardContent>
             </Card>
@@ -2485,45 +2526,6 @@ export default function MultiCamInspector({
       )}
 
       {/* Image Enhancement Controls - iPad friendly */}
-      <div className="bg-white dark:bg-gray-800 px-6 py-4">
-        <div className="flex justify-center items-center gap-8">
-          {/* Brightness Control */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">BRIGHTNESS</span>
-            <button
-              onClick={() => adjustBrightness(-10)}
-              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
-            >
-              −
-            </button>
-            <span className="text-base font-bold text-gray-800 dark:text-gray-200 w-16 text-center">{brightness}%</span>
-            <button
-              onClick={() => adjustBrightness(10)}
-              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
-            >
-              +
-            </button>
-          </div>
-          
-          {/* Contrast Control */}
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">CONTRAST</span>
-            <button
-              onClick={() => adjustContrast(-10)}
-              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
-            >
-              −
-            </button>
-            <span className="text-base font-bold text-gray-800 dark:text-gray-200 w-16 text-center">{contrast}%</span>
-            <button
-              onClick={() => adjustContrast(10)}
-              className="w-12 h-12 text-xl bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 transition-colors font-medium text-black dark:text-white"
-            >
-              +
-            </button>
-          </div>
-        </div>
-      </div>
       
       {/* Session Info and Help - Bottom bar */}
       <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600 px-6 py-3">
@@ -2571,8 +2573,6 @@ export default function MultiCamInspector({
       {fsId != null && (
         <Fullscreen
           cam={cams[fsId!]}
-          brightness={brightness}
-          contrast={contrast}
           onClose={() => {
             resetView(fsId!);
             setFsId(null);
@@ -3048,8 +3048,6 @@ export default function MultiCamInspector({
 function CamTile({
   cam,
   transform,
-  brightness = 100,
-  contrast = 100,
   onWheel,
   onDragStart,
   onDropFile,
@@ -3067,11 +3065,10 @@ function CamTile({
   validationBoxCreation,
   onValidationBoxCreation,
   onValidationBoxUpdate,
+  // retakeCameraImage, // Feature disabled
   }: {
     cam: Cam;
     transform?: CameraTransform;
-    brightness?: number;
-    contrast?: number;
     onWheel: (e: React.WheelEvent<HTMLDivElement>) => void;
     onDragStart: (e: React.MouseEvent<HTMLDivElement>) => void;
     onDropFile: (f?: File) => void;
@@ -3089,6 +3086,7 @@ function CamTile({
     validationBoxCreation: { id: string; label: string; description: string; startX?: number; startY?: number; currentX?: number; currentY?: number; startNormalizedX?: number; startNormalizedY?: number; currentNormalizedX?: number; currentNormalizedY?: number; cameraId?: number; imageWidth?: number; imageHeight?: number; } | null;
     onValidationBoxCreation: (cameraId: number, imageX: number, imageY: number) => void;
     onValidationBoxUpdate: (cameraId: number, imageX: number, imageY: number) => void;
+    // retakeCameraImage?: (cameraId: number) => void; // Feature disabled
   }) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const lastScale = useRef(1);
@@ -3283,8 +3281,6 @@ function CamTile({
             panX={cam.pan.x}
             panY={cam.pan.y}
             transform={transform}
-            brightness={brightness}
-            contrast={contrast}
             validationBoxes={items[idx]?.validationBoxes?.[cam.name] || []}
             validatedBoxIds={validatedBoxes[items[idx]?.id] || new Set()}
             onBoxClick={handleValidationBoxClick}
@@ -3310,21 +3306,41 @@ function CamTile({
         {cam.name}
       </div>
 
+      {/* Retake button - DISABLED
+      {cam.src && !cam.isLoading && !items.some((item: TIItem) => item.status === 'pass' || item.status === 'fail' || item.status === 'na') && (
+        <div className="absolute bottom-1 right-1">
+          <button
+            onClick={() => retakeCameraImage(cam.id)}
+            disabled={cam.isLoading}
+            className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-500 text-white px-2 py-1 rounded text-xs font-medium transition-colors flex items-center gap-1"
+            title="Refocus and retake image"
+          >
+            {cam.isLoading ? (
+              <>
+                <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Retaking...
+              </>
+            ) : (
+              <>🔄 Retake</>
+            )}
+          </button>
+        </div>
+      )} */}
+
     </div>
   );
 }
 
 function Fullscreen({
   cam,
-  brightness,
-  contrast,
   onClose,
   onWheel,
   onDragStart,
 }: {
   cam: Cam;
-  brightness: number;
-  contrast: number;
   onClose: () => void;
   onWheel: (e: React.WheelEvent<HTMLDivElement>) => void;
   onDragStart: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -3368,7 +3384,6 @@ function Fullscreen({
                 maxWidth: '100%',
                 maxHeight: '100%',
                 display: 'block',
-                filter: `brightness(${brightness}%) contrast(${contrast}%)`,
               }}
             />
           ) : (
@@ -3442,8 +3457,6 @@ function CanvasImage({
   panX, 
   panY, 
   transform,
-  brightness = 100,
-  contrast = 100,
   validationBoxes = [], 
   validatedBoxIds = new Set(),
   onBoxClick,
@@ -3459,8 +3472,6 @@ function CanvasImage({
   panX: number; 
   panY: number; 
   transform?: CameraTransform;
-  brightness?: number;
-  contrast?: number;
   validationBoxes?: ValidationBox[];
   validatedBoxIds?: Set<string>;
   onBoxClick?: (boxId: string) => void;
@@ -4308,7 +4319,6 @@ function CanvasImage({
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       style={{
-        filter: `brightness(${brightness}%) contrast(${contrast}%)`,
         width: '100%',
         height: '100%',
         display: 'block',

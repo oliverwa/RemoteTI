@@ -260,6 +260,12 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
       inspectionType = 'service-partner-inspection';
     }
     
+    console.log('[UnifiedInspectionScreen] handleLoadSession:', {
+      sessionName,
+      detectedType: inspectionType,
+      hasImages: images?.length > 0
+    });
+    
     // Pass session data as part of the hangar parameter (will be parsed in the inspector components)
     const sessionData = `${hangarId}|${sessionName}`;
     onStartInspection('load-session', inspectionType, sessionData, 'session');

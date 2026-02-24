@@ -429,8 +429,11 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
                 </div>
               </div>
 
-              {/* Images section - moved up */}
-              {showImages && Object.keys(summaryData.images).length > 0 && (
+              {/* Images section - moved up - only show for remote inspections */}
+              {showImages && 
+               Object.keys(summaryData.images).length > 0 && 
+               !summaryData.inspectionType.includes('onsite') && 
+               !summaryData.inspectionType.includes('service') && (
                 <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                   <h3 className="font-semibold text-xs text-gray-700 dark:text-gray-300 mb-2">Inspection Images</h3>
                   <div className="grid grid-cols-4 gap-2">
