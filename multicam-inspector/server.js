@@ -153,7 +153,7 @@ const loginLimiter = createRateLimiter(
 
 const apiLimiter = createRateLimiter(
   1 * 60 * 1000, // 1 minute
-  100, // max 100 requests per minute
+  500, // max 500 requests per minute (increased for normal app usage)
   'Too many requests, please slow down'
 );
 
@@ -163,6 +163,13 @@ const captureLimiter = createRateLimiter(
   'Too many capture requests, please wait before trying again'
 );
 
+// Lighter rate limit for read-only endpoints
+const readOnlyLimiter = createRateLimiter(
+  1 * 60 * 1000, // 1 minute
+  1000, // max 1000 requests per minute for GET requests
+  'Too many requests, please slow down'
+);
+
 // Middleware - Order matters!
 app.use(cors(corsOptions));
 
@@ -170,8 +177,21 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' })); // Limit JSON body size
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Apply general rate limiting to all API routes
-app.use('/api/', apiLimiter);
+// Apply different rate limits based on request type
+app.use('/api/', (req, res, next) => {
+  // Skip rate limiting for health checks
+  if (req.path === '/health') {
+    return next();
+  }
+  
+  // Use lighter limits for GET requests (read-only)
+  if (req.method === 'GET') {
+    return readOnlyLimiter(req, res, next);
+  }
+  
+  // Use standard limits for other methods
+  return apiLimiter(req, res, next);
+});
 
 // Add basic security headers manually for API routes
 app.use('/api', (req, res, next) => {
