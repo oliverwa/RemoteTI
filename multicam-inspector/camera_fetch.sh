@@ -18,8 +18,8 @@ SESSION_TIMESTAMP="${5:-}"
 CUSTOM_PORT="${6:-}"
 
 # Configuration
-CAM_USER="admin"
-CAM_PASS="H4anGar0NeC4amAdmin"
+CAM_USER="${CAMERA_ADMIN_USERNAME:-admin}"
+CAM_PASS="${CAMERA_ADMIN_PASSWORD}"
 FORWARD_PORT="${CUSTOM_PORT:-8083}"  # Use custom port if provided, otherwise default to 8083
 CURL_CONNECT_TIMEOUT=20
 CURL_TOTAL_TIMEOUT=90

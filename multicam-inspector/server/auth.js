@@ -10,12 +10,23 @@ try {
   // dotenv not available, will use default values or environment variables
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-key';
+// JWT secret is required for security - fail if not provided
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  console.error('ERROR: JWT_SECRET environment variable is required for security');
+  console.error('Please set JWT_SECRET in your .env file with a strong random value');
+  console.error('You can generate one with: openssl rand -base64 32');
+  process.exit(1);
+}
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
 const BCRYPT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 10;
 
 // Users database file
 const USERS_DB_PATH = path.join(__dirname, '../data/users.json');
+const LOGIN_ATTEMPTS_PATH = path.join(__dirname, '../data/login_attempts.json');
+
+// Track failed login attempts
+const loginAttempts = new Map();
 
 // Initialize users database if it doesn't exist
 async function initializeUsersDB() {
@@ -143,6 +154,67 @@ function authenticateToken(req, res, next) {
   next();
 }
 
+// Login attempt tracking
+async function logLoginAttempt(username, ipAddress, success, reason = null) {
+  const timestamp = new Date().toISOString();
+  const attempt = {
+    timestamp,
+    username: username.substring(0, 50), // Limit username length for logging
+    ipAddress,
+    success,
+    reason
+  };
+
+  // Track in memory for rate limiting
+  const key = `${username}:${ipAddress}`;
+  if (!loginAttempts.has(key)) {
+    loginAttempts.set(key, []);
+  }
+  
+  const attempts = loginAttempts.get(key);
+  attempts.push({ timestamp, success });
+  
+  // Keep only last 100 attempts per key in memory
+  if (attempts.length > 100) {
+    attempts.shift();
+  }
+
+  // Log to file for audit trail
+  try {
+    let logData = [];
+    if (await fs.exists(LOGIN_ATTEMPTS_PATH)) {
+      const fileContent = await fs.readFile(LOGIN_ATTEMPTS_PATH, 'utf8');
+      logData = JSON.parse(fileContent);
+    }
+    
+    logData.push(attempt);
+    
+    // Keep only last 10000 entries
+    if (logData.length > 10000) {
+      logData = logData.slice(-10000);
+    }
+    
+    await fs.writeJson(LOGIN_ATTEMPTS_PATH, logData, { spaces: 2 });
+  } catch (error) {
+    console.error('Failed to log login attempt:', error);
+  }
+  
+  // Log to console for immediate visibility
+  const logLevel = success ? 'INFO' : 'WARN';
+  console.log(`[${timestamp}] [${logLevel}] Login attempt - User: ${username}, IP: ${ipAddress}, Success: ${success}${reason ? `, Reason: ${reason}` : ''}`);
+}
+
+function getRecentFailedAttempts(username, ipAddress, minutes = 15) {
+  const key = `${username}:${ipAddress}`;
+  const attempts = loginAttempts.get(key) || [];
+  const cutoff = Date.now() - (minutes * 60 * 1000);
+  
+  return attempts.filter(a => 
+    !a.success && 
+    new Date(a.timestamp).getTime() > cutoff
+  ).length;
+}
+
 // Permission middleware
 function requirePermission(permission) {
   return (req, res, next) => {
@@ -159,6 +231,7 @@ function requirePermission(permission) {
 // Login endpoint handler
 async function handleLogin(req, res) {
   const { username, password } = req.body;
+  const ipAddress = req.ip || req.connection.remoteAddress;
 
   if (!username || !password) {
     return res.status(400).json({
@@ -168,9 +241,21 @@ async function handleLogin(req, res) {
   }
 
   try {
+    // Check for too many recent failed attempts
+    const recentFailures = getRecentFailedAttempts(username, ipAddress);
+    if (recentFailures >= 5) {
+      await logLoginAttempt(username, ipAddress, false, 'Account temporarily locked');
+      return res.status(429).json({
+        success: false,
+        message: 'Too many failed login attempts. Please try again later.',
+        retryAfter: 900 // 15 minutes in seconds
+      });
+    }
+
     const user = await findUserByUsername(username);
     
     if (!user) {
+      await logLoginAttempt(username, ipAddress, false, 'User not found');
       return res.status(401).json({
         success: false,
         message: 'Invalid username or password'
@@ -180,6 +265,7 @@ async function handleLogin(req, res) {
     const isValidPassword = await verifyPassword(password, user.password);
     
     if (!isValidPassword) {
+      await logLoginAttempt(username, ipAddress, false, 'Invalid password');
       return res.status(401).json({
         success: false,
         message: 'Invalid username or password'
@@ -197,6 +283,9 @@ async function handleLogin(req, res) {
 
     // Generate token
     const token = generateToken(user);
+
+    // Log successful login
+    await logLoginAttempt(username, ipAddress, true);
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;

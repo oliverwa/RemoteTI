@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+// const helmet = require('helmet'); // Temporarily disabled to fix white screen
+const { body, param, validationResult } = require('express-validator');
 const { spawn, exec } = require('child_process');
 const fs = require('fs-extra');
 const path = require('path');
@@ -62,7 +65,7 @@ function getHangarConfig(hangarId) {
         enabled: false,
         endpoint: hangar.ipAddress ? `https://${hangar.ipAddress}:7548/hangar/lightson` : '',
         username: process.env.HANGAR_SYSTEM_USERNAME || 'system',
-        password: process.env.HANGAR_SYSTEM_PASSWORD || 'FJjf93/#',
+        password: process.env.HANGAR_SYSTEM_PASSWORD || '',
         waitTime: 9,  // Increased to 9s to allow cameras more time to adjust and prevent blurry images
         // Override with hangar-specific config if provided
         ...(hangar.lights || {})
@@ -72,8 +75,8 @@ function getHangarConfig(hangarId) {
       cameras: hangar.ipAddress ? {
         RUL: {
           url: `https://${hangar.ipAddress}:8083/cgi-bin/api.cgi?cmd=Snap&channel=0&rs=wuuPhkmUCeI9WG7C`,
-          username: 'admin',
-          password: 'H4anGar0NeC4amAdmin'
+          username: process.env.CAMERA_ADMIN_USERNAME || 'admin',
+          password: process.env.CAMERA_ADMIN_PASSWORD || ''
         }
       } : {}
     };
@@ -102,9 +105,81 @@ const CAMERA_SCRIPT_PATH = path.join(BASE_DIR, config.paths.scripts.cameraFetch)
 const INSPECTION_JSON_PATH = path.join(BASE_DIR, config.paths.data.inspectionJson);
 const SNAPSHOTS_DIR = config.paths.snapshotsAbsolute || path.join(process.env.HOME, config.paths.snapshots);
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// CORS Configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+      : ['http://localhost:3000', 'http://localhost:5001', 'http://172.20.1.254:5001'];
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Allow credentials (cookies, authorization headers)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400 // Cache preflight response for 24 hours
+};
+
+// Rate Limiting Configuration
+const createRateLimiter = (windowMs, max, message) => rateLimit({
+  windowMs,
+  max,
+  message,
+  standardHeaders: true, // Return rate limit info in headers
+  legacyHeaders: false,
+  handler: (req, res) => {
+    console.log(`[RATE_LIMIT] ${req.ip} exceeded limit on ${req.path}`);
+    res.status(429).json({ 
+      success: false, 
+      message,
+      retryAfter: Math.ceil(windowMs / 1000)
+    });
+  }
+});
+
+// Different rate limiters for different endpoints
+const loginLimiter = createRateLimiter(
+  15 * 60 * 1000, // 15 minutes
+  5, // max 5 attempts
+  'Too many login attempts, please try again later'
+);
+
+const apiLimiter = createRateLimiter(
+  1 * 60 * 1000, // 1 minute
+  100, // max 100 requests per minute
+  'Too many requests, please slow down'
+);
+
+const captureLimiter = createRateLimiter(
+  5 * 60 * 1000, // 5 minutes  
+  10, // max 10 capture requests
+  'Too many capture requests, please wait before trying again'
+);
+
+// Middleware - Order matters!
+app.use(cors(corsOptions));
+
+// Request Size Limits
+app.use(express.json({ limit: '10mb' })); // Limit JSON body size
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Apply general rate limiting to all API routes
+app.use('/api/', apiLimiter);
+
+// Add basic security headers manually for API routes
+app.use('/api', (req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
 // Serve public directory for additional static files  
 app.use('/public', express.static('public'));
 
@@ -114,6 +189,70 @@ app.use('/static', express.static(path.join(__dirname, 'build/static')));
 // Serve session images from data/sessions directory
 app.use('/data/sessions', express.static(path.join(__dirname, 'data/sessions')));
 
+// Validation Middleware
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(`[VALIDATION_ERROR] ${req.path}:`, errors.array());
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Validation failed',
+      errors: errors.array().map(e => ({ field: e.param, message: e.msg }))
+    });
+  }
+  next();
+};
+
+// Validation Rules
+const validationRules = {
+  login: [
+    body('username')
+      .trim()
+      .isLength({ min: 3, max: 50 })
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage('Username must be 3-50 characters, alphanumeric with _ or -'),
+    body('password')
+      .isLength({ min: 6, max: 100 })
+      .withMessage('Password must be 6-100 characters')
+  ],
+  
+  capture: [
+    body('hangar')
+      .trim()
+      .isLength({ min: 1, max: 50 })
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage('Invalid hangar ID format'),
+    body('drone')
+      .trim()
+      .isLength({ min: 1, max: 50 })
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage('Invalid drone name format'),
+    body('inspectionType')
+      .optional()
+      .isIn(['remote', 'remote-ti-inspection', 'initial-remote-ti-inspection', 'full-remote-ti-inspection', 'onsite-ti-inspection'])
+      .withMessage('Invalid inspection type'),
+    body('sessionName')
+      .optional()
+      .isLength({ max: 100 })
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage('Invalid session name format')
+  ],
+  
+  userId: [
+    param('id')
+      .matches(/^usr_[a-zA-Z0-9]+$/)
+      .withMessage('Invalid user ID format')
+  ],
+  
+  hangarId: [
+    param('hangarId')
+      .trim()
+      .isLength({ min: 1, max: 50 })
+      .matches(/^[a-zA-Z0-9_-]+$/)
+      .withMessage('Invalid hangar ID format')
+  ]
+};
+
 // Initialize authentication system
 auth.initializeUsersDB().catch(console.error);
 
@@ -122,8 +261,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Authentication routes
-app.post('/api/auth/login', auth.handleLogin);
+// Authentication routes (with strict rate limiting and validation)
+app.post('/api/auth/login', loginLimiter, validationRules.login, handleValidationErrors, auth.handleLogin);
 app.post('/api/auth/validate', auth.handleValidateToken);
 app.post('/api/auth/change-password', auth.authenticateToken, auth.handleChangePassword);
 
@@ -272,7 +411,7 @@ function sendSSEUpdate(requestId, data) {
 }
 
 // Main capture endpoint
-app.post('/api/capture', async (req, res) => {
+app.post('/api/capture', captureLimiter, validationRules.capture, handleValidationErrors, async (req, res) => {
   const requestId = Math.random().toString(36).substr(2, 9);
   
   try {
@@ -1656,8 +1795,8 @@ app.get('/api/hangar/:hangarId/quick-preview', async (req, res) => {
     
     const cameraIP = cameraIPs[camera] || cameraIPs['RUL']; // Default to RUL if unknown camera
     const hangarIP = hangarConfig.ipAddress;
-    const username = 'admin';
-    const password = 'H4anGar0NeC4amAdmin';
+    const username = process.env.CAMERA_ADMIN_USERNAME || 'admin';
+    const password = process.env.CAMERA_ADMIN_PASSWORD || '';
     
     // Create a temporary file for the image
     const tempFile = `/tmp/preview_${hangarId}_${Date.now()}.jpg`;

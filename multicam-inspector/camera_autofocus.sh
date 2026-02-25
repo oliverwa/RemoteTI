@@ -15,8 +15,8 @@ CAM_IP="$3"
 CUSTOM_PORT="${4:-}"
 
 # Configuration
-CAM_USER="admin"
-CAM_PASS="H4anGar0NeC4amAdmin"
+CAM_USER="${CAMERA_ADMIN_USERNAME:-admin}"
+CAM_PASS="${CAMERA_ADMIN_PASSWORD}"
 FORWARD_PORT="${CUSTOM_PORT:-8083}"
 
 echo "=== Autofocus for ${CAMERA_NAME} ==="
