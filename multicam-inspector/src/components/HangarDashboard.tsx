@@ -410,19 +410,19 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         progress: 10,
                         assignedTo: 'Everdrone'
                       };
-                    } else if (phases.servicePartner?.status === 'in-progress' || phases.onsiteTI?.status === 'in-progress') {
+                    } else if (phases.missionReset?.status === 'in-progress' || phases.onsiteTI?.status === 'in-progress') {
                       state = 'inspection';
-                      const isBasic = phases.servicePartner?.status === 'in-progress';
-                      const inspection = isBasic ? session.inspections?.servicePartner : session.inspections?.onsiteTI;
+                      const isBasic = phases.missionReset?.status === 'in-progress';
+                      const inspection = isBasic ? session.inspections?.missionReset : session.inspections?.onsiteTI;
                       currentPhase = isBasic 
                         ? (inspection?.progress && inspection.progress !== '0%' 
-                          ? `Service Partner ${inspection.progress} complete`
-                          : 'Performing Service Partner Inspection')
+                          ? `Mission Reset ${inspection.progress} complete`
+                          : 'Performing Mission Reset')
                         : (inspection?.progress && inspection.progress !== '0%'
                           ? `Onsite inspection ${inspection.progress} complete`  
                           : 'Technician performing onsite inspection');
                       activeInspection = {
-                        type: isBasic ? 'Service Partner' : 'Onsite TI',
+                        type: isBasic ? 'Mission Reset' : 'Onsite TI',
                         progress: 50,
                         assignedTo: isBasic ? 'Remote Crew' : 'Everdrone'
                       };
@@ -443,16 +443,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                       // Initial RTI completed but no route decision yet
                       state = 'inspection';
                       currentPhase = '🚨 Initial assessment complete - Choose route';
-                    } else if (phases.initialRTI?.status === 'completed' && phases.servicePartner?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
-                      // Route selected but Service Partner inspection not started
+                    } else if (phases.initialRTI?.status === 'completed' && phases.missionReset?.status === 'pending' && session.workflow?.routeDecision === 'basic') {
+                      // Route selected but Mission Reset inspection not started
                       state = 'inspection';
-                      currentPhase = 'Service Partner inspection pending';
+                      currentPhase = 'Mission Reset inspection pending';
                     } else if (phases.initialRTI?.status === 'completed' && phases.onsiteTI?.status === 'pending' && session.workflow?.routeDecision === 'onsite') {
                       // Route selected but Onsite TI not started
                       state = 'inspection';
                       currentPhase = 'Awaiting technician dispatch';
-                    } else if (phases.servicePartner?.status === 'completed' && !phases.fullRTI?.status && session.workflow?.routeDecision === 'basic') {
-                      // Service Partner inspection completed but Full RTI not started
+                    } else if (phases.missionReset?.status === 'completed' && !phases.fullRTI?.status && session.workflow?.routeDecision === 'basic') {
+                      // Mission Reset inspection completed but Full RTI not started
                       state = 'inspection';
                       currentPhase = 'Full inspection required';
                     } else if (phases.fullRTI?.status === 'completed' && !phases.clearArea?.status) {
@@ -564,8 +564,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     } else if (phases.clearArea?.status === 'completed') {
       // Area is cleared - don't show anything extra
       return null;
-    } else if (routeDecision === 'basic' && (phases.servicePartner?.status === 'pending' || phases.servicePartner?.status === 'in-progress')) {
-      // Service Partner route selected, can perform inspection
+    } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
+      // Mission Reset route selected, can perform inspection
       canPerformBasicTI = true;
     }
     
@@ -576,13 +576,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     if (!routeDecision && getRemoteStatusText()) {
       statusText = getRemoteStatusText();
       statusColor = 'text-yellow-600 dark:text-yellow-300';
-    } else if (routeDecision === 'basic' && !inspections.servicePartner?.path) {
+    } else if (routeDecision === 'basic' && !inspections.missionReset?.path) {
       statusText = 'Ready for Inspection';
       statusColor = 'text-blue-600 dark:text-blue-300';
     } else if (routeDecision === 'onsite') {
       statusText = 'No Action Required';
       statusColor = 'text-gray-600 dark:text-gray-200';
-    } else if (phases.servicePartner?.status === 'completed') {
+    } else if (phases.missionReset?.status === 'completed') {
       statusText = 'Final Validation';
       statusColor = 'text-violet-600 dark:text-violet-400';
     }
@@ -597,7 +597,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 {statusText}
               </span>
               {/* Preparing message inline */}
-              {canPerformBasicTI && !inspections.servicePartner?.path && (
+              {canPerformBasicTI && !inspections.missionReset?.path && (
                 <div className="text-sm text-gray-500 dark:text-gray-200 mt-2">
                   Preparing inspection checklist...
                 </div>
@@ -757,11 +757,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           { 
             id: 'basicTI', 
             icon: FileCheck, 
-            label: 'Service Partner', 
-            status: phases.servicePartner?.status,
-            progress: getProgress(inspections.servicePartner),
-            inspectionPath: inspections.servicePartner?.path,
-            clickable: !!inspections.servicePartner?.path
+            label: 'Mission Reset', 
+            status: phases.missionReset?.status,
+            progress: getProgress(inspections.missionReset),
+            inspectionPath: inspections.missionReset?.path,
+            clickable: !!inspections.missionReset?.path
           },
           { 
             id: 'fullRTI', 
@@ -795,13 +795,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     // Get action button for current phase
     const getActionButton = () => {
-      // Remote users can only perform Service Partner inspection
+      // Remote users can only perform Mission Reset inspection
       const isAllowedForRemoteUser = (stepId: string) => {
         if (!isRemoteUser) return true; // Everdrone users can do everything
-        return stepId === 'basicTI'; // Remote users can only do Service Partner inspection
+        return stepId === 'basicTI'; // Remote users can only do Mission Reset inspection
       };
-      // First check for Full RTI trigger when Service Partner inspection is complete but Full RTI not started
-      if (phases.servicePartner?.status === 'completed' && (!phases.fullRTI?.status || (phases.fullRTI?.status === 'pending')) && routeDecision === 'basic') {
+      // First check for Full RTI trigger when Mission Reset inspection is complete but Full RTI not started
+      if (phases.missionReset?.status === 'completed' && (!phases.fullRTI?.status || (phases.fullRTI?.status === 'pending')) && routeDecision === 'basic') {
         return (
           <button
             onClick={async (e) => {
@@ -909,7 +909,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               const [h, s] = currentStep.inspectionPath!.split('/');
               const typeMap: any = {
                 'initialRTI': 'initial-remote-ti-inspection',
-                'basicTI': 'service-partner-inspection',
+                'basicTI': 'mission-reset',
                 'onsiteTI': 'onsite-ti-inspection',
                 'fullRTI': 'full-remote-ti-inspection'
               };
@@ -1092,7 +1092,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded transition-colors flex flex-col items-center gap-1"
               >
                 <FileCheck className="w-4 h-4" />
-                <span>Service Partner → Full RTI</span>
+                <span>Mission Reset → Full RTI</span>
               </button>
               <button
                 onClick={async (e) => {
@@ -1192,7 +1192,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                           const [h, s] = step.inspectionPath.split('/');
                           const typeMap: any = {
                             'initialRTI': 'initial-remote-ti-inspection',
-                            'basicTI': 'service-partner-inspection',
+                            'basicTI': 'mission-reset',
                             'onsiteTI': 'onsite-ti-inspection',
                             'fullRTI': 'full-remote-ti-inspection'
                           };
@@ -1259,9 +1259,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       
       if (phases.clearArea?.status === 'completed') {
         return <CheckCircle className="w-6 h-6 text-green-600" />;
-      } else if (phases.servicePartner?.status === 'completed') {
+      } else if (phases.missionReset?.status === 'completed') {
         return <Shield className="w-6 h-6 text-purple-600" />;
-      } else if (routeDecision === 'basic' && (phases.servicePartner?.status === 'pending' || phases.servicePartner?.status === 'in-progress')) {
+      } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
         return <FileCheck className="w-6 h-6 text-blue-600" />;
       } else if (routeDecision === 'onsite') {
         return <Wrench className="w-6 h-6 text-gray-500 dark:text-gray-200" />;
@@ -1305,9 +1305,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         return 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-400 shadow-lg hover:shadow-xl';
       }
       
-      // Check if Service Partner inspection is ready to perform
-      if (routeDecision === 'basic' && inspections.servicePartner?.path && phases.servicePartner?.status !== 'completed') {
-        // Service Partner inspection is available - prominent blue gradient
+      // Check if Mission Reset inspection is ready to perform
+      if (routeDecision === 'basic' && inspections.missionReset?.path && phases.missionReset?.status !== 'completed') {
+        // Mission Reset inspection is available - prominent blue gradient
         return 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-500 shadow-xl hover:shadow-2xl';
       }
       
@@ -1361,9 +1361,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       
       if (phases.clearArea?.status === 'completed') {
         return 'No maintenance required';
-      } else if (phases.servicePartner?.status === 'completed') {
+      } else if (phases.missionReset?.status === 'completed') {
         return 'Final Validation';
-      } else if (routeDecision === 'basic' && (phases.servicePartner?.status === 'pending' || phases.servicePartner?.status === 'in-progress')) {
+      } else if (routeDecision === 'basic' && (phases.missionReset?.status === 'pending' || phases.missionReset?.status === 'in-progress')) {
         return 'Ready for Inspection';
       } else if (routeDecision === 'onsite') {
         return 'No Action Required';
@@ -1375,7 +1375,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     // More accurate status based on current phase (Everdrone users)
     if (currentPhase) {
       if (currentPhase.toLowerCase().includes('initial remote ti')) return 'Initial RTI';
-      if (currentPhase.toLowerCase().includes('basic ti') || currentPhase.toLowerCase().includes('service partner')) return 'Service Partner Active';
+      if (currentPhase.toLowerCase().includes('basic ti') || currentPhase.toLowerCase().includes('service partner')) return 'Mission Reset Active';
       if (currentPhase.toLowerCase().includes('remote crew')) return 'Field Team Active';
     }
     
@@ -1678,7 +1678,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 <span>{currentUser}</span>
                 <span className="text-xs text-gray-400 dark:text-gray-100">({
                   userType === 'admin' ? 'Admin' :
-                  userType === 'everdrone' ? 'Everdrone' : 'Service Partner'
+                  userType === 'everdrone' ? 'Everdrone' : 'Mission Reset'
                 })</span>
               </div>
               <button
@@ -1906,7 +1906,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 </div>
               </div>
               
-              {/* Service Partner Inspection Button - Moved to be more prominent */}
+              {/* Mission Reset Button - Moved to be more prominent */}
               {userType === 'service_partner' && hangar.alarmSession?.workflow?.routeDecision === 'basic' && 
                hangar.alarmSession?.inspections?.servicePartner?.path && 
                hangar.alarmSession?.workflow?.phases?.servicePartner?.status !== 'completed' && (
@@ -1914,16 +1914,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const [h, s] = hangar.alarmSession.inspections.servicePartner.path.split('/');
-                      window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=service-partner-inspection&userType=service_partner`;
+                      const [h, s] = hangar.alarmSession.inspections.missionReset.path.split('/');
+                      window.location.href = `/?action=load-session&hangar=${h}&session=${s}&type=mission-reset&userType=service_partner`;
                     }}
                     className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-2"
                   >
                     <FileCheck className="w-5 h-5" />
                     <span>
-                      {hangar.alarmSession?.inspections?.servicePartner?.progress && hangar.alarmSession.inspections.servicePartner.progress !== '0%' 
-                        ? 'Continue Service Partner Inspection' 
-                        : 'Perform Service Partner Inspection'}
+                      {hangar.alarmSession?.inspections?.servicePartner?.progress && hangar.alarmSession.inspections.missionReset.progress !== '0%' 
+                        ? 'Continue Mission Reset' 
+                        : 'Perform Mission Reset'}
                     </span>
                   </button>
                 </div>
@@ -2001,7 +2001,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               
               <div className="flex-1 flex flex-col justify-end">
                 
-                {/* Service Partner - Show centered status for standby state */}
+                {/* Mission Reset - Show centered status for standby state */}
                 {userType === 'service_partner' && hangar.state === 'standby' && hangar.status === 'operational' && (
                   <div className="flex-1 flex items-center justify-center">
                     <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-100 text-green-700 dark:bg-green-500 dark:text-white">

@@ -192,9 +192,9 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
           } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
             inspectionType = 'service-ti-inspection';
           } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
-            inspectionType = 'service-partner-inspection';
-          } else if (firstPart === 'service' || nameLower.startsWith('service_partner')) {
-            inspectionType = 'service-partner-inspection';
+            inspectionType = 'minimal-mission-reset';
+          } else if (firstPart === 'service' || nameLower.startsWith('service_partner') || firstPart === 'minimal' || nameLower.startsWith('minimal_')) {
+            inspectionType = 'minimal-mission-reset';
           }
           
           // Load the session using the same mechanism as browse
@@ -256,8 +256,8 @@ const UnifiedInspectionScreen: React.FC<UnifiedInspectionScreenProps> = ({
       inspectionType = 'extended-ti-inspection';
     } else if (firstPart === 'service' || nameLower.startsWith('service_')) {
       inspectionType = 'service-ti-inspection';
-    } else if (firstPart === 'basic' || nameLower.startsWith('basic_')) {
-      inspectionType = 'service-partner-inspection';
+    } else if (firstPart === 'basic' || nameLower.startsWith('basic_') || firstPart === 'minimal' || nameLower.startsWith('minimal_')) {
+      inspectionType = 'minimal-mission-reset';
     }
     
     console.log('[UnifiedInspectionScreen] handleLoadSession:', {

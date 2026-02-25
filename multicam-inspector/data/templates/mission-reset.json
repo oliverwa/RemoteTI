@@ -1,14 +1,14 @@
 {
-  "inspectionType": "drone_service_partner_inspection",
-  "name": "Service Partner Inspection",
+  "inspectionType": "drone_mission_reset",
+  "name": "Mission Reset",
   "version": "3.0",
-  "description": "Streamlined service partner checklist for battery swap, medkit verification, and essential safety checks",
+  "description": "Mission reset checklist for battery swap, medkit verification, and essential safety checks",
   "metadata": {
     "author": "Oliver Wallin",
     "created": "2024-12-05",
     "updated": "2026-02-12",
     "inspectionMode": "onsite",
-    "safetyNote": "Minimal onsite inspection - RemoteTI handles detailed technical checks"
+    "safetyNote": "Onsite inspection - RemoteTI handles detailed technical checks"
   },
   "tasks": [
     {

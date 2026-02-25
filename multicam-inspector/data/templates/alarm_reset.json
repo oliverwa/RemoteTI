@@ -49,7 +49,7 @@
         "decision": null
       },
       
-      "servicePartner": {
+      "missionReset": {
         "status": "not-applicable",
         "inspectionId": null,
         "startTime": null,
@@ -83,7 +83,7 @@
   
   "inspections": {
     "initialRTI": null,
-    "servicePartner": null,
+    "missionReset": null,
     "onsiteTI": null,
     "fullRTI": null
   },
