@@ -67,7 +67,7 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
           <select
             value={filters.alarmType}
             onChange={(e) => handleFilterChange('alarmType', e.target.value)}
-            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
           >
             <option value="">All types</option>
             {alarmTypes.map(type => (
@@ -84,7 +84,7 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
           <select
             value={filters.droneName}
             onChange={(e) => handleFilterChange('droneName', e.target.value)}
-            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
           >
             <option value="">All drones</option>
             {droneNames.map(name => (
@@ -103,7 +103,7 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
             min={minDate}
             max={maxDate}
             placeholder="From"
-            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
           />
         </div>
         
@@ -117,7 +117,7 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
             min={minDate}
             max={maxDate}
             placeholder="To"
-            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
           />
         </div>
         
@@ -127,7 +127,7 @@ const FlightFilters: React.FC<FlightFiltersProps> = ({
           <select
             value={filters.completionStatus}
             onChange={(e) => handleFilterChange('completionStatus', e.target.value)}
-            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="px-2 py-1 text-xs border border-slate-200 dark:border-slate-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-50"
           >
             <option value="">All statuses</option>
             {completionStatuses.map(status => (

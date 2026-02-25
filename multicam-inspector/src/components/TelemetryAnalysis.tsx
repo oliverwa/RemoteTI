@@ -331,7 +331,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
           </div>
           <div>
             <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Telemetry Data Analysis</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Analyzing flight data for {droneId}</p>
+            <p className="text-gray-500 dark:text-gray-300 text-sm mt-1">Analyzing flight data for {droneId}</p>
           </div>
         </div>
         {onClose && (
@@ -340,7 +340,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             title="Close"
           >
-            <X className="w-5 h-5 text-gray-400 dark:text-gray-300" />
+            <X className="w-5 h-5 text-gray-400 dark:text-gray-200" />
           </button>
         )}
       </div>
@@ -359,7 +359,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-gray-900 dark:text-gray-100">{selectedFile?.filename}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
                       {selectedFile && formatTimestamp(selectedFile.timestamp)} • {selectedFile?.size}
                     </p>
                   </div>
@@ -397,7 +397,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="font-medium text-gray-900 dark:text-gray-100">{file.filename}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
                           {formatTimestamp(file.timestamp)} • {file.size}
                         </p>
                       </div>
@@ -434,7 +434,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
               <RefreshCw className="w-8 h-8 text-blue-600 animate-spin" />
             </div>
             <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">Analyzing Telemetry Data</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">Extracting and validating flight parameters...</p>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">Extracting and validating flight parameters...</p>
             
             <div className="w-full max-w-md mx-auto">
               <div className="bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
@@ -443,7 +443,7 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                   style={{ width: `${analysisProgress}%` }}
                 />
               </div>
-              <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{analysisProgress}% Complete</p>
+              <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{analysisProgress}% Complete</p>
             </div>
           </div>
         </div>
@@ -456,19 +456,19 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
           <div className="flex gap-8 justify-center mb-8">
             <div className="text-center">
               <p className="text-4xl font-bold text-gray-900 dark:text-gray-100">{results.summary.totalChecks}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Checks</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">Checks</p>
             </div>
             <div className="text-center">
               <p className="text-4xl font-bold text-green-500">{results.summary.passed}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Passed</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">Passed</p>
             </div>
             <div className="text-center">
               <p className="text-4xl font-bold text-yellow-500">{results.summary.warnings}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Warnings</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">Warnings</p>
             </div>
             <div className="text-center">
               <p className="text-4xl font-bold text-red-500">{results.summary.failed}</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Failed</p>
+              <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">Failed</p>
             </div>
           </div>
 
@@ -477,23 +477,23 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
             <h3 className="text-lg font-semibold mb-6 text-gray-900 dark:text-gray-100">Flight Mission Details</h3>
             <div className="grid grid-cols-4 gap-8">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Flight Time:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Total Flight Time:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.flightTime}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Max Altitude:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Max Altitude:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.maxAltitude}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Delivery Time:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Delivery Time:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.deliveryTime}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Battery Used:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Battery Used:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.batteryUsed}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Status:</p>
                 <p className={`text-lg font-semibold ${
                   results.flightData.completionStatus === 'completed' ? 'text-green-500' : 
                   results.flightData.completionStatus === 'aborted' ? 'text-red-500' : 'text-yellow-500'
@@ -502,15 +502,15 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Weather:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Weather:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.weatherConditions}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Distance:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Total Distance:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{results.flightData.totalDistance}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Abnormal Events:</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300 mb-1">Abnormal Events:</p>
                 <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {results.flightData.abnormalEvents.length > 0 
                     ? results.flightData.abnormalEvents.join(', ') 
@@ -531,14 +531,14 @@ const TelemetryAnalysis: React.FC<TelemetryAnalysisProps> = ({ droneId, hangarId
                 >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(metric.status)}
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{metric.name}</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-200">{metric.name}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                       {metric.value}
                     </span>
                     {metric.unit && (
-                      <span className="ml-2 text-gray-500 dark:text-gray-400">
+                      <span className="ml-2 text-gray-500 dark:text-gray-300">
                         {metric.unit}
                       </span>
                     )}

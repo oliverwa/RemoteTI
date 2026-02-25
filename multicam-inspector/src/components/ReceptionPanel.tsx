@@ -8,12 +8,12 @@ interface ReceptionPanelProps {
 const ReceptionPanel: React.FC<ReceptionPanelProps> = ({ reception }) => {
   if (!reception) {
     return (
-      <div className="bg-white rounded-lg border p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Signal className="h-5 w-5 text-purple-600" />
-          <h3 className="font-medium text-gray-900">Network Reception</h3>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100">Network Reception</h3>
         </div>
-        <p className="text-sm text-gray-500">No reception data available</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">No reception data available</p>
       </div>
     );
   }
@@ -64,12 +64,12 @@ const ReceptionPanel: React.FC<ReceptionPanelProps> = ({ reception }) => {
   const overallQuality = getSignalQuality(avgSignal);
 
   return (
-    <div className="bg-white rounded-lg border p-3">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
       <div className="flex items-center gap-2 mb-2">
         <Signal className="h-4 w-4 text-purple-600" />
-        <h3 className="font-medium text-gray-900 text-sm">Network Reception</h3>
+        <h3 className="font-medium text-gray-900 dark:text-gray-100 text-sm">Network Reception</h3>
         {reception.haloFirmware && (
-          <span className="text-xs text-gray-500 ml-auto">HALO v{reception.haloFirmware}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400 ml-auto">HALO v{reception.haloFirmware}</span>
         )}
       </div>
 
@@ -79,8 +79,8 @@ const ReceptionPanel: React.FC<ReceptionPanelProps> = ({ reception }) => {
           {simCards.map(sim => {
             const quality = getSignalQuality(sim.rssi, sim.rxLevel);
             return (
-              <div key={sim.id} className="bg-gray-50 rounded p-1.5 text-center">
-                <div className="text-xs font-medium text-gray-600 mb-0.5">SIM {sim.id}</div>
+              <div key={sim.id} className="bg-gray-50 dark:bg-gray-700 rounded p-1.5 text-center">
+                <div className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-0.5">SIM {sim.id}</div>
                 <div className="mb-1">
                   <span className={`inline-block px-1 py-0 rounded text-xs font-medium ${getOperatorColor(sim.carrier)}`}>
                     {sim.carrier}
@@ -128,7 +128,7 @@ const ReceptionPanel: React.FC<ReceptionPanelProps> = ({ reception }) => {
                 </>
               )}
             </div>
-            <div className="flex gap-3 text-xs text-gray-600">
+            <div className="flex gap-3 text-xs text-gray-600 dark:text-gray-400">
               <span>Active: <span className="font-medium">{simCards.length}/4</span></span>
               <span>Avg: <span className="font-medium">{avgSignal.toFixed(1)} dBm</span></span>
             </div>

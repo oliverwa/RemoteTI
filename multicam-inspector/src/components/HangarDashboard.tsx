@@ -55,7 +55,7 @@ const DarkModeButton: React.FC = () => {
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+      className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-100"
       title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDarkMode ? (
@@ -136,17 +136,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       case 'passed':
         return {
           bg: 'bg-green-50 dark:bg-green-900/30',
-          text: 'text-green-600 dark:text-green-400'
+          text: 'text-green-600 dark:text-green-300'
         };
       case 'failed':
         return {
           bg: 'bg-red-50 dark:bg-red-600/20',
-          text: 'text-red-600 dark:text-red-500'
+          text: 'text-red-600 dark:text-red-400'
         };
       case 'partial':
         return {
           bg: 'bg-yellow-50 dark:bg-yellow-900/30',
-          text: 'text-yellow-600 dark:text-yellow-400'
+          text: 'text-yellow-600 dark:text-yellow-300'
         };
       case 'pending':
         return {
@@ -571,17 +571,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     // Get status text for display in header
     let statusText = '';
-    let statusColor = 'text-gray-600 dark:text-gray-300';
+    let statusColor = 'text-gray-600 dark:text-gray-200';
     
     if (!routeDecision && getRemoteStatusText()) {
       statusText = getRemoteStatusText();
-      statusColor = 'text-yellow-600 dark:text-yellow-400';
+      statusColor = 'text-yellow-600 dark:text-yellow-300';
     } else if (routeDecision === 'basic' && !inspections.servicePartner?.path) {
       statusText = 'Ready for Inspection';
-      statusColor = 'text-blue-600 dark:text-blue-400';
+      statusColor = 'text-blue-600 dark:text-blue-300';
     } else if (routeDecision === 'onsite') {
       statusText = 'No Action Required';
-      statusColor = 'text-gray-600 dark:text-gray-300';
+      statusColor = 'text-gray-600 dark:text-gray-200';
     } else if (phases.servicePartner?.status === 'completed') {
       statusText = 'Final Validation';
       statusColor = 'text-violet-600 dark:text-violet-400';
@@ -598,7 +598,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               </span>
               {/* Preparing message inline */}
               {canPerformBasicTI && !inspections.servicePartner?.path && (
-                <div className="text-sm text-gray-500 dark:text-gray-300 mt-2">
+                <div className="text-sm text-gray-500 dark:text-gray-200 mt-2">
                   Preparing inspection checklist...
                 </div>
               )}
@@ -831,7 +831,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       // Check if Initial RTI is capturing images (in-progress but no inspection path yet)
       if (phases.initialRTI?.status === 'in-progress' && !inspections.initialRTI?.path) {
         return (
-          <div className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+          <div className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-200">
             <RefreshCw className="w-3 h-3 animate-spin" />
             <span>Capturing Initial RTI images...</span>
           </div>
@@ -842,7 +842,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       if (phases.initialRTI?.status === 'in-progress' && inspections.initialRTI?.path) {
         if (!isAllowedForRemoteUser('initialRTI')) {
           return (
-            <div className="mt-3 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-xs rounded border border-gray-200 dark:border-gray-700">
+            <div className="mt-3 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-200 text-xs rounded border border-gray-200 dark:border-gray-700">
               Initial RTI (Everdrone only)
             </div>
           );
@@ -864,7 +864,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       // Check if Full RTI is capturing images (in-progress but no inspection path yet)
       if (phases.fullRTI?.status === 'in-progress' && !inspections.fullRTI?.path) {
         return (
-          <div className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+          <div className="mt-3 flex items-center gap-2 text-xs text-gray-600 dark:text-gray-200">
             <RefreshCw className="w-3 h-3 animate-spin" />
             <span>Capturing Full RTI images...</span>
           </div>
@@ -896,7 +896,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         
         if (!isAllowedForRemoteUser(currentStep.id)) {
           return (
-            <div className="mt-3 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 text-xs rounded border border-gray-200 dark:border-gray-700">
+            <div className="mt-3 px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-200 text-xs rounded border border-gray-200 dark:border-gray-700">
               {currentStep.label} (Everdrone only)
             </div>
           );
@@ -1211,7 +1211,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     >
                       <Icon className={`
                         w-4 h-4
-                        ${isDisabled ? 'text-gray-500 dark:text-gray-400' : ''}
+                        ${isDisabled ? 'text-gray-500 dark:text-gray-100' : ''}
                         ${!isDisabled && highlightRoute ? 'text-amber-600' : ''}
                         ${!isDisabled && !highlightRoute && (isCompleted || isInProgress) ? 'text-white' : ''}
                         ${!isDisabled && !highlightRoute && !(isCompleted || isInProgress) ? 'text-gray-400' : ''}
@@ -1264,7 +1264,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       } else if (routeDecision === 'basic' && (phases.servicePartner?.status === 'pending' || phases.servicePartner?.status === 'in-progress')) {
         return <FileCheck className="w-6 h-6 text-blue-600" />;
       } else if (routeDecision === 'onsite') {
-        return <Wrench className="w-6 h-6 text-gray-500 dark:text-gray-300" />;
+        return <Wrench className="w-6 h-6 text-gray-500 dark:text-gray-200" />;
       } else if (phases.flight?.status) {
         return <Clock className="w-6 h-6 text-yellow-600" />;
       }
@@ -1282,7 +1282,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       case 'verification':
         return <Radio className="w-6 h-6 text-purple-600" />;
       default:
-        return <CheckCircle className="w-6 h-6 text-gray-500 dark:text-gray-300" />;
+        return <CheckCircle className="w-6 h-6 text-gray-500 dark:text-gray-200" />;
     }
   };
 
@@ -1658,8 +1658,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-gray-400 dark:text-gray-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-300">Loading hangar statuses...</p>
+          <RefreshCw className="w-8 h-8 text-gray-400 dark:text-gray-300 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-200">Loading hangar statuses...</p>
         </div>
       </div>
     );
@@ -1673,17 +1673,17 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Hangar Dashboard</h1>
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 px-3 py-1.5 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 px-3 py-1.5 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                 <User className="w-4 h-4" />
                 <span>{currentUser}</span>
-                <span className="text-xs text-gray-400 dark:text-gray-400">({
+                <span className="text-xs text-gray-400 dark:text-gray-100">({
                   userType === 'admin' ? 'Admin' :
                   userType === 'everdrone' ? 'Everdrone' : 'Service Partner'
                 })</span>
               </div>
               <button
                 onClick={handleRefresh}
-                className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-100"
                 title="Refresh"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -1692,7 +1692,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               {userType === 'admin' && (
                 <button
                   onClick={() => setShowAdminPanel(true)}
-                  className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                  className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-100"
                   title="Admin Settings"
                 >
                   <Settings className="w-4 h-4" />
@@ -1723,7 +1723,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 onClick={onLogout}
                 variant="ghost"
                 size="sm"
-                className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                className="text-gray-600 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-100"
               >
                 Logout
               </Button>
@@ -1801,7 +1801,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
                     <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{hangar.name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-200 mt-1">
                       Drone: {hangar.assignedDrone || 'Not assigned'}
                     </p>
                   </div>
@@ -1826,7 +1826,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
                         title="Quick camera preview"
                       >
-                        <Eye className="w-5 h-5 text-gray-400 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-200" />
+                        <Eye className="w-5 h-5 text-gray-400 dark:text-gray-200 group-hover:text-gray-600 dark:group-hover:text-gray-200" />
                       </button>
                     )}
                     {/* Light Control Button */}
@@ -1881,7 +1881,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                         <Lightbulb className={`w-5 h-5 ${
                           lightsLoading[hangar.id] ? 'text-gray-300 animate-pulse' :
                           lightsOn[hangar.id] ? 'text-yellow-500' : 
-                          'text-gray-400 dark:text-gray-300 group-hover:text-gray-600 dark:group-hover:text-gray-200'
+                          'text-gray-400 dark:text-gray-200 group-hover:text-gray-600 dark:group-hover:text-gray-200'
                         }`} />
                       </button>
                     );
@@ -2053,7 +2053,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                     {/* Show maintenance required message when overdue */}
                     {hangar.state === 'standby' && (userType === 'admin' || userType === 'everdrone') && hangar.status === 'operational' && isMaintenanceOverdue && (
                       <div className="flex justify-center mt-4">
-                        <div className="text-sm text-red-600 dark:text-red-500 font-medium">
+                        <div className="text-sm text-red-600 dark:text-red-400 font-medium">
                           Cannot trigger workflow - Maintenance required
                         </div>
                       </div>
@@ -2205,7 +2205,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   {previewModal.hangarName} - Live Camera Preview
                 </h3>
                 <div className="flex items-center gap-4 mt-2">
-                  <label className="text-sm text-gray-600 dark:text-gray-300">Camera:</label>
+                  <label className="text-sm text-gray-600 dark:text-gray-200">Camera:</label>
                   <select
                     value={selectedCamera}
                     onChange={(e) => {
@@ -2250,7 +2250,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 }}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500 dark:text-gray-300" />
+                <X className="w-5 h-5 text-gray-500 dark:text-gray-200" />
               </button>
             </div>
             
@@ -2259,8 +2259,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               {previewError ? (
                 <div className="text-center">
                   <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                  <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">Failed to load camera preview</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-300">{previewError}</p>
+                  <p className="text-gray-700 dark:text-gray-200 font-medium mb-2">Failed to load camera preview</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-200">{previewError}</p>
                   <button
                     onClick={() => {
                       setPreviewError(null);
@@ -2337,11 +2337,11 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               <div className="flex justify-between items-center">
                 <div className="flex-1">
-                  <p className="text-xs text-gray-500 dark:text-gray-300">
+                  <p className="text-xs text-gray-500 dark:text-gray-200">
                     This is a live preview from the {selectedCamera} camera. No lights are turned on for this preview.
                   </p>
                   {previewLoadTime && (
-                    <p className="text-xs text-gray-400 dark:text-gray-300 mt-1">
+                    <p className="text-xs text-gray-400 dark:text-gray-200 mt-1">
                       Connection: {previewLoadTime < 300 ? '🟢 Excellent' :
                                   previewLoadTime < 600 ? '🟢 Very Good' : 
                                   previewLoadTime < 1200 ? '🟡 Good' : 

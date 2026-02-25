@@ -151,7 +151,7 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
           <Battery className="h-6 w-6 text-gray-400" />
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Battery Performance</h3>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400">No battery data available</p>
+        <p className="text-sm text-gray-500 dark:text-gray-300">No battery data available</p>
       </div>
     );
   }
@@ -173,9 +173,9 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
           <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-lg">Battery Performance</h3>
         </div>
         <span className={`text-sm px-3 py-1.5 rounded-full font-medium ${
-          healthStatus.color === 'green' ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-200' :
-          healthStatus.color === 'yellow' ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-200' :
-          'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-200'
+          healthStatus.color === 'green' ? 'bg-green-100 dark:bg-green-800 text-green-700 dark:text-green-100' :
+          healthStatus.color === 'yellow' ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-700 dark:text-yellow-100' :
+          'bg-red-100 dark:bg-red-800 text-red-700 dark:text-red-100'
         }`}>
           {healthStatus.text}
         </span>
@@ -184,17 +184,17 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
       <div className="space-y-4">
         {/* Primary Consumption Metrics */}
         <div className="bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-900 dark:to-green-900 rounded-xl p-6 border border-green-200 dark:border-green-600">
-          <h4 className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-3">Consumption Rates</h4>
+          <h4 className="text-base font-semibold text-gray-700 dark:text-gray-200 mb-3">Consumption Rates</h4>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white dark:bg-gray-600 rounded-lg p-4">
               <div className="flex items-center gap-1 mb-1">
                 <Clock className="h-4 w-4 text-blue-500" />
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Per Minute</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Per Minute</span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {metrics.consumptionPerMinute.toFixed(2)}%
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                 ~{metrics.estimatedTotalFlightTime.toFixed(0)} min max flight
               </p>
             </div>
@@ -202,12 +202,12 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
             <div className="bg-white dark:bg-gray-600 rounded-lg p-4">
               <div className="flex items-center gap-1 mb-1">
                 <MapPin className="h-4 w-4 text-purple-500" />
-                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Per Kilometer</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-300">Per Kilometer</span>
               </div>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {metrics.consumptionPerKm.toFixed(2)}%
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-300 mt-1">
                 ~{metrics.estimatedTotalRange.toFixed(1)} km range
               </p>
             </div>
@@ -219,17 +219,17 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center gap-1.5 mb-2">
               <Activity className="h-5 w-5 text-indigo-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Flight Efficiency</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Flight Efficiency</span>
             </div>
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-600 dark:text-gray-400">Range per %</span>
+                <span className="text-xs text-gray-600 dark:text-gray-300">Range per %</span>
                 <span className="text-base font-bold text-gray-900 dark:text-gray-100">
                   {metrics.kmPerPercent.toFixed(3)} km
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-600 dark:text-gray-400">Time per %</span>
+                <span className="text-xs text-gray-600 dark:text-gray-300">Time per %</span>
                 <span className="text-base font-bold text-gray-900 dark:text-gray-100">
                   {metrics.minutesPerPercent.toFixed(2)} min
                 </span>
@@ -240,11 +240,11 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center gap-1.5 mb-2">
               <TrendingDown className="h-5 w-5 text-red-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Battery Status</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Battery Status</span>
             </div>
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-600 dark:text-gray-400">Total Used</span>
+                <span className="text-xs text-gray-600 dark:text-gray-300">Total Used</span>
                 <span className="text-base font-bold text-gray-900 dark:text-gray-100">
                   {metrics.batteryUsed.toFixed(1)}%
                 </span>
@@ -265,25 +265,25 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
         {/* Segment Analysis */}
         {outDistance && homeDistance && (
           <div className="border-t border-gray-200 dark:border-gray-600 pt-3">
-            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Waypoint Segment Analysis</h4>
+            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Waypoint Segment Analysis</h4>
             <div className="space-y-3">
               {/* Outbound Segment */}
               <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-3.5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Outbound</span>
-                  <span className="text-base font-bold text-blue-900 dark:text-blue-100">
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-100">Outbound</span>
+                  <span className="text-base font-bold text-blue-900 dark:text-blue-50">
                     {metrics.outConsumption.toFixed(1)}% total
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-white dark:bg-gray-600 rounded p-2">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 block">Per km</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 block">Per km</span>
                     <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                       {metrics.outConsumptionPerKm.toFixed(2)}%
                     </span>
                   </div>
                   <div className="bg-white dark:bg-gray-600 rounded p-2">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 block">Per minute</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 block">Per minute</span>
                     <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                       {metrics.outConsumptionPerMinute.toFixed(2)}%
                     </span>
@@ -293,20 +293,20 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
               {/* Return Segment */}
               <div className="bg-green-50 dark:bg-green-900 rounded-lg p-3.5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-green-800 dark:text-green-200">Return</span>
-                  <span className="text-base font-bold text-green-900 dark:text-green-100">
+                  <span className="text-sm font-medium text-green-800 dark:text-green-100">Return</span>
+                  <span className="text-base font-bold text-green-900 dark:text-green-50">
                     {metrics.homeConsumption.toFixed(1)}% total
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-white dark:bg-gray-600 rounded p-2">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 block">Per km</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 block">Per km</span>
                     <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                       {metrics.homeConsumptionPerKm.toFixed(2)}%
                     </span>
                   </div>
                   <div className="bg-white dark:bg-gray-600 rounded p-2">
-                    <span className="text-xs text-gray-600 dark:text-gray-400 block">Per minute</span>
+                    <span className="text-xs text-gray-600 dark:text-gray-300 block">Per minute</span>
                     <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                       {metrics.homeConsumptionPerMinute.toFixed(2)}%
                     </span>
@@ -321,18 +321,18 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
         {battery?.averageVoltage && (
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Voltage Stats</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Voltage Stats</span>
               <div className="flex gap-3 text-sm">
-                <span className="text-gray-700 dark:text-gray-300">
+                <span className="text-gray-700 dark:text-gray-200">
                   Avg: <strong className="text-gray-900 dark:text-gray-100">{battery.averageVoltage.toFixed(1)}V</strong>
                 </span>
                 {battery?.minVoltage && (
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-gray-700 dark:text-gray-200">
                     Min: <strong className="text-gray-900 dark:text-gray-100">{battery.minVoltage.toFixed(1)}V</strong>
                   </span>
                 )}
                 {metrics.voltageDrop > 0 && (
-                  <span className="text-gray-700 dark:text-gray-300">
+                  <span className="text-gray-700 dark:text-gray-200">
                     Drop: <strong className="text-orange-600">{metrics.voltageDrop.toFixed(1)}V</strong>
                   </span>
                 )}
@@ -345,18 +345,18 @@ const BatteryMetrics: React.FC<BatteryMetricsProps> = ({
         <div className="bg-blue-50 dark:bg-blue-900 rounded-lg p-4 border border-blue-200 dark:border-blue-600">
           <div className="flex items-center gap-1.5 mb-2">
             <AlertCircle className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-medium text-blue-800 dark:text-blue-200">Remaining Estimates</span>
+            <span className="text-sm font-medium text-blue-800 dark:text-blue-100">Remaining Estimates</span>
           </div>
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
-              <span className="text-blue-700 dark:text-blue-300">Flight Time:</span>
-              <strong className="text-blue-900 dark:text-blue-100 ml-1">
+              <span className="text-blue-700 dark:text-blue-200">Flight Time:</span>
+              <strong className="text-blue-900 dark:text-blue-50 ml-1">
                 {metrics.estimatedRemainingTime.toFixed(0)} min
               </strong>
             </div>
             <div>
-              <span className="text-blue-700 dark:text-blue-300">Range:</span>
-              <strong className="text-blue-900 dark:text-blue-100 ml-1">
+              <span className="text-blue-700 dark:text-blue-200">Range:</span>
+              <strong className="text-blue-900 dark:text-blue-50 ml-1">
                 {metrics.estimatedRemainingRange.toFixed(1)} km
               </strong>
             </div>

@@ -21,12 +21,12 @@ interface WeatherPanelProps {
 const WeatherPanel: React.FC<WeatherPanelProps> = ({ weatherData }) => {
   if (!weatherData) {
     return (
-      <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Cloud className="w-4 h-4 text-gray-400" />
-          <h3 className="font-medium text-sm text-gray-700">Weather Conditions</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-200">Weather Conditions</h3>
         </div>
-        <p className="text-xs text-gray-500">No weather data available</p>
+        <p className="text-xs text-gray-500 dark:text-gray-200">No weather data available</p>
       </div>
     );
   }
@@ -68,96 +68,96 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({ weatherData }) => {
   };
 
   return (
-    <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Cloud className="w-4 h-4 text-blue-600" />
-          <h3 className="font-medium text-sm text-gray-700">Weather Conditions</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-200">Weather Conditions</h3>
         </div>
         {weatherData.stationName && (
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-200">
             <MapPin className="w-3 h-3" />
             <span>{weatherData.stationName}</span>
             {weatherData.stationDistance && (
-              <span className="text-gray-400">({weatherData.stationDistance.toFixed(1)} km)</span>
+              <span className="text-gray-400 dark:text-gray-300">({weatherData.stationDistance.toFixed(1)} km)</span>
             )}
           </div>
         )}
       </div>
 
       {/* Weather Grid */}
-      <div className="bg-white rounded-lg p-3">
+      <div className="bg-white dark:bg-gray-700 rounded-lg p-3">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {/* Temperature */}
           <div className="flex items-start gap-2">
-            <div className="p-1.5 bg-orange-100 rounded">
+            <div className="p-1.5 bg-orange-100 dark:bg-orange-900 rounded">
               <Thermometer className="w-3 h-3 text-orange-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Temperature</p>
-              <p className="text-sm font-semibold text-gray-900">{formatTemp(weatherData.tempPrognosis)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">Temperature</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">{formatTemp(weatherData.tempPrognosis)}</p>
             </div>
           </div>
 
           {/* Wind Speed */}
           <div className="flex items-start gap-2">
-            <div className="p-1.5 bg-blue-100 rounded">
+            <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded">
               <Wind className="w-3 h-3 text-blue-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Wind</p>
-              <p className="text-sm font-semibold text-gray-900">{formatWind(weatherData.windPrognosis)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">Wind</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">{formatWind(weatherData.windPrognosis)}</p>
               {weatherData.gustPrognosis && weatherData.gustPrognosis > 0 && (
-                <p className="text-xs text-gray-600">Gusts: {formatWind(weatherData.gustPrognosis)}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-200">Gusts: {formatWind(weatherData.gustPrognosis)}</p>
               )}
             </div>
           </div>
 
           {/* Wind Direction */}
           <div className="flex items-start gap-2">
-            <div className="p-1.5 bg-green-100 rounded">
+            <div className="p-1.5 bg-green-100 dark:bg-green-900 rounded">
               <Navigation2 className="w-3 h-3 text-green-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Wind Direction</p>
-              <p className="text-sm font-semibold text-gray-900">{formatWindDirection(weatherData.winddirPrognosis)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">Wind Direction</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">{formatWindDirection(weatherData.winddirPrognosis)}</p>
             </div>
           </div>
 
           {/* Precipitation */}
           <div className="flex items-start gap-2">
-            <div className="p-1.5 bg-cyan-100 rounded">
+            <div className="p-1.5 bg-cyan-100 dark:bg-cyan-900 rounded">
               <Droplets className="w-3 h-3 text-cyan-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Precipitation</p>
-              <p className="text-sm font-semibold text-gray-900">{formatPrecipitation(weatherData.percipitationPrognosis)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">Precipitation</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">{formatPrecipitation(weatherData.percipitationPrognosis)}</p>
             </div>
           </div>
 
           {/* Visibility */}
           <div className="flex items-start gap-2">
-            <div className="p-1.5 bg-purple-100 rounded">
+            <div className="p-1.5 bg-purple-100 dark:bg-purple-900 rounded">
               <Eye className="w-3 h-3 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">Visibility</p>
-              <p className="text-sm font-semibold text-gray-900">{formatVisibility(weatherData.visibilityPrognosis)}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-200">Visibility</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">{formatVisibility(weatherData.visibilityPrognosis)}</p>
             </div>
           </div>
 
           {/* Hangar Wind */}
           {(weatherData.windHangar !== undefined || weatherData.gustHangar !== undefined) && (
             <div className="flex items-start gap-2">
-              <div className="p-1.5 bg-gray-100 rounded">
-                <Wind className="w-3 h-3 text-gray-600" />
+              <div className="p-1.5 bg-gray-100 dark:bg-gray-700 rounded">
+                <Wind className="w-3 h-3 text-gray-600 dark:text-gray-200" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">Hangar Wind</p>
-                <p className="text-sm font-semibold text-gray-900">{formatWind(weatherData.windHangar)}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-200">Hangar Wind</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-gray-50">{formatWind(weatherData.windHangar)}</p>
                 {weatherData.gustHangar && weatherData.gustHangar > 0 && (
-                  <p className="text-xs text-gray-600">Gusts: {formatWind(weatherData.gustHangar)}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-200">Gusts: {formatWind(weatherData.gustHangar)}</p>
                 )}
               </div>
             </div>
@@ -167,7 +167,7 @@ const WeatherPanel: React.FC<WeatherPanelProps> = ({ weatherData }) => {
         {/* Weather Assessment */}
         <div className="mt-3 pt-3 border-t">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">Flight Conditions</span>
+            <span className="text-xs text-gray-500 dark:text-gray-200">Flight Conditions</span>
             {(() => {
               const wind = weatherData.windPrognosis || 0;
               const gust = weatherData.gustPrognosis || 0;

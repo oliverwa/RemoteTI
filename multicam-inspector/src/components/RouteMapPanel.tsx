@@ -385,9 +385,9 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
       <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Map className="w-4 h-4 text-gray-400" />
-          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-300">Flight Route</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-50">Flight Route</h3>
         </div>
-        <p className="text-xs text-gray-500 dark:text-gray-400">No route data available</p>
+        <p className="text-xs text-gray-500 dark:text-gray-100">No route data available</p>
       </div>
     );
   }
@@ -402,9 +402,9 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Map className="w-4 h-4 text-blue-600" />
-          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-300">Flight Route</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-50">Flight Route</h3>
         </div>
-        <div className="text-gray-500 dark:text-gray-400 text-xs">
+        <div className="text-gray-500 dark:text-gray-100 text-xs">
           Total: {formatDistance((routeData?.outDistance || 0) + (routeData?.homeDistance || 0))}
         </div>
       </div>
@@ -412,22 +412,22 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
       <div className="bg-white dark:bg-gray-700 rounded-lg p-3 space-y-3">
         {/* Route Map Visualization */}
         {(hasOutRoute || hasHomeRoute || hasTelemetry) && bounds ? (
-          <div className="bg-gray-50 rounded-lg p-2 relative overflow-hidden">
+          <div className="bg-gray-50 dark:bg-gray-600 rounded-lg p-2 relative overflow-hidden">
             {/* Zoom Controls */}
-            <div className="absolute top-2 right-2 z-10 bg-white rounded-lg shadow-md p-1 flex flex-col gap-1">
+            <div className="absolute top-2 right-2 z-10 bg-white dark:bg-gray-700 rounded-lg shadow-md p-1 flex flex-col gap-1">
               <button
                 onClick={() => setZoom(prev => Math.min(5, prev * 1.2))}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                 title="Zoom In"
               >
                 <ZoomIn className="w-4 h-4" />
               </button>
-              <div className="text-xs text-center font-medium text-gray-600 py-1">
+              <div className="text-xs text-center font-medium text-gray-600 dark:text-gray-50 py-1">
                 {Math.round(zoom * 100)}%
               </div>
               <button
                 onClick={() => setZoom(prev => Math.max(0.5, prev / 1.2))}
-                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                 title="Zoom Out"
               >
                 <ZoomOut className="w-4 h-4" />
@@ -438,7 +438,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                     setZoom(1);
                     setPan({ x: 0, y: 0 });
                   }}
-                  className="p-2 hover:bg-gray-100 rounded transition-colors"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
                   title="Reset View"
                 >
                   <Maximize2 className="w-4 h-4" />
@@ -626,8 +626,8 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
             {/* Current Metrics Summary */}
             {currentPoint && currentPointIndex >= 0 && currentPointIndex < telemetryPoints.length && (
               <div className="grid grid-cols-6 gap-2 mt-3">
-                <div className="bg-gradient-to-br from-blue-50 to-white rounded-lg p-2 border border-blue-200">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">AGL Height</div>
+                <div className="bg-gradient-to-br from-blue-50 to-white dark:from-blue-900 dark:to-gray-800 rounded-lg p-2 border border-blue-200 dark:border-blue-600">
+                  <div className="text-[10px] text-gray-500 dark:text-gray-100 uppercase tracking-wide">AGL Height</div>
                   <div className="text-sm font-bold text-blue-700 mt-0.5">
                     {currentPoint.aglHeight.toFixed(1)}m
                     {currentPoint.altitudeAmsl && (
@@ -636,20 +636,20 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                   </div>
                 </div>
                 <div className="bg-gradient-to-br from-orange-50 to-white rounded-lg p-2 border border-orange-200">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">H Speed</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-100 uppercase tracking-wide">H Speed</div>
                   <div className="text-sm font-bold text-orange-600 mt-0.5">
                     {(currentPoint.horizontalSpeed * 3.6).toFixed(0)} km/h
                   </div>
                 </div>
                 <div className="bg-gradient-to-br from-purple-50 to-white rounded-lg p-2 border border-purple-200">
-                  <div className="text-[10px] text-gray-500 uppercase tracking-wide">V Speed</div>
+                  <div className="text-[10px] text-gray-500 dark:text-gray-100 uppercase tracking-wide">V Speed</div>
                   <div className={`text-sm font-bold mt-0.5 ${currentPoint.verticalSpeed > 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {currentPoint.verticalSpeed > 0 ? '+' : ''}{currentPoint.verticalSpeed.toFixed(2)} m/s
                   </div>
                 </div>
                 {currentPoint.batteryPercentage !== undefined && (
                   <div className="bg-gradient-to-br from-green-50 to-white rounded-lg p-2 border border-green-200">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Battery</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-100 uppercase tracking-wide">Battery</div>
                     <div className={`text-sm font-bold mt-0.5 ${
                       currentPoint.batteryPercentage > 30 ? 'text-green-600' :
                       currentPoint.batteryPercentage > 15 ? 'text-yellow-600' : 'text-red-600'
@@ -660,7 +660,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 )}
                 {currentPoint.batteryVoltage !== undefined && (
                   <div className="bg-gradient-to-br from-indigo-50 to-white rounded-lg p-2 border border-indigo-200">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Voltage</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-100 uppercase tracking-wide">Voltage</div>
                     <div className="text-sm font-bold text-indigo-600 mt-0.5">
                       {currentPoint.batteryVoltage?.toFixed(1)}V
                     </div>
@@ -668,7 +668,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 )}
                 {weatherData && weatherData.windPrognosis && (
                   <div className="bg-gradient-to-br from-cyan-50 to-white rounded-lg p-2 border border-cyan-200">
-                    <div className="text-[10px] text-gray-500 uppercase tracking-wide">Wind</div>
+                    <div className="text-[10px] text-gray-500 dark:text-gray-100 uppercase tracking-wide">Wind</div>
                     <div className="flex items-center justify-between">
                       <div className="text-sm font-bold text-cyan-700">
                         {weatherData.windPrognosis.toFixed(1)} m/s
@@ -703,7 +703,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
             {hasTelemetry && (
               <div className="mt-4 space-y-3">
                 {/* Timeline slider */}
-                <div className="bg-white rounded-lg p-3 border border-gray-200">
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium text-gray-700">Flight Timeline</span>
                     <span className="text-xs text-gray-500">
@@ -753,8 +753,8 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 </div>
 
                 {/* Route color mode selector */}
-                <div className="mb-3 p-2 bg-gray-50 rounded-lg">
-                  <label className="text-xs font-medium text-gray-700 mb-1 block">Route Coloring</label>
+                <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <label className="text-xs font-medium text-gray-700 dark:text-gray-50 mb-1 block">Route Coloring</label>
                   <div className="flex gap-2">
                     <label className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -765,7 +765,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                         onChange={(e) => setRouteColorMode('speed')}
                         className="w-3 h-3"
                       />
-                      <span className="text-xs">Speed</span>
+                      <span className="text-xs text-gray-700 dark:text-gray-50">Speed</span>
                     </label>
                     <label className="flex items-center gap-1 cursor-pointer">
                       <input
@@ -776,7 +776,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                         onChange={(e) => setRouteColorMode('altitude')}
                         className="w-3 h-3"
                       />
-                      <span className="text-xs">Altitude</span>
+                      <span className="text-xs text-gray-700 dark:text-gray-50">Altitude</span>
                     </label>
                     {telemetryPoints.some(p => p.batteryPercentage !== undefined) && (
                       <label className="flex items-center gap-1 cursor-pointer">
@@ -788,7 +788,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                           onChange={(e) => setRouteColorMode('battery')}
                           className="w-3 h-3"
                         />
-                        <span className="text-xs">Battery</span>
+                        <span className="text-xs text-gray-700 dark:text-gray-50">Battery</span>
                       </label>
                     )}
                   </div>
@@ -797,14 +797,14 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 
                 {/* Flight Metrics Dashboard */}
                 {telemetryPoints.length > 0 && (
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-100 mt-3 p-3">
+                  <div className="bg-white dark:bg-gray-700 rounded-xl shadow-sm border border-gray-100 dark:border-gray-600 mt-3 p-3">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                      <h4 className="text-sm font-semibold text-gray-800 dark:text-gray-50 flex items-center gap-2">
                         <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
                         Flight Metrics
                       </h4>
                       {currentPointIndex > 0 && currentPointIndex < telemetryPoints.length && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-100">
                           {((currentPointIndex / (telemetryPoints.length - 1)) * 100).toFixed(0)}% Complete
                         </span>
                       )}
@@ -812,9 +812,9 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                     
                     {/* Altitude & Terrain Timeline */}
                     <div className="space-y-3">
-                      <div className="bg-gradient-to-r from-blue-50 to-sky-50 rounded-lg p-2">
+                      <div className="bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-lg p-2">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-50 flex items-center gap-1.5">
                             <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                             Altitude (AMSL)
                           </span>
@@ -822,18 +822,18 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                             {telemetryPoints.some(p => p.altitudeAmsl) && (
                               <span className="flex items-center gap-1">
                                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                <span className="text-gray-600">Altitude</span>
+                                <span className="text-gray-600 dark:text-gray-100">Altitude</span>
                               </span>
                             )}
                             {telemetryPoints.some(p => p.terrainElevationAmsl) && (
                               <span className="flex items-center gap-1">
                                 <div className="w-2 h-2 bg-amber-600 rounded-full"></div>
-                                <span className="text-gray-600">Terrain</span>
+                                <span className="text-gray-600 dark:text-gray-100">Terrain</span>
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="relative h-20 bg-white rounded-md overflow-hidden border border-gray-200">
+                        <div className="relative h-20 bg-white dark:bg-gray-800 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
                         <svg className="w-full h-full">
                           {/* Grid lines */}
                           {[0, 25, 50, 75, 100].map(pct => (
@@ -978,17 +978,17 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                     </div>
                     
                     {/* Speed Timeline */}
-                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-2">
+                    <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-lg p-2">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
                           <Gauge className="w-3.5 h-3.5 text-orange-600" />
                           Speed (km/h)
                         </span>
-                        <span className="text-xs text-gray-600">
+                        <span className="text-xs text-gray-600 dark:text-gray-100">
                           Max: {(Math.max(...telemetryPoints.map(p => p.horizontalSpeed)) * 3.6).toFixed(1)} km/h
                         </span>
                       </div>
-                      <div className="relative h-20 bg-white rounded-md overflow-hidden border border-gray-200">
+                      <div className="relative h-20 bg-white dark:bg-gray-800 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
                         <svg className="w-full h-full">
                           {/* Grid lines */}
                           {[0, 25, 50, 75, 100].map(pct => (
@@ -1044,9 +1044,9 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
 
                     {/* Battery and Voltage Timeline */}
                     {telemetryPoints.some(p => p.batteryPercentage !== undefined || p.batteryVoltage !== undefined) && (
-                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-2">
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-2">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                          <span className="text-xs font-medium text-gray-700 dark:text-gray-50 flex items-center gap-1.5">
                             <Battery className="w-3.5 h-3.5 text-green-600" />
                             Battery & Voltage
                           </span>
@@ -1054,18 +1054,18 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                             {telemetryPoints.some(p => p.batteryPercentage) && (
                               <span className="flex items-center gap-1">
                                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <span className="text-gray-600">Battery %</span>
+                                <span className="text-gray-600 dark:text-gray-100">Battery %</span>
                               </span>
                             )}
                             {telemetryPoints.some(p => p.batteryVoltage) && (
                               <span className="flex items-center gap-1">
                                 <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                <span className="text-gray-600">Voltage</span>
+                                <span className="text-gray-600 dark:text-gray-100">Voltage</span>
                               </span>
                             )}
                           </div>
                         </div>
-                        <div className="relative h-20 bg-white rounded-md overflow-hidden border border-gray-200">
+                        <div className="relative h-20 bg-white dark:bg-gray-800 rounded-md overflow-hidden border border-gray-200 dark:border-gray-600">
                           <svg className="w-full h-full">
                             {/* Grid lines */}
                             {[0, 25, 50, 75, 100].map(pct => (
@@ -1245,24 +1245,24 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
 
         {/* Actual GPS Flight Path Stats */}
         {actualGpsDistance > 0 && (
-          <div className="bg-purple-50 rounded-lg p-3 mb-3 border border-purple-200">
+          <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 mb-3 border border-purple-200 dark:border-purple-700">
             <div className="flex items-center gap-2 mb-2">
               <Navigation2 className="w-4 h-4 text-purple-600" />
-              <h4 className="text-sm font-semibold text-purple-900">Actual GPS Flight Path</h4>
+              <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-100">Actual GPS Flight Path</h4>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <span className="text-xs text-gray-600">Actual Distance</span>
-                <p className="text-lg font-bold text-purple-900">{actualGpsDistance.toFixed(2)} km</p>
+                <span className="text-xs text-gray-600 dark:text-gray-100">Actual Distance</span>
+                <p className="text-lg font-bold text-purple-900 dark:text-purple-100">{actualGpsDistance.toFixed(2)} km</p>
               </div>
               <div>
-                <span className="text-xs text-gray-600">Planned Distance</span>
-                <p className="text-lg font-bold text-gray-700">
+                <span className="text-xs text-gray-600 dark:text-gray-100">Planned Distance</span>
+                <p className="text-lg font-bold text-gray-700 dark:text-gray-50">
                   {formatDistance((routeData?.outDistance || 0) + (routeData?.homeDistance || 0))}
                 </p>
               </div>
               <div>
-                <span className="text-xs text-gray-600">Deviation</span>
+                <span className="text-xs text-gray-600 dark:text-gray-100">Deviation</span>
                 <p className={`text-lg font-bold ${
                   Math.abs((actualGpsDistance / (((routeData?.outDistance || 0) + (routeData?.homeDistance || 0)) / 1000) - 1) * 100) > 10
                     ? 'text-orange-600' 
@@ -1273,7 +1273,7 @@ const RouteMapPanel: React.FC<RouteMapPanelProps> = ({ routeData, telemetryPoint
                 </p>
               </div>
             </div>
-            <div className="mt-2 pt-2 border-t border-purple-100 text-xs text-gray-600">
+            <div className="mt-2 pt-2 border-t border-purple-100 dark:border-purple-800 text-xs text-gray-600 dark:text-gray-100">
               <p>Note: Actual distance includes all flight movements (outbound, on-site operations, and return).</p>
               <p>Deviation shows how the total actual distance compares to the planned route distance.</p>
             </div>

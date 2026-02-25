@@ -19,12 +19,12 @@ interface TemperaturePanelProps {
 const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) => {
   if (!temperatureData) {
     return (
-      <div className="bg-gray-50 rounded-lg border border-gray-200 p-4">
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-4">
         <div className="flex items-center gap-2 mb-3">
           <Thermometer className="w-4 h-4 text-gray-400" />
-          <h3 className="font-medium text-sm text-gray-700">Temperature Data</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-100">Temperature Data</h3>
         </div>
-        <p className="text-xs text-gray-500">No temperature data available</p>
+        <p className="text-xs text-gray-500 dark:text-gray-200">No temperature data available</p>
       </div>
     );
   }
@@ -73,24 +73,24 @@ const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) 
   const overallStatus = getOverallStatus();
 
   return (
-    <div className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 p-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Thermometer className="w-4 h-4 text-red-500" />
-          <h3 className="font-medium text-sm text-gray-700">System Temperatures</h3>
+          <h3 className="font-medium text-sm text-gray-700 dark:text-gray-100">System Temperatures</h3>
         </div>
         <span className={`text-xs font-medium px-2 py-0.5 rounded ${overallStatus.color}`}>
           {overallStatus.status}
         </span>
       </div>
 
-      <div className="bg-white rounded-lg p-3 space-y-3">
+      <div className="bg-white dark:bg-gray-700 rounded-lg p-3 space-y-3">
         <div className="grid grid-cols-2 gap-3">
           {/* HALO System */}
-          <div className="border rounded-lg p-2">
+          <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-2">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-gray-700">HALO System</h4>
+              <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-100">HALO System</h4>
               {haloTempChange !== null && (
                 <div className="flex items-center gap-1">
                   {haloTempChange < 0 ? (
@@ -107,26 +107,26 @@ const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) 
             
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Takeoff</span>
+                <span className="text-xs text-gray-500 dark:text-gray-200">Takeoff</span>
                 <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.haloTakeOffTemp)}`}>
                   {formatTemp(temperatureData.haloTakeOffTemp)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Landing</span>
+                <span className="text-xs text-gray-500 dark:text-gray-200">Landing</span>
                 <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.haloLandingTemp)}`}>
                   {formatTemp(temperatureData.haloLandingTemp)}
                 </span>
               </div>
               <div className="border-t pt-1.5 mt-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Min</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-200">Min</span>
                   <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.haloTempMin)}`}>
                     {formatTemp(temperatureData.haloTempMin)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Max</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-200">Max</span>
                   <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.haloMaxTemp)}`}>
                     {formatTemp(temperatureData.haloMaxTemp)}
                   </span>
@@ -136,9 +136,9 @@ const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) 
           </div>
 
           {/* FTS System */}
-          <div className="border rounded-lg p-2">
+          <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-2">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-xs font-semibold text-gray-700">FTS System</h4>
+              <h4 className="text-xs font-semibold text-gray-700 dark:text-gray-100">FTS System</h4>
               {ftsTempChange !== null && (
                 <div className="flex items-center gap-1">
                   {ftsTempChange < 0 ? (
@@ -155,26 +155,26 @@ const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) 
             
             <div className="space-y-1.5">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Takeoff</span>
+                <span className="text-xs text-gray-500 dark:text-gray-200">Takeoff</span>
                 <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.ftsTakeOffTemp)}`}>
                   {formatTemp(temperatureData.ftsTakeOffTemp)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500">Landing</span>
+                <span className="text-xs text-gray-500 dark:text-gray-200">Landing</span>
                 <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.ftsLandingTemp)}`}>
                   {formatTemp(temperatureData.ftsLandingTemp)}
                 </span>
               </div>
               <div className="border-t pt-1.5 mt-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Average</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-200">Average</span>
                   <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.ftsAvgTemp)}`}>
                     {formatTemp(temperatureData.ftsAvgTemp)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Max</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-200">Max</span>
                   <span className={`text-xs font-medium ${getTempStatusColor(temperatureData.ftsMaxTemp)}`}>
                     {formatTemp(temperatureData.ftsMaxTemp)}
                   </span>
@@ -186,7 +186,7 @@ const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) 
 
         {/* Temperature Range Bar */}
         <div className="border-t pt-2">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+          <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-200 mb-1">
             <span>Temperature Range</span>
             <span>0°C — 100°C</span>
           </div>
@@ -211,11 +211,11 @@ const TemperaturePanel: React.FC<TemperaturePanelProps> = ({ temperatureData }) 
           <div className="flex items-center gap-4 mt-1 text-xs">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-              <span className="text-gray-600">HALO Max</span>
+              <span className="text-gray-600 dark:text-gray-200">HALO Max</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
-              <span className="text-gray-600">FTS Max</span>
+              <span className="text-gray-600 dark:text-gray-200">FTS Max</span>
             </div>
           </div>
         </div>

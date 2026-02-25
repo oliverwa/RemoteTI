@@ -146,35 +146,35 @@ const getInspectionTypeInfo = (sessionName: string, inspectionType?: string | nu
     case 'initial-remote':
       return { 
         label: 'Initial Remote', 
-        color: 'text-blue-600 dark:text-blue-400', 
+        color: 'text-blue-600 dark:text-blue-300', 
         bgColor: 'bg-blue-50 dark:bg-blue-900/20',
         borderColor: 'border-blue-200 dark:border-blue-600'
       };
     case 'full-remote':
       return { 
         label: 'Full Remote', 
-        color: 'text-blue-600 dark:text-blue-400', 
+        color: 'text-blue-600 dark:text-blue-300', 
         bgColor: 'bg-blue-50 dark:bg-blue-900/20',
         borderColor: 'border-blue-200 dark:border-blue-600'
       };
     case 'remote':
       return { 
         label: 'Remote', 
-        color: 'text-blue-600 dark:text-blue-400', 
+        color: 'text-blue-600 dark:text-blue-300', 
         bgColor: 'bg-blue-50 dark:bg-blue-900/20',
         borderColor: 'border-blue-200 dark:border-blue-600'
       };
     case 'onsite':
       return { 
         label: 'Onsite', 
-        color: 'text-green-600 dark:text-green-400', 
+        color: 'text-green-600 dark:text-green-300', 
         bgColor: 'bg-green-50 dark:bg-green-900/20',
         borderColor: 'border-green-200 dark:border-green-600'
       };
     case 'extended':
       return { 
         label: 'Extended', 
-        color: 'text-purple-600 dark:text-purple-400', 
+        color: 'text-purple-600 dark:text-purple-300', 
         bgColor: 'bg-purple-50 dark:bg-purple-900/20',
         borderColor: 'border-purple-200 dark:border-purple-600'
       };
@@ -195,7 +195,7 @@ const getInspectionTypeInfo = (sessionName: string, inspectionType?: string | nu
     default:
       return { 
         label: 'Standard', 
-        color: 'text-gray-600 dark:text-gray-400', 
+        color: 'text-gray-600 dark:text-gray-300', 
         bgColor: 'bg-gray-50 dark:bg-gray-900',
         borderColor: 'border-gray-200 dark:border-gray-600'
       };
@@ -224,7 +224,7 @@ const getAgeCategory = (dateString: string): { category: 'recent' | 'today' | 'o
   } else {
     return { 
       category: 'old', 
-      color: 'text-gray-600 dark:text-gray-400', 
+      color: 'text-gray-600 dark:text-gray-300', 
       bgColor: 'bg-gray-50 dark:bg-gray-900', 
       borderColor: 'border-gray-200 dark:border-gray-600'
     };
@@ -239,19 +239,19 @@ const getInspectionStatusColors = (detailedStatus: 'passed' | 'failed' | 'partia
       case 'passed':
         return {
           dot: 'bg-green-500 dark:bg-green-400',
-          text: 'text-green-600 dark:text-green-400',
+          text: 'text-green-600 dark:text-green-300',
           label: 'Passed'
         };
       case 'failed':
         return {
           dot: 'bg-red-500 dark:bg-red-400',
-          text: 'text-red-600 dark:text-red-400',
+          text: 'text-red-600 dark:text-red-300',
           label: 'Failed'
         };
       case 'partial':
         return {
           dot: 'bg-yellow-500 dark:bg-yellow-400',
-          text: 'text-yellow-600 dark:text-yellow-400',
+          text: 'text-yellow-600 dark:text-yellow-300',
           label: 'Partial'
         };
       case 'pending':
@@ -268,7 +268,7 @@ const getInspectionStatusColors = (detailedStatus: 'passed' | 'failed' | 'partia
     case 'completed':
       return {
         dot: 'bg-green-500 dark:bg-green-400',
-        text: 'text-green-600 dark:text-green-400',
+        text: 'text-green-600 dark:text-green-300',
         label: 'Completed'
       };
     case 'in_progress':
@@ -280,13 +280,13 @@ const getInspectionStatusColors = (detailedStatus: 'passed' | 'failed' | 'partia
     case 'not_started':
       return {
         dot: 'bg-red-500 dark:bg-red-400',
-        text: 'text-red-600 dark:text-red-400',
+        text: 'text-red-600 dark:text-red-300',
         label: 'Not Started'
       };
     default:
       return {
         dot: 'bg-gray-300 dark:bg-gray-600',
-        text: 'text-gray-400 dark:text-gray-500',
+        text: 'text-gray-400 dark:text-gray-400',
         label: ''
       };
   }
@@ -431,7 +431,7 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
         default:
           return { 
             text: 'Images Only',
-            textColor: 'text-gray-400 dark:text-gray-500',
+            textColor: 'text-gray-400 dark:text-gray-400',
             bgColor: 'bg-gray-50 dark:bg-gray-900',
             borderColor: 'border-gray-200 dark:border-gray-600',
             priority: 4
@@ -475,13 +475,13 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
             </div>
             
             {/* Time */}
-            <div className="text-gray-400 dark:text-gray-500 text-xs">
+            <div className="text-gray-400 dark:text-gray-400 text-xs">
               {getRelativeTime(session.created)}
             </div>
             
             {/* Status Text - Subtle */}
             {session.hasInspection && (
-              <div className="text-xs text-gray-600 dark:text-gray-400">
+              <div className="text-xs text-gray-600 dark:text-gray-300">
                 {getInspectionStatusColors(session.inspectionDetailedStatus, session.inspectionStatus).label}
                 {session.inspectionStatus === 'in_progress' && (
                   <span className="ml-1">
@@ -491,15 +491,15 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
               </div>
             )}
             {!session.hasInspection && (
-              <span className="text-xs text-gray-400 dark:text-gray-500">Images Only</span>
+              <span className="text-xs text-gray-400 dark:text-gray-400">Images Only</span>
             )}
             {ageInfo.category === 'recent' && (
-              <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-xs rounded font-medium">
+              <span className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs rounded font-medium">
                 NEW
               </span>
             )}
           </div>
-          <svg className={`w-4 h-4 ${hoveredSession === session.id ? 'text-gray-500 dark:text-gray-400' : 'text-gray-300 dark:text-gray-600'} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className={`w-4 h-4 ${hoveredSession === session.id ? 'text-gray-500 dark:text-gray-300' : 'text-gray-300 dark:text-gray-500'} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </div>
@@ -527,14 +527,14 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
               </div>
               <div>
                 <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-100">Inspection History</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Browse all inspection types and sessions by drone</p>
+                <p className="text-gray-500 dark:text-gray-300 text-sm mt-1">Browse all inspection types and sessions by drone</p>
               </div>
             </div>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-gray-400 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -545,15 +545,15 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="w-12 h-12 border-3 border-gray-300 border-t-gray-600 rounded-full animate-spin mb-4"></div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">{loadingDrones ? 'Loading drones...' : 'Loading inspection data...'}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">{loadingDrones ? 'Loading drones...' : 'Loading inspection data...'}</div>
             </div>
           </div>
         ) : hangarsList.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-16 h-16 text-gray-300 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
             </svg>
-            <div className="text-gray-500 dark:text-gray-400 text-sm">No inspection folders found</div>
+            <div className="text-gray-500 dark:text-gray-300 text-sm">No inspection folders found</div>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-8 pb-6">
@@ -648,7 +648,7 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
                           <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{droneName}</h3>
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                          <span className="text-sm text-gray-500 dark:text-gray-300">
                             ({totalInspections} total inspections)
                           </span>
                           {incompleteCount > 0 && (
@@ -659,7 +659,7 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                         </div>
                         <button
                           onClick={() => toggleDroneExpansion(droneName)}
-                          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+                          className="text-sm text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
                         >
                           {isExpanded ? 'Show latest only' : 'View all inspections'}
                         </button>
@@ -696,12 +696,12 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                                   </span>
                                   
                                   {/* Hangar name */}
-                                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  <span className="text-sm text-gray-700 dark:text-gray-200">
                                     {session.hangarName}
                                   </span>
                                   
                                   {/* Date and time - more compact */}
-                                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  <span className="text-xs text-gray-500 dark:text-gray-300">
                                     {formatDateTime(session.created)}
                                   </span>
                                   
@@ -722,13 +722,13 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                                     disabled={isDeleting}
                                     title="Delete inspection"
                                   >
-                                    <svg className="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-red-500 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                   </button>
                                   
                                   {/* Arrow */}
-                                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-4 h-4 text-gray-400 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                   </svg>
                                 </div>
@@ -765,12 +765,12 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                                     </span>
                                     
                                     {/* Hangar name */}
-                                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                                    <span className="text-sm text-gray-700 dark:text-gray-200">
                                       {session.hangarName}
                                     </span>
                                     
                                     {/* Date and time - more compact */}
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                                    <span className="text-xs text-gray-500 dark:text-gray-300">
                                       {formatDateTime(session.created)}
                                     </span>
                                     
@@ -791,13 +791,13 @@ const FolderBrowserModal: React.FC<FolderBrowserModalProps> = ({
                                       disabled={isDeleting}
                                       title="Delete inspection"
                                     >
-                                      <svg className="w-4 h-4 text-red-500 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <svg className="w-4 h-4 text-red-500 dark:text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                       </svg>
                                     </button>
                                     
                                     {/* Arrow */}
-                                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-gray-400 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                     </svg>
                                   </div>
