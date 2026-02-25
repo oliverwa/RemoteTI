@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X, Lightbulb, Sun, Moon } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X, Lightbulb, Sun, Moon, Menu, LogOut } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
 import SimpleTelemetryAnalysis from './SimpleTelemetryAnalysis';
@@ -86,6 +86,24 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [captureStartTimes, setCaptureStartTimes] = useState<{ [key: string]: number }>({});
   const [maintenanceHistory, setMaintenanceHistory] = useState<{[key: string]: any}>({});
   const [availableInspections, setAvailableInspections] = useState<any[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (mobileMenuOpen && !target.closest('.mobile-menu-container')) {
+        setMobileMenuOpen(false);
+      }
+    };
+    
+    if (mobileMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [mobileMenuOpen]);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [previewModal, setPreviewModal] = useState<{ hangarId: string; hangarName: string } | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -1669,10 +1687,12 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="px-8 py-4">
+        <div className="px-4 sm:px-8 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Hangar Dashboard</h1>
-            <div className="flex items-center gap-3">
+            <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200">Inspection Dashboard</h1>
+            
+            {/* Desktop menu */}
+            <div className="hidden md:flex items-center gap-3">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 px-3 py-1.5 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                 <User className="w-4 h-4" />
                 <span>{currentUser}</span>
@@ -1728,15 +1748,92 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 Logout
               </Button>
             </div>
+            
+            {/* Mobile menu button and icons */}
+            <div className="mobile-menu-container flex md:hidden items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                title="Refresh"
+              >
+                <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-200" />
+              </button>
+              <DarkModeButton />
+              {userType === 'admin' && (
+                <button
+                  onClick={() => setShowAdminPanel(true)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  title="Admin Settings"
+                >
+                  <Settings className="w-5 h-5 text-gray-600 dark:text-gray-200" />
+                </button>
+              )}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <Menu className="w-5 h-5 text-gray-600 dark:text-gray-200" />
+              </button>
+            </div>
           </div>
+          
+          {/* Mobile dropdown menu */}
+          {mobileMenuOpen && (
+            <div className="mobile-menu-container md:hidden mt-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+              <div className="flex flex-col space-y-3">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <User className="w-4 h-4" />
+                  <span className="font-medium">{currentUser}</span>
+                  <span className="text-xs text-gray-400">({userType === 'admin' ? 'Admin' : userType === 'everdrone' ? 'Everdrone' : 'Mission Reset'})</span>
+                </div>
+                
+                {(userType === 'admin' || userType === 'everdrone') && (
+                  <button
+                    onClick={() => {
+                      onProceedToInspection();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Manual Inspection</span>
+                  </button>
+                )}
+                
+                {userType === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setShowTelemetryDataAnalysis(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                  >
+                    <BarChart className="w-4 h-4" />
+                    <span>Telemetry Analysis</span>
+                  </button>
+                )}
+                
+                <button
+                  onClick={() => {
+                    onLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
       {/* Main Content - Responsive padding */}
       <div className="p-4 sm:p-6 md:p-8">
 
-        {/* Hangar Grid - Better mobile breakpoints */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6 auto-rows-fr">
+        {/* Hangar Grid - Earlier adaptation with larger minimum width */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {hangarStatuses.map(hangar => {
             // Check if maintenance is required (failed inspections or overdue maintenance)
             const hasFailedInspection = (
@@ -1780,13 +1877,13 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             return (
             <div
               key={hangar.id}
-              className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all border-l-8 ${
+              className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all border-l-8 md:border-l-[16px] ${
                 getBorderColor()
-              } p-6 ${
+              } p-4 sm:p-5 md:p-6 ${
                 hangar.state === 'standby' || hangar.status !== 'operational' ? '' : 'cursor-pointer'
               } ${
                 hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[160px]' : 'min-h-[220px]'
-              } flex flex-col`}
+              } min-w-[280px] sm:min-w-[320px] flex flex-col`}
               onClick={(e) => {
                 // Only open modal if clicking on the card itself, not buttons
                 if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.card-content')) {
@@ -1800,8 +1897,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               <div className="mb-4">
                 <div className="flex justify-between items-center">
                   <div className="flex-1">
-                    <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{hangar.name}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-200 mt-1">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">{hangar.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-200 mt-1">
                       Drone: {hangar.assignedDrone || 'Not assigned'}
                     </p>
                   </div>
