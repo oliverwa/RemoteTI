@@ -114,8 +114,8 @@ const getInspectionTypeFromName = (name: string): string => {
     return 'full-remote';
   } else if (nameLower.startsWith('full_remote_')) {
     return 'full-remote';
-  } else if (nameLower.startsWith('service_partner_')) {
-    return 'service';
+  } else if (nameLower.startsWith('mission_reset_')) {
+    return 'mission-reset';
   } else if (nameLower.startsWith('onsite_ti_')) {
     return 'onsite';
   } else if (firstPart === 'remote' || nameLower.includes('remote')) {
@@ -191,6 +191,13 @@ const getInspectionTypeInfo = (sessionName: string, inspectionType?: string | nu
         color: 'text-cyan-600 dark:text-cyan-400', 
         bgColor: 'bg-cyan-50 dark:bg-cyan-900/20',
         borderColor: 'border-cyan-200 dark:border-cyan-600'
+      };
+    case 'mission-reset':
+      return { 
+        label: 'Mission Reset', 
+        color: 'text-indigo-600 dark:text-indigo-300', 
+        bgColor: 'bg-indigo-50 dark:bg-indigo-900/20',
+        borderColor: 'border-indigo-200 dark:border-indigo-600'
       };
     default:
       return { 

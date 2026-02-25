@@ -84,10 +84,17 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
       
       // If images not in JSON, build them from standard camera IDs
       let images = data.images || {};
-      if (Object.keys(images).length === 0) {
+      const sessionName = sessionPath.split('/').pop() || '';
+      
+      // Skip image loading for onsite inspections (Mission Reset, Onsite TI, etc)
+      const isOnsiteInspection = sessionName.startsWith('mission_reset_') || 
+                                 sessionName.startsWith('onsite_') ||
+                                 sessionName.startsWith('extended_') ||
+                                 sessionName.startsWith('service_');
+      
+      if (!isOnsiteInspection && Object.keys(images).length === 0) {
         // For camera inspections, we know the standard camera IDs and file format
         const cameraIds = ['FDL', 'FDR', 'FUL', 'FUR', 'RDL', 'RDR', 'RUL', 'RUR'];
-        const sessionName = sessionPath.split('/').pop() || '';
         // Extract timestamp from session name (e.g., "full_remote_e3002_260223_140122" -> "260223_140122")
         const timestampMatch = sessionName.match(/_(\d{6}_\d{6})$/);
         if (timestampMatch) {
@@ -97,7 +104,7 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
             images[camId] = `${camId}_${timestamp}.jpg`;
           });
         }
-      } else {
+      } else if (!isOnsiteInspection) {
         // Clean up image paths if they contain the full path
         const cleanedImages: Record<string, string> = {};
         Object.entries(images).forEach(([camId, imagePath]) => {
@@ -111,9 +118,13 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
         images = cleanedImages;
       }
       
+      // For onsite inspections, ensure images is empty
+      if (isOnsiteInspection) {
+        images = {};
+      }
+      
       // Determine inspection type from session name if not properly set
       let inspectionType = data.inspectionType || data.sessionInfo?.inspectionType || '';
-      const sessionName = sessionPath.split('/').pop() || '';
       if (inspectionType === 'drone_remote_visual_inspection' || !inspectionType) {
         if (sessionName.startsWith('full_remote_')) {
           inspectionType = 'full-remote-ti-inspection';
@@ -121,6 +132,8 @@ const InspectionSummaryModal: React.FC<InspectionSummaryModalProps> = ({
           inspectionType = 'initial-remote-ti-inspection';
         } else if (sessionName.startsWith('onsite_')) {
           inspectionType = 'onsite-ti-inspection';
+        } else if (sessionName.startsWith('mission_reset_')) {
+          inspectionType = 'mission-reset';
         }
       }
       
