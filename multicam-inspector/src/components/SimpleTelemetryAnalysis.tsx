@@ -789,40 +789,40 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     <span className="ml-auto text-sm px-3 py-1.5 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full font-medium">PRIMARY</span>
                   </div>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedDropTime > 0 ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-4`}>
-                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-600' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'bg-amber-50 dark:bg-amber-900 border-amber-200 dark:border-amber-600' : 'bg-rose-50 dark:bg-rose-900 border-rose-200 dark:border-rose-600'}`}>
                       <div className="flex items-center gap-1.5 mb-2">
-                        <Zap className="w-4 h-4 text-slate-600" />
-                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">Alarm to Takeoff</span>
+                        <Zap className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Alarm to Takeoff</span>
                       </div>
-                      <div className={`text-2xl font-bold ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'text-emerald-700' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'text-amber-700' : 'text-rose-700'}`}>
+                      <div className={`text-2xl font-bold ${selectedFlightData.alarmToTakeoffTime <= 25 ? 'text-emerald-700 dark:text-emerald-300' : selectedFlightData.alarmToTakeoffTime <= 35 ? 'text-amber-700 dark:text-amber-300' : 'text-rose-700 dark:text-rose-300'}`}>
                         {formatDuration(selectedFlightData.alarmToTakeoffTime)}
                       </div>
                     </div>
 
-                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.awaitingClearanceTime <= 10 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.awaitingClearanceTime <= 20 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.awaitingClearanceTime <= 10 ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-600' : selectedFlightData.awaitingClearanceTime <= 20 ? 'bg-amber-50 dark:bg-amber-900 border-amber-200 dark:border-amber-600' : 'bg-rose-50 dark:bg-rose-900 border-rose-200 dark:border-rose-600'}`}>
                       <div className="flex items-center gap-1.5 mb-2">
-                        <Pause className="w-4 h-4 text-slate-600" />
-                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">Awaiting Clearance</span>
+                        <Pause className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Awaiting Clearance</span>
                       </div>
-                      <div className={`text-2xl font-bold ${selectedFlightData.awaitingClearanceTime <= 10 ? 'text-emerald-700' : selectedFlightData.awaitingClearanceTime <= 20 ? 'text-amber-700' : 'text-rose-700'}`}>
+                      <div className={`text-2xl font-bold ${selectedFlightData.awaitingClearanceTime <= 10 ? 'text-emerald-700 dark:text-emerald-300' : selectedFlightData.awaitingClearanceTime <= 20 ? 'text-amber-700 dark:text-amber-300' : 'text-rose-700 dark:text-rose-300'}`}>
                         {selectedFlightData.awaitingClearanceTime > 0 
                           ? formatDuration(selectedFlightData.awaitingClearanceTime)
                           : '-'}
                       </div>
                     </div>
 
-                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.wpOutCalibratedTime <= 120 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.wpOutCalibratedTime <= 180 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.wpOutCalibratedTime <= 120 ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-600' : selectedFlightData.wpOutCalibratedTime <= 180 ? 'bg-amber-50 dark:bg-amber-900 border-amber-200 dark:border-amber-600' : 'bg-rose-50 dark:bg-rose-900 border-rose-200 dark:border-rose-600'}`}>
                       <div className="flex items-center gap-1.5 mb-2">
-                        <Activity className="w-4 h-4 text-slate-600" />
-                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">WP Out Time (2km)</span>
+                        <Activity className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">WP Out Time (2km)</span>
                       </div>
-                      <div className={`text-2xl font-bold ${selectedFlightData.wpOutCalibratedTime <= 120 ? 'text-emerald-700' : selectedFlightData.wpOutCalibratedTime <= 180 ? 'text-amber-700' : 'text-rose-700'}`}>
+                      <div className={`text-2xl font-bold ${selectedFlightData.wpOutCalibratedTime <= 120 ? 'text-emerald-700 dark:text-emerald-300' : selectedFlightData.wpOutCalibratedTime <= 180 ? 'text-amber-700 dark:text-amber-300' : 'text-rose-700 dark:text-rose-300'}`}>
                         {selectedFlightData.wpOutCalibratedTime > 0 
                           ? formatDuration(selectedFlightData.wpOutCalibratedTime)
                           : '-'}
                       </div>
                       {selectedFlightData.wpOutActualTime > 0 && (
-                        <div className="text-[10px] text-slate-500 mt-1">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                           ({formatDuration(selectedFlightData.wpOutActualTime)} actual)
                         </div>
                       )}
@@ -830,29 +830,29 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
 
                     {/* AED Drop Time - Only for OHCA */}
                     {selectedFlightData.aedDropTime > 0 && (
-                      <div className="rounded-xl p-4 border shadow-sm bg-violet-50 border-violet-200 flex flex-col items-center justify-center text-center">
+                      <div className="rounded-xl p-4 border shadow-sm bg-violet-50 dark:bg-violet-900 border-violet-200 dark:border-violet-600 flex flex-col items-center justify-center text-center">
                         <div className="flex items-center gap-1.5 mb-2">
-                          <Heart className="w-4 h-4 text-violet-600" />
-                          <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">AED Drop Time</span>
+                          <Heart className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                          <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">AED Drop Time</span>
                         </div>
-                        <div className="text-2xl font-bold text-violet-700">
+                        <div className="text-2xl font-bold text-violet-700 dark:text-violet-300">
                           {formatDuration(selectedFlightData.aedDropTime)}
                         </div>
                       </div>
                     )}
 
-                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.calibratedDeliveryTime <= 170 ? 'bg-emerald-50 border-emerald-200' : selectedFlightData.calibratedDeliveryTime <= 210 ? 'bg-amber-50 border-amber-200' : 'bg-rose-50 border-rose-200'}`}>
+                    <div className={`rounded-xl p-4 border shadow-sm flex flex-col items-center justify-center text-center ${selectedFlightData.calibratedDeliveryTime <= 170 ? 'bg-emerald-50 dark:bg-emerald-900 border-emerald-200 dark:border-emerald-600' : selectedFlightData.calibratedDeliveryTime <= 210 ? 'bg-amber-50 dark:bg-amber-900 border-amber-200 dark:border-amber-600' : 'bg-rose-50 dark:bg-rose-900 border-rose-200 dark:border-rose-600'}`}>
                       <div className="flex items-center gap-1.5 mb-2">
-                        <MapPin className="w-4 h-4 text-slate-600" />
-                        <span className="text-[11px] font-medium text-slate-600 uppercase tracking-wide">Calibrated Delivery</span>
+                        <MapPin className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                        <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">Calibrated Delivery</span>
                       </div>
-                      <div className={`text-2xl font-bold ${selectedFlightData.calibratedDeliveryTime <= 170 ? 'text-emerald-700' : selectedFlightData.calibratedDeliveryTime <= 210 ? 'text-amber-700' : 'text-rose-700'}`}>
+                      <div className={`text-2xl font-bold ${selectedFlightData.calibratedDeliveryTime <= 170 ? 'text-emerald-700 dark:text-emerald-300' : selectedFlightData.calibratedDeliveryTime <= 210 ? 'text-amber-700 dark:text-amber-300' : 'text-rose-700 dark:text-rose-300'}`}>
                         {selectedFlightData.calibratedDeliveryTime > 0 
                           ? formatDuration(selectedFlightData.calibratedDeliveryTime)
                           : '-'}
                       </div>
                       {selectedFlightData.calibratedDeliveryTime > 0 && (
-                        <div className="text-[10px] text-slate-500 mt-1" title="Alarm to Takeoff + Awaiting Clearance + WP Out (2km)">
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1" title="Alarm to Takeoff + Awaiting Clearance + WP Out (2km)">
                           (Total calibrated)
                         </div>
                       )}
@@ -877,7 +877,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     <h3 className="text-base font-semibold text-gray-800 dark:text-gray-200">Flight Statistics</h3>
                   </div>
                   <div className={`grid grid-cols-2 ${selectedFlightData.aedReleaseAGL > 0 ? 'md:grid-cols-6' : 'md:grid-cols-5'} gap-4`}>
-                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                  <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm">Flight Duration</span>
@@ -887,7 +887,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                  <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <Battery className="w-4 h-4" />
                       <span className="text-sm">Battery Used</span>
@@ -899,7 +899,7 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                  <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <MapPin className="w-4 h-4" />
                       <span className="text-sm">Alarm Distance</span>
@@ -911,18 +911,18 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
 
                   {/* AED Release AGL - Only for OHCA */}
                   {selectedFlightData.aedReleaseAGL > 0 && (
-                    <div className="bg-purple-50 rounded-lg border border-purple-300 p-4">
-                      <div className="flex items-center gap-2 text-gray-500 mb-2">
-                        <Heart className="w-4 h-4 text-purple-600" />
+                    <div className="bg-purple-50 dark:bg-purple-900 rounded-lg border border-purple-300 dark:border-purple-600 p-4 shadow-sm">
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
+                        <Heart className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                         <span className="text-sm">AED Release Alt</span>
                       </div>
-                      <div className="text-2xl font-bold text-purple-600">
+                      <div className="text-2xl font-bold text-purple-600 dark:text-purple-300">
                         {selectedFlightData.aedReleaseAGL}m
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-4">
+                  <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-2">
                       <AlertCircle className="w-4 h-4" />
                       <span className="text-sm">Alarm Type</span>
@@ -932,25 +932,25 @@ const SimpleTelemetryAnalysis: React.FC<SimpleTelemetryAnalysisProps> = ({ isOpe
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500 p-3">
+                  <div className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-3 shadow-sm">
                     <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mb-1">
                       {selectedFlightData.completionStatus === 'normal' ? (
-                        <CheckCircle className="w-3 h-3 text-green-600" />
+                        <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
                       ) : selectedFlightData.completionStatus === 'complete' ? (
-                        <CheckCircle className="w-3 h-3 text-green-600" />
+                        <CheckCircle className="w-3 h-3 text-green-600 dark:text-green-400" />
                       ) : (
-                        <AlertCircle className="w-3 h-3 text-red-600" />
+                        <AlertCircle className="w-3 h-3 text-red-600 dark:text-red-400" />
                       )}
                       <span className="text-xs">Completion Status</span>
                     </div>
                     <div className={`text-lg font-bold capitalize ${
                       selectedFlightData.completionStatus === 'normal' || selectedFlightData.completionStatus === 'complete'
-                        ? 'text-green-600' 
+                        ? 'text-green-600 dark:text-green-400' 
                         : selectedFlightData.completionStatus === 'abnormal'
-                        ? 'text-red-600'
+                        ? 'text-red-600 dark:text-red-400'
                         : selectedFlightData.completionStatus === 'motbud'
-                        ? 'text-yellow-600'
-                        : 'text-gray-600'
+                        ? 'text-yellow-600 dark:text-yellow-400'
+                        : 'text-gray-600 dark:text-gray-400'
                     }`}>
                       {selectedFlightData.completionStatus || 'Unknown'}
                     </div>
