@@ -6,7 +6,11 @@
   "metadata": {
     "author": "RemoteTI",
     "created": "2024-12-03",
-    "inspectionMode": "onsite"
+    "inspectionMode": "onsite",
+    "airworthiness": {
+      "dayInterval": 90,
+      "airtimeHours": 0
+    }
   },
   "tasks": [
     {

@@ -2247,12 +2247,14 @@ export default function MultiCamInspector({
   }
 
   return (
-    <div className="w-full min-h-screen max-h-screen overflow-y-auto px-3 py-2 space-y-2 bg-white dark:bg-gray-800 text-black dark:text-white">
+    <div className="w-full h-screen flex flex-col bg-white dark:bg-gray-800 text-black dark:text-white overflow-hidden">
       {/* Header – main controls */}
 
 
-      {/* Capture Status Display */}
-      {isCapturing && capturePhase && (
+      {/* Main scrollable content */}
+      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+        {/* Capture Status Display */}
+        {isCapturing && capturePhase && (
         <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-2">
           <div className="flex items-center justify-center space-x-2">
             {/* Animated spinner */}
@@ -2349,13 +2351,32 @@ export default function MultiCamInspector({
 
         {/* Pass/Fail Buttons, Title, and Timeline - Below Camera Images */}
         {items.some(item => !item.status) && (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4 pb-8">
             {/* Title with Pass/Fail Buttons */}
             <div className="">
               {/* Task Title first */}
-              <div className="text-center mb-4 px-4">
-                <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
-                  <span className="truncate max-w-[90%]">
+              <div className="text-center mb-3 sm:mb-4 px-3 sm:px-4">
+                <h2 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
+                  {/* Mobile navigation arrow - previous */}
+                  <button
+                    onClick={() => {
+                      if (idx > 0) {
+                        setIdx(idx - 1);
+                        addLog(`⬅️ Back to task ${idx}: ${items[idx - 1]?.title?.substring(0, 30)}...`);
+                      }
+                    }}
+                    disabled={idx === 0}
+                    className="sm:hidden p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label="Previous task"
+                  >
+                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <span className="sm:hidden text-sm text-gray-500 dark:text-gray-400">
+                    {idx + 1}/{items.length}
+                  </span>
+                  <span className="truncate max-w-[50%] sm:max-w-[90%]">
                     {items[idx].title}
                   </span>
                   <button 
@@ -2365,10 +2386,30 @@ export default function MultiCamInspector({
                   >
                     ?
                   </button>
+                  {/* Mobile navigation arrow - next */}
+                  <button
+                    onClick={() => {
+                      if (idx < items.length - 1) {
+                        setIdx(idx + 1);
+                        addLog(`➡️ Advanced to task ${idx + 2}: ${items[idx + 1]?.title?.substring(0, 30)}...`);
+                      }
+                    }}
+                    disabled={idx === items.length - 1}
+                    className="sm:hidden p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label="Next task"
+                  >
+                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </h2>
+                {/* Task ID */}
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">
+                  {items[idx].id}
+                </div>
                 {/* Instructions below title */}
                 {items[idx].instructions && items[idx].instructions.length > 0 && (
-                  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     <ul className="list-disc list-inside space-y-1">
                       {items[idx].instructions.map((instruction: string, i: number) => (
                         <li key={i} className="text-left max-w-3xl mx-auto">
@@ -2380,8 +2421,8 @@ export default function MultiCamInspector({
                 )}
               </div>
               
-              {/* Pass/Fail Buttons below title */}
-              <div className="flex justify-center gap-6">
+              {/* Pass/Fail Buttons */}
+              <div className="flex justify-center gap-3 sm:gap-6 mb-4">
                 {(() => {
                   const currentTask = items[idx];
                   const currentValidations = validatedBoxes[currentTask.id] || new Set();
@@ -2396,7 +2437,7 @@ export default function MultiCamInspector({
                           console.log('FAIL clicked for task', idx);
                           selectStatus("fail");
                         }} 
-                        className={`py-3 px-16 text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[200px] ${
+                        className={`py-2.5 sm:py-3 px-8 sm:px-16 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[140px] sm:min-w-[200px] ${
                           items[idx].status === "fail" 
                             ? "bg-red-500 text-white hover:bg-red-600 shadow-md" 
                             : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"
@@ -2415,7 +2456,7 @@ export default function MultiCamInspector({
                           selectStatus("pass");
                         }} 
                         disabled={!isValidationComplete}
-                        className={`py-3 px-16 text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[200px] ${
+                        className={`py-2.5 sm:py-3 px-8 sm:px-16 text-sm sm:text-base font-medium rounded-lg transition-all flex items-center justify-center gap-2 min-w-[140px] sm:min-w-[200px] ${
                           items[idx].status === "pass" 
                             ? "bg-green-500 text-white hover:bg-green-600 shadow-md" 
                             : isValidationComplete
@@ -2434,9 +2475,9 @@ export default function MultiCamInspector({
               </div>
             </div>
             
-            {/* Progress Timeline */}
-            <div className="flex justify-center pb-3">
-              <div className="flex items-center gap-1.5">
+            {/* Progress Timeline - Hidden on mobile */}
+            <div className="hidden sm:block pb-3">
+              <div className="flex items-center justify-center gap-1.5">
                 {isDataLoaded && items.map((it, i) => {
                   const isActive = i === idx;
                   const isDone = it.status === "pass" || it.status === "fail" || it.status === "na";
@@ -2469,17 +2510,17 @@ export default function MultiCamInspector({
               </div>
             </div>
             
-            {/* Notes Section - Always visible */}
-            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <div className="flex items-center justify-between mb-2">
-                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+            {/* Notes Section - Smaller on mobile */}
+            <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <div className="flex items-center justify-between mb-1 sm:mb-2">
+                <label className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                   </svg>
                   <span>Notes (Optional)</span>
                 </label>
                 
-                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-800 dark:hover:text-gray-200">
+                <label className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:text-gray-800 dark:hover:text-gray-200">
                   <input 
                     type="radio" 
                     name={`task-${idx}`}
@@ -2492,8 +2533,8 @@ export default function MultiCamInspector({
               </div>
               
               <textarea
-                className="w-full border border-gray-200 dark:border-gray-600 rounded-md px-3 py-2 text-sm resize-none bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-                rows={3}
+                className="w-full border border-gray-200 dark:border-gray-600 rounded-md px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm resize-none bg-white dark:bg-gray-800 text-black dark:text-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+                rows={2}
                 placeholder="Add any observations or notes about this task..."
                 value={items[idx].comment || ''}
                 onChange={(e) => updateTaskComment(e.target.value)}
@@ -2501,7 +2542,6 @@ export default function MultiCamInspector({
             </div>
           </div>
         )}
-
       </div>
 
 
@@ -2527,8 +2567,10 @@ export default function MultiCamInspector({
 
       {/* Image Enhancement Controls - iPad friendly */}
       
-      {/* Session Info and Help - Bottom bar */}
-      <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600 px-6 py-3">
+      </div>
+
+      {/* Session Info and Help - Bottom bar (Fixed on mobile) */}
+      <div className="fixed sm:relative bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-600 px-3 sm:px-6 py-2 sm:py-3 z-10 flex-shrink-0">
         <div className="flex items-center justify-between">
           {/* Session Info */}
           <div className="flex items-center gap-2 text-sm">

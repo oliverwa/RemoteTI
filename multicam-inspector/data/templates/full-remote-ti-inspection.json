@@ -8,7 +8,11 @@
     "created": "2024-10-08",
     "updated": "2026-02-08",
     "inspectionMode": "remote",
-    "assumptions": "Batteries already swapped and charging. MedKit is mounted. No one enters hangar during RemoteTI. All 8 camera images must be clear and of good quality."
+    "assumptions": "Batteries already swapped and charging. MedKit is mounted. No one enters hangar during RemoteTI. All 8 camera images must be clear and of good quality.",
+    "airworthiness": {
+      "dayInterval": 45,
+      "airtimeHours": 0
+    }
   },
   "tasks": [
     {

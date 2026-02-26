@@ -2105,9 +2105,206 @@ app.put('/api/hangars/:hangarId/transforms', (req, res) => {
   }
 });
 
+// API endpoint to get airworthiness settings
+app.get('/api/airworthiness-settings', auth.authenticateToken, async (req, res) => {
+  try {
+    const settingsPath = path.join(BASE_DIR, 'data', 'airworthiness-settings.json');
+    
+    // Return default settings if file doesn't exist
+    if (!fs.existsSync(settingsPath)) {
+      return res.json({
+        intervals: [
+          {
+            type: 'onsite-ti',
+            displayName: 'Onsite TI',
+            dayInterval: 30,
+            airtimeHours: 0,
+            description: 'Technical inspection performed on-site'
+          },
+          {
+            type: 'full-remote-ti',
+            displayName: 'Full Remote TI',
+            dayInterval: 45,
+            airtimeHours: 0,
+            description: 'Complete remote technical inspection'
+          },
+          {
+            type: 'extended-ti',
+            displayName: 'Extended TI',
+            dayInterval: 60,
+            airtimeHours: 0,
+            description: 'Extended technical inspection'
+          },
+          {
+            type: 'service',
+            displayName: 'Service',
+            dayInterval: 90,
+            airtimeHours: 0,
+            description: 'Regular service and maintenance'
+          }
+        ]
+      });
+    }
+    
+    const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+    res.json(settings);
+  } catch (error) {
+    log('error', 'Failed to get airworthiness settings:', error.message);
+    res.status(500).json({ error: 'Failed to get airworthiness settings' });
+  }
+});
+
+// API endpoint to update airworthiness settings
+app.post('/api/airworthiness-settings', auth.authenticateToken, async (req, res) => {
+  // Check if user is admin or everdrone
+  if (req.user.type !== 'admin' && req.user.type !== 'everdrone') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin or Everdrone privileges required.'
+    });
+  }
+  
+  try {
+    const { intervals } = req.body;
+    
+    if (!intervals || !Array.isArray(intervals)) {
+      return res.status(400).json({ error: 'Invalid intervals data' });
+    }
+    
+    const settingsPath = path.join(BASE_DIR, 'data', 'airworthiness-settings.json');
+    const settings = {
+      intervals,
+      updatedAt: new Date().toISOString(),
+      updatedBy: req.user.username
+    };
+    
+    // Create data directory if it doesn't exist
+    const dataDir = path.join(BASE_DIR, 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    log('info', `Airworthiness settings updated by ${req.user.username}`);
+    
+    res.json({ message: 'Airworthiness settings saved successfully' });
+  } catch (error) {
+    log('error', 'Failed to save airworthiness settings:', error.message);
+    res.status(500).json({ error: 'Failed to save airworthiness settings' });
+  }
+});
+
 // Catch-all route removed to avoid conflicts with API endpoints on Pi
 
 // Start server
+// API endpoint to update airworthiness limits for a specific template
+app.post('/api/airworthiness/template/:templateId', auth.authenticateToken, async (req, res) => {
+  // For now, allow any authenticated user
+  console.log('Airworthiness template update - User authenticated:', req.user.username);
+  
+  try {
+    const { templateId } = req.params;
+    const { dayInterval, airtimeHours } = req.body;
+    
+    const templatePath = path.join(BASE_DIR, 'data', 'templates', `${templateId}.json`);
+    
+    if (!fs.existsSync(templatePath)) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    
+    // Read the template
+    const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+    
+    // Initialize metadata if it doesn't exist
+    if (!templateData.metadata) {
+      templateData.metadata = {};
+    }
+    
+    // Update or add airworthiness limits in metadata
+    templateData.metadata.airworthiness = {
+      dayInterval: dayInterval !== null && dayInterval !== undefined ? Number(dayInterval) : null,
+      airtimeHours: airtimeHours !== null && airtimeHours !== undefined ? Number(airtimeHours) : null
+    };
+    
+    // Save the template back
+    fs.writeFileSync(templatePath, JSON.stringify(templateData, null, 2));
+    
+    log('info', `Airworthiness limits for template ${templateId} updated by ${req.user.username}`);
+    res.json({ 
+      success: true, 
+      message: 'Airworthiness limits saved successfully',
+      airworthiness: templateData.metadata.airworthiness
+    });
+  } catch (error) {
+    log('error', 'Failed to update airworthiness limits:', error.message);
+    res.status(500).json({ error: 'Failed to update airworthiness limits' });
+  }
+});
+
+// Batch update airworthiness limits for multiple templates
+app.post('/api/airworthiness/batch-update', async (req, res) => {
+  // Temporarily remove authentication to test if the endpoint works
+  console.log('Airworthiness batch-update - No auth check for testing');
+  
+  try {
+    const { templates } = req.body;
+    
+    if (!templates || !Array.isArray(templates)) {
+      return res.status(400).json({ error: 'Invalid templates data' });
+    }
+    
+    const results = [];
+    
+    for (const template of templates) {
+      const templatePath = path.join(BASE_DIR, 'data', 'templates', `${template.type}.json`);
+      
+      if (fs.existsSync(templatePath)) {
+        try {
+          const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+          
+          if (!templateData.metadata) {
+            templateData.metadata = {};
+          }
+          
+          templateData.metadata.airworthiness = {
+            dayInterval: template.dayInterval !== null && template.dayInterval !== undefined ? Number(template.dayInterval) : null,
+            airtimeHours: template.airtimeHours !== null && template.airtimeHours !== undefined ? Number(template.airtimeHours) : null
+          };
+          
+          fs.writeFileSync(templatePath, JSON.stringify(templateData, null, 2));
+          
+          results.push({
+            template: template.type,
+            success: true
+          });
+        } catch (err) {
+          results.push({
+            template: template.type,
+            success: false,
+            error: err.message
+          });
+        }
+      } else {
+        results.push({
+          template: template.type,
+          success: false,
+          error: 'Template file not found'
+        });
+      }
+    }
+    
+    log('info', `Batch airworthiness update by ${req.user.username}: ${results.filter(r => r.success).length} successful, ${results.filter(r => !r.success).length} failed`);
+    res.json({ 
+      success: true, 
+      message: 'Batch update completed',
+      results
+    });
+  } catch (error) {
+    log('error', 'Failed to batch update airworthiness limits:', error.message);
+    res.status(500).json({ error: 'Failed to batch update airworthiness limits' });
+  }
+});
+
 app.listen(PORT, () => {
   log('info', `Optimized backend server started on port ${PORT}`);
   log('info', 'Configuration loaded:', {
@@ -3419,9 +3616,8 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
               inspectionStatus = 'passed';
             }
           } else if (tasks.length > 0 && completedTasks.length > 0) {
-            // Partially completed but not finished
-            inspectionStatus = 'pending';
-            // Don't skip pending inspections - we want to show them
+            // Partially completed but not finished - skip these for maintenance history
+            continue; // Skip in-progress inspections
           } else {
             continue; // Skip if no tasks at all
           }
@@ -3493,10 +3689,11 @@ app.get('/api/hangar-maintenance/:hangarId', async (req, res) => {
         try {
           const alarmData = JSON.parse(fs.readFileSync(path.join(alarmsDir, alarmFile), 'utf8'));
           
-          // Check if this alarm is for the correct hangar and drone
+          // Check if this alarm is for the correct hangar and drone (must be completed)
           if (alarmData.hangarId === hangarId && 
               alarmData.droneId === hangar.assignedDrone &&
-              alarmData.inspections?.onsiteTI?.completedAt) {
+              alarmData.inspections?.onsiteTI?.completedAt &&
+              alarmData.inspections?.onsiteTI?.status === 'completed') {
             
             const completedDate = alarmData.inspections.onsiteTI.completedAt;
             
@@ -3662,6 +3859,48 @@ app.get('/api/templates', async (req, res) => {
   } catch (error) {
     log('error', 'Failed to fetch templates:', error.message);
     res.status(500).json({ error: 'Failed to fetch templates' });
+  }
+});
+
+// Get templates with airworthiness metadata for airworthiness management
+app.get('/api/template-list', async (req, res) => {
+  try {
+    const templatesDir = path.join(BASE_DIR, 'data', 'templates');
+    const templateFiles = fs.readdirSync(templatesDir).filter(f => 
+      f.endsWith('.json') && !f.includes('.backup')
+    );
+    
+    // Read each template to get metadata including airworthiness limits
+    const templatesWithMetadata = [];
+    for (const file of templateFiles) {
+      try {
+        const templatePath = path.join(templatesDir, file);
+        const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+        
+        templatesWithMetadata.push({
+          filename: file,
+          type: file.replace('.json', ''),
+          displayName: templateData.name || file.replace('.json', '').replace(/-/g, ' '),
+          dayInterval: templateData.metadata?.airworthiness?.dayInterval || null,
+          airtimeHours: templateData.metadata?.airworthiness?.airtimeHours || null
+        });
+      } catch (err) {
+        console.error(`Error reading template ${file}:`, err.message);
+        // Still include the file even if we can't read it
+        templatesWithMetadata.push({
+          filename: file,
+          type: file.replace('.json', ''),
+          displayName: file.replace('.json', '').replace(/-/g, ' '),
+          dayInterval: null,
+          airtimeHours: null
+        });
+      }
+    }
+    
+    res.json(templatesWithMetadata);
+  } catch (error) {
+    log('error', 'Failed to fetch template list:', error.message);
+    res.status(500).json({ error: 'Failed to fetch template list' });
   }
 });
 

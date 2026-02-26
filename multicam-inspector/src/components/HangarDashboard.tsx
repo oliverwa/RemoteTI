@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from './ui/button';
-import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X, Lightbulb, Sun, Moon, Menu, LogOut } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Wrench, Radio, ArrowRight, User, RefreshCw, Timer, AlertTriangle, BarChart, Camera, FileCheck, HelpCircle, Shield, Settings, FileText, XCircle, PlayCircle, Eye, X, Lightbulb, Sun, Moon, Menu, LogOut, ChevronDown, ChevronUp, Grid, List } from 'lucide-react';
 import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
 import SimpleTelemetryAnalysis from './SimpleTelemetryAnalysis';
@@ -117,6 +117,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [showInspectionSummary, setShowInspectionSummary] = useState(false);
   const [selectedInspectionData, setSelectedInspectionData] = useState<any>(null);
   const [refreshCountdown, setRefreshCountdown] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'compact' | 'detailed'>('compact');
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [selectedCamera, setSelectedCamera] = useState<string>('RUL');
 
   // Update countdown timer for next refresh
@@ -1399,7 +1401,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
     
     switch(state) {
       case 'standby':
-        return 'No maintenance required';
+        // Already handled maintenance check above, so if we get here, no maintenance is required
+        return isMaintenanceOverdue ? 'Maintenance Required' : 'No maintenance required';
       case 'alarm':
         return 'Workflow Active';
       case 'post_flight':
@@ -1831,14 +1834,78 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
 
       {/* Main Content - Responsive padding */}
       <div className="p-4 sm:p-6 md:p-8">
+        
 
-        {/* Hangar Grid - Optimized for iPad with larger cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
-          {hangarStatuses.map(hangar => {
-            // Check if maintenance is required (failed inspections or overdue maintenance)
+        {/* Hangar Grid - Smart sorted with compact/detailed mode */}
+        <div className={`grid ${
+          viewMode === 'compact' 
+            ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3' 
+            : 'grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4'
+        }`}>
+          {[...hangarStatuses]
+            .sort((a, b) => {
+              // Priority 1: Active workflows (not standby)
+              if (a.state !== 'standby' && b.state === 'standby') return -1;
+              if (a.state === 'standby' && b.state !== 'standby') return 1;
+              
+              // Priority 2: Maintenance required (any failed inspection)
+              const aHasFailedInspection = (
+                a.maintenanceHistory?.lastOnsiteTIStatus === 'failed' ||
+                a.maintenanceHistory?.lastFullRemoteTIStatus === 'failed' ||
+                a.maintenanceHistory?.lastExtendedTIStatus === 'failed' ||
+                a.maintenanceHistory?.lastServiceStatus === 'failed'
+              );
+              const bHasFailedInspection = (
+                b.maintenanceHistory?.lastOnsiteTIStatus === 'failed' ||
+                b.maintenanceHistory?.lastFullRemoteTIStatus === 'failed' ||
+                b.maintenanceHistory?.lastExtendedTIStatus === 'failed' ||
+                b.maintenanceHistory?.lastServiceStatus === 'failed'
+              );
+              
+              const aIsMaintenanceOverdue = (userType === 'admin' || userType === 'everdrone') && a.status === 'operational' && a.assignedDrone && a.state === 'standby' && (
+                aHasFailedInspection ||
+                (a.maintenanceHistory?.lastOnsiteTI && getDaysSince(a.maintenanceHistory.lastOnsiteTI) > 30) ||
+                (a.maintenanceHistory?.lastExtendedTI && getDaysSince(a.maintenanceHistory.lastExtendedTI) > 60) ||
+                (a.maintenanceHistory?.lastService && getDaysSince(a.maintenanceHistory.lastService) > 90) ||
+                (a.maintenanceHistory?.lastFullRemoteTI && getDaysSince(a.maintenanceHistory.lastFullRemoteTI) > 45) ||
+                (!a.maintenanceHistory?.lastOnsiteTI && !a.maintenanceHistory?.lastExtendedTI && !a.maintenanceHistory?.lastService && !a.maintenanceHistory?.lastFullRemoteTI)
+              );
+              
+              const bIsMaintenanceOverdue = (userType === 'admin' || userType === 'everdrone') && b.status === 'operational' && b.assignedDrone && b.state === 'standby' && (
+                bHasFailedInspection ||
+                (b.maintenanceHistory?.lastOnsiteTI && getDaysSince(b.maintenanceHistory.lastOnsiteTI) > 30) ||
+                (b.maintenanceHistory?.lastExtendedTI && getDaysSince(b.maintenanceHistory.lastExtendedTI) > 60) ||
+                (b.maintenanceHistory?.lastService && getDaysSince(b.maintenanceHistory.lastService) > 90) ||
+                (b.maintenanceHistory?.lastFullRemoteTI && getDaysSince(b.maintenanceHistory.lastFullRemoteTI) > 45) ||
+                (!b.maintenanceHistory?.lastOnsiteTI && !b.maintenanceHistory?.lastExtendedTI && !b.maintenanceHistory?.lastService && !b.maintenanceHistory?.lastFullRemoteTI)
+              );
+              
+              if (aIsMaintenanceOverdue && !bIsMaintenanceOverdue) return -1;
+              if (!aIsMaintenanceOverdue && bIsMaintenanceOverdue) return 1;
+              
+              // Priority 3: Operational (not under construction, in standby, not needing maintenance)
+              const aIsOperational = a.status === 'operational' && a.state === 'standby' && !aIsMaintenanceOverdue;
+              const bIsOperational = b.status === 'operational' && b.state === 'standby' && !bIsMaintenanceOverdue;
+              
+              if (aIsOperational && !bIsOperational) return -1;
+              if (!aIsOperational && bIsOperational) return 1;
+              
+              // Priority 4: Under construction last
+              if (a.status === 'construction' && b.status !== 'construction') return 1;
+              if (a.status !== 'construction' && b.status === 'construction') return -1;
+              if (a.status === 'maintenance' && b.status !== 'maintenance') return 1;
+              if (a.status !== 'maintenance' && b.status === 'maintenance') return -1;
+              
+              // Default: alphabetical
+              return a.name.localeCompare(b.name);
+            })
+            .map(hangar => {
+            // Check if maintenance is required (any failed inspection)
             const hasFailedInspection = (
               hangar.maintenanceHistory?.lastOnsiteTIStatus === 'failed' ||
-              hangar.maintenanceHistory?.lastFullRemoteTIStatus === 'failed'
+              hangar.maintenanceHistory?.lastFullRemoteTIStatus === 'failed' ||
+              hangar.maintenanceHistory?.lastExtendedTIStatus === 'failed' ||
+              hangar.maintenanceHistory?.lastServiceStatus === 'failed'
             );
             
             // Check if maintenance is overdue (only for admin/everdrone users and when in standby state)
@@ -1874,35 +1941,100 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               }
             };
 
+            const isExpanded = expandedCards.has(hangar.id);
+            const isCompactMode = viewMode === 'compact' && !isExpanded;
+            
+            const toggleCardExpansion = (e: React.MouseEvent) => {
+              e.stopPropagation();
+              setExpandedCards(prev => {
+                const newSet = new Set(prev);
+                if (newSet.has(hangar.id)) {
+                  newSet.delete(hangar.id);
+                } else {
+                  newSet.add(hangar.id);
+                }
+                return newSet;
+              });
+            };
+
+            // For expanded cards in compact mode, span full width
+            const isExpandedCompact = viewMode === 'compact' && isExpanded;
+
             return (
             <div
               key={hangar.id}
-              className={`relative bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-all border-l-8 md:border-l-[16px] ${
-                getBorderColor()
-              } p-4 sm:p-5 md:p-6 ${
-                hangar.state === 'standby' || hangar.status !== 'operational' ? '' : 'cursor-pointer'
+              className={`relative bg-white dark:bg-gray-800 rounded-lg transition-all ${
+                isCompactMode 
+                  ? `border-l-8 ${getBorderColor()} shadow-sm hover:shadow-md hover:scale-[1.02]` 
+                  : `border-l-8 md:border-l-12 ${getBorderColor()} shadow-md hover:shadow-lg`
               } ${
-                hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[160px]' : 'min-h-[220px]'
-              } min-w-[340px] sm:min-w-[380px] md:min-w-[420px] flex flex-col`}
-              onClick={(e) => {
-                // Only open modal if clicking on the card itself, not buttons
-                if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.card-content')) {
-                  if (hangar.state !== 'standby' && hangar.status === 'operational') {
-                    setSelectedHangar(hangar.id);
-                  }
-                }
-              }}
+                isCompactMode 
+                  ? 'p-4 cursor-pointer' 
+                  : 'p-4 sm:p-5 md:p-6 min-h-[220px]'
+              } flex flex-col ${
+                isExpandedCompact ? 'col-span-full' : ''
+              }`}
+              onClick={isCompactMode ? toggleCardExpansion : undefined}
             >
-              {/* Header */}
-              <div className="mb-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">{hangar.name}</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-200 mt-1">
-                      Drone: {hangar.assignedDrone || 'Not assigned'}
-                    </p>
+              {isCompactMode ? (
+                /* Compact Card Layout - Simplified without dot */
+                <>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 truncate">{hangar.name}</h3>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        {hangar.assignedDrone ? (
+                          <>
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400 dark:bg-gray-500" />
+                            <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {hangar.assignedDrone}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-xs text-gray-400 dark:text-gray-500 italic">
+                            No drone assigned
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  
+                  {/* State indicator - shows workflow state or maintenance status */}
+                  <div className="mt-3">
+                    {hangar.state !== 'standby' && hangar.alarmSession ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-[11px] font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                          WORKFLOW ACTIVE
+                        </span>
+                      </div>
+                    ) : isMaintenanceOverdue && hangar.state === 'standby' ? (
+                      <span className="text-[10px] font-medium text-red-600 dark:text-red-400 uppercase tracking-wide">
+                        Maintenance Required
+                      </span>
+                    ) : hangar.status === 'construction' ? (
+                      <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide">
+                        Under Construction
+                      </span>
+                    ) : hangar.status === 'maintenance' ? (
+                      <span className="text-[10px] font-medium text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                        Under Maintenance
+                      </span>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                /* Detailed Card Layout (Original) */
+                <>
+                  {/* Header */}
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-gray-100">{hangar.name}</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-200 mt-1">
+                          Drone: {hangar.assignedDrone || 'Not assigned'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
                     {/* Quick Preview Eye Icon */}
                     {hangar.status === 'operational' && (
                       <button
@@ -2158,6 +2290,21 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   </>
                 )}
               </div>
+              
+              {/* Collapse button for expanded cards in compact mode */}
+              {viewMode === 'compact' && isExpanded && (
+                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={toggleCardExpansion}
+                    className="w-full flex items-center justify-center gap-1 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  >
+                    <ChevronUp className="w-3 h-3" />
+                    <span>Collapse</span>
+                  </button>
+                </div>
+              )}
+              </>
+              )}
             </div>
             );
           })}
@@ -2298,7 +2445,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   {previewModal.hangarName} - Live Camera Preview
                 </h3>
                 <div className="flex items-center gap-4 mt-2">
@@ -2373,7 +2520,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                   <img
                     src={`${API_CONFIG.BASE_URL}/api/hangar/${previewModal.hangarId}/quick-preview?camera=${selectedCamera}&t=${previewTimestamp}`}
                     alt="Camera Preview"
-                    className="max-w-full max-h-[70vh] rounded-lg shadow-lg"
+                    className="w-full sm:max-w-full h-auto sm:max-h-[70vh] rounded-lg shadow-lg object-contain"
                     onLoad={() => {
                       const loadTime = Date.now() - previewTimestamp;
                       setPreviewLoading(false);
@@ -2483,6 +2630,26 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         hangarId={selectedInspectionData?.hangarId}
         showImages={selectedInspectionData?.sessionPath?.includes('full_remote')}
       />
+      
+      {/* Fixed Compact/Detailed toggle button at bottom */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40">
+        <button
+          onClick={() => setViewMode(viewMode === 'compact' ? 'detailed' : 'compact')}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white rounded-full shadow-lg transition-all hover:scale-105"
+        >
+          {viewMode === 'compact' ? (
+            <>
+              <Grid className="w-4 h-4" />
+              <span>Compact</span>
+            </>
+          ) : (
+            <>
+              <List className="w-4 h-4" />
+              <span>Detailed</span>
+            </>
+          )}
+        </button>
+      </div>
       
     </div>
   );

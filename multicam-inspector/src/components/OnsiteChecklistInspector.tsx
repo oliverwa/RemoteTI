@@ -504,24 +504,55 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
   const progressPercentage = (completedTasksCount / inspectionData.tasks.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Simplified Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4">
+    <div className="h-screen bg-gray-50 dark:bg-gray-900 flex flex-col overflow-hidden">
+      {/* Simplified Header - Sticky */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <div className="px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{getInspectionDisplayName()}</h1>
+            <div className="flex items-center gap-2">
+              {/* Mobile navigation arrows */}
+              <button
+                onClick={handlePrevious}
+                disabled={currentTaskIndex === 0}
+                className="sm:hidden p-1.5 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="Previous task"
+              >
+                <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
+              <h1 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">{getInspectionDisplayName()}</h1>
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <Clock className="w-3.5 h-3.5" />
               <span>{completedTasksCount} / {inspectionData.tasks.length} completed</span>
               <span className="mx-2">•</span>
               <span>{selectedHangar} • {selectedDrone}</span>
             </div>
+            <div className="flex sm:hidden items-center gap-2">
+              <span className="text-xs text-gray-500 dark:text-gray-400">{currentTaskIndex + 1}/{inspectionData.tasks.length}</span>
+              {/* Mobile navigation arrow - next or complete */}
+              {currentTaskIndex === inspectionData.tasks.length - 1 ? (
+                <button
+                  onClick={handleCompleteInspection}
+                  disabled={completedTasksCount !== inspectionData.tasks.length}
+                  className="sm:hidden px-2 py-1 text-xs bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium"
+                  aria-label="Complete inspection"
+                >
+                  Complete
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  className="sm:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  aria-label="Next task"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                </button>
+              )}
+            </div>
           </div>
           
-          {/* Simplified Progress Dots */}
-          <div className="mt-4">
+          {/* Simplified Progress Dots - Hidden on mobile */}
+          <div className="hidden sm:block mt-3 sm:mt-4">
             <div className="flex items-center justify-center gap-1">
               {inspectionData.tasks.map((task, idx) => {
                 const status = taskStatuses[task.taskNumber];
@@ -552,11 +583,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-120px)] relative">
-
-        {/* Main Content - Current Task */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="w-full max-w-3xl mx-auto px-8 py-8">
+      {/* Main scrollable content area */}
+      <div className="flex-1 overflow-y-auto relative">
+          <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-24 sm:pb-8">
             {/* Simplified Task Card */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -593,7 +622,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
               {/* Instructions with Checkboxes */}
               {currentTask.instructions && currentTask.instructions.length > 0 && (
-                <div className="mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <div className="mb-4 sm:mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-3 sm:p-4">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Instructions:</h3>
                   <div className="space-y-2">
                     {currentTask.instructions.map((instruction, index) => (
@@ -619,9 +648,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               )}
             </div>
 
-            {/* Simplified Task Actions */}
-            <div className="mb-6">
-              <div className="flex gap-3">
+            {/* Pass/Fail Buttons - Fixed on mobile */}
+            <div className="fixed sm:relative bottom-0 left-0 right-0 bg-white dark:bg-gray-800 sm:bg-transparent p-3 sm:p-0 border-t sm:border-0 border-gray-200 dark:border-gray-700 z-10 sm:mb-6">
+              <div className="flex gap-3 max-w-3xl mx-auto">
                 <Button
                   onClick={() => handleTaskStatus(currentTask.taskNumber, 'pass')}
                   disabled={
@@ -630,7 +659,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                     (!checkedInstructions[currentTask.taskNumber] || 
                      checkedInstructions[currentTask.taskNumber].filter(Boolean).length < currentTask.instructions.length)
                   }
-                  className={`flex-1 py-4 text-lg font-medium transition-all ${
+                  className={`flex-1 py-3 sm:py-4 text-base sm:text-lg font-medium transition-all ${
                     taskStatuses[currentTask.taskNumber] === 'pass'
                       ? 'bg-green-500 hover:bg-green-600 text-white'
                       : currentTask.instructions && 
@@ -646,7 +675,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                 </Button>
                 <Button
                   onClick={() => handleTaskStatus(currentTask.taskNumber, 'fail')}
-                  className={`flex-1 py-4 text-lg font-medium transition-all ${
+                  className={`flex-1 py-3 sm:py-4 text-base sm:text-lg font-medium transition-all ${
                     taskStatuses[currentTask.taskNumber] === 'fail'
                       ? 'bg-red-500 hover:bg-red-600 text-white'
                       : 'bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-500 dark:border-red-600'
@@ -657,9 +686,9 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                 </Button>
               </div>
 
-              {/* Notes Section */}
-              <div className="mt-4">
-                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
+              {/* Notes Section - Smaller on mobile */}
+              <div className="mt-2 sm:mt-4 mb-2 sm:mb-4">
+                <label className="block text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1 sm:mb-2">
                   Notes (Optional)
                 </label>
                 <textarea
@@ -690,49 +719,25 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                       }
                     }
                   }}
-                  className="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 resize-none bg-white dark:bg-gray-800 text-black dark:text-white"
-                  rows={3}
+                  className="w-full p-2 sm:p-3 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-gray-400 dark:focus:border-gray-500 resize-none bg-white dark:bg-gray-800 text-black dark:text-white text-xs sm:text-sm"
+                  rows={1}
                   placeholder="Add any observations or notes about this task..."
                 />
               </div>
-            </div>
-
-            {/* Simplified Navigation */}
-            <div className="flex justify-between items-center">
-              <Button
-                onClick={handlePrevious}
-                disabled={currentTaskIndex === 0}
-                className="flex items-center gap-1 px-4 py-2"
-                variant="outline"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </Button>
-
-              <div className="text-center">
-                <div className="text-xs text-gray-400 dark:text-gray-500">← → Navigate | P Pass | F Fail</div>
+              
+              {/* Back button for mobile - at bottom of content */}
+              <div className="mt-6 mb-4 sm:hidden">
+                <button
+                  onClick={() => window.history.back()}
+                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Back</span>
+                </button>
               </div>
-
-              {currentTaskIndex === inspectionData.tasks.length - 1 ? (
-                <Button
-                  onClick={handleCompleteInspection}
-                  disabled={completedTasksCount !== inspectionData.tasks.length}
-                  className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white px-6 py-2 font-medium"
-                >
-                  Complete Inspection
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNext}
-                  className="flex items-center gap-1 px-6 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              )}
             </div>
+
           </div>
-        </div>
       </div>
     </div>
   );

@@ -8,17 +8,10 @@
     "created": "2024-12-03",
     "updated": "2026-02-04",
     "inspectionMode": "onsite",
-    "safetyNote": "IMPORTANT: ENSURE OVERALL SAFETY AND ACCURACY - This checklist is critical for safe drone operation"
-  },
-  "safetyInstructions": {
-    "general": [
-      "Safety First - This checklist is critical for the safe operation of the drone. Proper execution is essential.",
-      "Just Culture - We promote an environment of open and honest communication. Report any mistakes, incidents, or safety concerns without fear of blame.",
-      "Attention to Detail - Carefully follow each task in the order presented. Do not skip any steps.",
-      "Use PPE - Always wear required safety gear.",
-      "Report Issues - Document any abnormalities or safety concerns immediately.",
-      "INSTRUCTION: KEEP THE DRONE POWERED ON UNTIL A TASK THAT EXPLICITLY TELLS YOU TO TURN IT OFF."
-    ]
+    "airworthiness": {
+      "dayInterval": 30,
+      "airtimeHours": 0
+    }
   },
   "tasks": [
     {

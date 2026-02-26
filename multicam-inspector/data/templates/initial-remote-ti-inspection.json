@@ -9,7 +9,11 @@
     "updated": "2026-02-08",
     "inspectionMode": "remote",
     "timing": "Immediately after mission completion/landing",
-    "assumptions": "Batteries are still the flown set. Drone may be misaligned. MedKit may not be mounted."
+    "assumptions": "Batteries are still the flown set. Drone may be misaligned. MedKit may not be mounted.",
+    "airworthiness": {
+      "dayInterval": 30,
+      "airtimeHours": 0
+    }
   },
   "tasks": [
     {
