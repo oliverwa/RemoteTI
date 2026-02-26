@@ -4,7 +4,6 @@ import OnsiteChecklistInspector from './components/OnsiteChecklistInspector';
 import LoginPage from './components/LoginPage';
 import UnifiedInspectionScreen from './components/UnifiedInspectionScreen';
 import HangarDashboard from './components/HangarDashboard';
-import BackendConnectionCheck from './components/BackendConnectionCheck';
 import InspectionSummaryModal from './components/modals/InspectionSummaryModal';
 import { ThemeProvider } from './contexts/ThemeContext';
 import authService from './services/authService';
@@ -260,8 +259,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <BackendConnectionCheck>
-        <div className="App">
+      <div className="App">
         {!isAuthenticated ? (
           <LoginPage onLogin={handleLogin} />
         ) : showDashboard ? (
@@ -333,7 +331,6 @@ function App() {
             showImages={true}
           />
         )}
-      </BackendConnectionCheck>
     </ThemeProvider>
   );
 }

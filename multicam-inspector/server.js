@@ -2470,10 +2470,14 @@ app.post('/api/alarm-session/:hangarId/generate-full-rti', async (req, res) => {
             // Create inspection with template
             const templatePath = path.join(BASE_DIR, 'data', 'templates', 'full-remote-ti-inspection.json');
             const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+            
+            // Merge with task library to get full task content
+            const mergedTemplate = mergeTasksWithLibrary(template);
+            
             const inspection = {
-              ...template,
+              ...mergedTemplate,
               metadata: {
-                ...template.metadata,
+                ...mergedTemplate.metadata,
                 sessionId: sessionName,
                 hangarId: hangarId,
                 droneId: droneId,
@@ -2699,10 +2703,14 @@ app.post('/api/alarm-session/:hangarId/generate-onsite-ti', async (req, res) => 
     // Create Onsite TI inspection from template
     const templatePath = path.join(BASE_DIR, 'data', 'templates', 'onsite-ti-inspection.json');
     const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+    
+    // Merge with task library to get full task content
+    const mergedTemplate = mergeTasksWithLibrary(template);
+    
     const inspection = {
-      ...template,
+      ...mergedTemplate,
       metadata: {
-        ...template.metadata,
+        ...mergedTemplate.metadata,
         sessionId: sessionName,
         hangarId: hangarId,
         droneId: droneId,
@@ -2877,10 +2885,14 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
       
       // Create inspection JSON
       const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+      
+      // Merge with task library to get full task content
+      const mergedTemplate = mergeTasksWithLibrary(template);
+      
       const inspection = {
-        ...template,
+        ...mergedTemplate,
         metadata: {
-          ...template.metadata,
+          ...mergedTemplate.metadata,
           sessionId: sessionName,
           hangarId: hangarId,
           droneId: droneId,
