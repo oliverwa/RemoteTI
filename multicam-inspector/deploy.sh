@@ -68,10 +68,12 @@ scp -r server $SERVER:$REMOTE_DIR/
 echo "  📦 Copying configuration..."
 scp config.js $SERVER:$REMOTE_DIR/
 
-# Copy data templates only (preserve server data)
-echo "  📦 Copying data templates..."
+# Copy data templates and task library (preserve server data)
+echo "  📦 Copying data templates and task library..."
 # Only copy templates folder, not the JSON files that store user data
 scp -r data/templates $SERVER:$REMOTE_DIR/data/ 2>/dev/null || true
+# Copy task library
+scp -r data/tasks $SERVER:$REMOTE_DIR/data/ 2>/dev/null || true
 
 # Initialize data files if they don't exist on server
 ssh $SERVER "cd $REMOTE_DIR && \

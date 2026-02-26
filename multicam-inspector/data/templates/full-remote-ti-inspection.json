@@ -12,16 +12,7 @@
   },
   "tasks": [
     {
-      "id": "start_conditions",
-      "title": "START CONDITIONS: Verify prerequisites",
-      "description": "Confirm all prerequisites for remote inspection are met.",
-      "instructions": [
-        "Confirm RemoteTI procedure is being used.",
-        "Verify correct hangar/Skybase selected.",
-        "Check all 8 camera images are captured with good quality.",
-        "Confirm no personnel visible in hangar.",
-        "Document timestamp of inspection start."
-      ],
+      "id": "TSK-PRE003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -30,17 +21,7 @@
       "note": ""
     },
     {
-      "id": "camera_coverage",
-      "title": "CAMERA COVERAGE: Verify visual coverage",
-      "description": "Confirm critical areas are visible in captured images.",
-      "instructions": [
-        "Verify drone visible from opposite corners.",
-        "Check marker alignment visibility.",
-        "Confirm umbilical area is visible.",
-        "Verify MedKit/winch visibility.",
-        "Check ground coverage for debris.",
-        "STOP if critical areas not visible."
-      ],
+      "id": "TSK-CAM001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -49,17 +30,7 @@
       "note": ""
     },
     {
-      "id": "skybase_environment",
-      "title": "SKYBASE SAFETY: Environment and obstacle check",
-      "description": "Inspect Skybase environment for safety hazards and foreign objects.",
-      "instructions": [
-        "Scan floor for debris/tools in images.",
-        "Check clearance around propellers.",
-        "Verify marker is clean and visible.",
-        "Assess vegetation clearance.",
-        "Confirm lighting functionality.",
-        "STOP if hazards detected."
-      ],
+      "id": "TSK-SKY003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -68,15 +39,7 @@
       "note": ""
     },
     {
-      "id": "umbilical_connection",
-      "title": "UMBILICAL: Power connection and contact surfaces",
-      "description": "Inspect umbilical connection and contact surfaces.",
-      "instructions": [
-        "Verify umbilical is connected straight.",
-        "Check for arcing/corrosion signs.",
-        "Verify cable routing appears correct.",
-        "STOP if misseated or damaged."
-      ],
+      "id": "TSK-PWR001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -85,18 +48,7 @@
       "note": ""
     },
     {
-      "id": "parachute_system",
-      "title": "PARACHUTE SYSTEM: Complete PRS inspection",
-      "description": "Inspect entire parachute recovery system for proper condition.",
-      "instructions": [
-        "Check yellow lid seating and gaps.",
-        "Inspect for perimeter cracks.",
-        "Verify no fabric protrusion.",
-        "Check tube mounting security.",
-        "Inspect line and collector.",
-        "Verify fuse switch and red cap.",
-        "STOP if PRS abnormal."
-      ],
+      "id": "TSK-PRS002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -105,17 +57,7 @@
       "note": ""
     },
     {
-      "id": "drone_structure",
-      "title": "DRONE STRUCTURE: Arms, core, and landing gear",
-      "description": "Inspect drone structural components for integrity.",
-      "instructions": [
-        "Inspect each motor arm for damage.",
-        "Check core for cracks.",
-        "Verify landing gear symmetry.",
-        "Look for structural deformation.",
-        "Confirm component alignment.",
-        "STOP if structural damage found."
-      ],
+      "id": "TSK-STR005",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -124,16 +66,7 @@
       "note": ""
     },
     {
-      "id": "propulsion_system",
-      "title": "PROPULSION: Propellers, motors, and ESCs",
-      "description": "Inspect all propulsion system components.",
-      "instructions": [
-        "Check all 8 propellers intact (no chips/cracks).",
-        "Verify no contamination (ice/snow/mud) on blades.",
-        "Inspect motors for visible damage.",
-        "Check ESC-to-motor orange cables intact.",
-        "Verify ESC modules mounted securely."
-      ],
+      "id": "TSK-PRO002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -142,15 +75,7 @@
       "note": ""
     },
     {
-      "id": "sensor_systems",
-      "title": "SENSORS: Navigation and vision systems",
-      "description": "Inspect sensor systems for proper condition.",
-      "instructions": [
-        "Check RealSense lenses clean (front + downward).",
-        "Verify OpticalFlow area unobstructed.",
-        "Confirm all sensors properly aligned.",
-        "Look for physical damage to housings."
-      ],
+      "id": "TSK-PER003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -159,16 +84,7 @@
       "note": ""
     },
     {
-      "id": "antenna_systems",
-      "title": "ANTENNAS: Communication systems",
-      "description": "Verify all antenna systems configuration.",
-      "instructions": [
-        "Count and verify 4 4G antennas present.",
-        "Check 2 antennas pointing sideways.",
-        "Check 2 antennas angled downward.",
-        "Verify GPS masts intact and forward-facing.",
-        "Confirm all antenna connections secure."
-      ],
+      "id": "TSK-PER004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -177,17 +93,7 @@
       "note": ""
     },
     {
-      "id": "ports_peripherals",
-      "title": "PORTS & PERIPHERALS: Protective covers and accessories",
-      "description": "Verify ports and peripheral equipment.",
-      "instructions": [
-        "Verify Ethernet and USB caps installed.",
-        "Confirm all ports have protective covers.",
-        "Check no exposed connectors visible.",
-        "Locate downlight on front-right landing gear.",
-        "Verify downlight not illuminated.",
-        "Check MiniFinder present and mounted."
-      ],
+      "id": "TSK-PER005",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -196,16 +102,7 @@
       "note": ""
     },
     {
-      "id": "identification",
-      "title": "MARKINGS: Regulatory and identification",
-      "description": "Verify all required markings are visible.",
-      "instructions": [
-        "Locate permit number on rear arm ('SWEbne...').",
-        "Verify Onyx name and airframeID correct.",
-        "Check 'found drone' instructions visible.",
-        "Find AED alarm device warning sticker.",
-        "Confirm all markings legible."
-      ],
+      "id": "TSK-MRK001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -214,18 +111,7 @@
       "note": ""
     },
     {
-      "id": "medkit_winch",
-      "title": "MEDKIT & WINCH: Payload system verification",
-      "description": "Verify MedKit and winch system configuration.",
-      "instructions": [
-        "Verify MedKit presence and seating.",
-        "Check mechanical locking.",
-        "Trace winch line routing.",
-        "Look for knots or snags.",
-        "Check line tension.",
-        "Verify AED mounting.",
-        "STOP if abnormal."
-      ],
+      "id": "TSK-MED003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -234,15 +120,7 @@
       "note": ""
     },
     {
-      "id": "drone_status",
-      "title": "DRONE STATUS: Verify safe state",
-      "description": "Confirm drone is in expected safe state.",
-      "instructions": [
-        "Verify drone stable on landing gear.",
-        "Check nav lights (Green=OK, Blue=OK+MedKit, Red=STOP).",
-        "Confirm drone appears level.",
-        "STOP if red lights or unexpected pattern."
-      ],
+      "id": "TSK-SYS004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -251,16 +129,7 @@
       "note": ""
     },
     {
-      "id": "alignment_verification",
-      "title": "ALIGNMENT: Marker positioning",
-      "description": "Verify drone alignment with navigation marker.",
-      "instructions": [
-        "Check drone centered on navigation marker.",
-        "Verify body parallel with marker lines.",
-        "Confirm landing legs symmetric to marker.",
-        "Check front matches marker orientation.",
-        "Verify clearance from hangar structures."
-      ],
+      "id": "TSK-SYS008",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -269,15 +138,7 @@
       "note": ""
     },
     {
-      "id": "battery_compartment",
-      "title": "BATTERY: Compartment inspection",
-      "description": "Inspect battery compartment area.",
-      "instructions": [
-        "Verify battery compartment lid completely closed.",
-        "Check 4 screws secured (2 on each side).",
-        "Ensure no gaps between lids and core.",
-        "Verify white seal visible and intact if observable."
-      ],
+      "id": "TSK-BAT007",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -286,16 +147,7 @@
       "note": ""
     },
     {
-      "id": "documentation",
-      "title": "DOCUMENTATION: Complete inspection records",
-      "description": "Complete inspection documentation and reporting.",
-      "instructions": [
-        "Log inspection completion.",
-        "Record Name, Hangar, Timestamp.",
-        "Note PASS/STOP status.",
-        "Add relevant comments.",
-        "Submit adverse events if needed."
-      ],
+      "id": "TSK-DOC001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,

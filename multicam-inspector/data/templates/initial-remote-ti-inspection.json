@@ -13,15 +13,7 @@
   },
   "tasks": [
     {
-      "id": "start_conditions",
-      "title": "START CONDITIONS: Verify prerequisites",
-      "description": "Confirm all prerequisites for initial remote inspection are met.",
-      "instructions": [
-        "Confirm correct hangar/Skybase ID.",
-        "Verify camera feeds are LIVE (check timestamps).",
-        "Confirm no people visible inside Skybase.",
-        "STOP if any condition cannot be confirmed."
-      ],
+      "id": "TSK-PRE003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -30,15 +22,7 @@
       "note": ""
     },
     {
-      "id": "critical_safety_check",
-      "title": "CRITICAL SAFETY: Skybase environment check",
-      "description": "Inspect Skybase environment for immediate safety hazards.",
-      "instructions": [
-        "Check for debris/tools/loose objects on floor.",
-        "Verify clearance near propellers and landing gear.",
-        "Check doors/enclosure for obstruction or damage.",
-        "STOP if anything could interfere with safety."
-      ],
+      "id": "TSK-SKY003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -47,16 +31,7 @@
       "note": ""
     },
     {
-      "id": "drone_safe_state",
-      "title": "DRONE SAFE STATE: Post-flight condition",
-      "description": "Verify drone is in safe post-flight state.",
-      "instructions": [
-        "Verify drone is stationary (no movement/rocking).",
-        "Check stability on landing gear (no abnormal tip/lean).",
-        "Look for smoke, steam, liquid, or heat haze.",
-        "Check for obvious structural damage.",
-        "STOP immediately if smoke/liquid/damage observed."
-      ],
+      "id": "TSK-SYS005",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -65,17 +40,7 @@
       "note": ""
     },
     {
-      "id": "propulsion_arm_status",
-      "title": "PROPULSION: Visual danger check",
-      "description": "Quick visual inspection of propulsion system for immediate dangers.",
-      "instructions": [
-        "Verify all 8 propellers present (none missing).",
-        "Check for broken/chipped propellers.",
-        "Look for bent propellers or surface contact.",
-        "Confirm motors are not spinning.",
-        "Check nav light pattern if visible.",
-        "STOP if propeller damaged or drone appears armed."
-      ],
+      "id": "TSK-PRO005",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -84,15 +49,7 @@
       "note": ""
     },
     {
-      "id": "umbilical_charge_area",
-      "title": "UMBILICAL: Quick visual check",
-      "description": "Visual inspection of umbilical and charging area.",
-      "instructions": [
-        "Check umbilical connector area for damage.",
-        "Look for soot/burn marks around contacts.",
-        "Verify no obvious mis-seat if connected.",
-        "STOP if area burned or connector misaligned."
-      ],
+      "id": "TSK-PWR001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -101,17 +58,7 @@
       "note": ""
     },
     {
-      "id": "sensor_peripheral_snapshot",
-      "title": "PERIPHERALS: Quick inventory check",
-      "description": "Fast visual check for missing or broken peripherals.",
-      "instructions": [
-        "Check 4G antennas present (not snapped off).",
-        "Verify GPS masts present and upright.",
-        "Check RealSense lenses not cracked/covered.",
-        "Look for ETH/USB caps if visible.",
-        "Check downlight and MiniFinder if visible.",
-        "STOP if essential peripheral missing/broken."
-      ],
+      "id": "TSK-PER006",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -120,16 +67,7 @@
       "note": ""
     },
     {
-      "id": "system_vitals",
-      "title": "SYSTEM VITALS: UI status check",
-      "description": "Check system status from UI if available.",
-      "instructions": [
-        "Check for critical warnings/faults in UI.",
-        "Verify LiveView or telemetry available.",
-        "Check battery status reasonable for post-flight.",
-        "Look for temperature/power warnings.",
-        "STOP if critical system fault present."
-      ],
+      "id": "TSK-SYS004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -138,15 +76,7 @@
       "note": ""
     },
     {
-      "id": "dispatch_decision",
-      "title": "DISPATCH GATE: Go/No-Go decision",
-      "description": "Make dispatch decision based on inspection results.",
-      "instructions": [
-        "Review all inspection results.",
-        "Make PASS or STOP decision.",
-        "If PASS: Clear for dispatch.",
-        "If STOP: Do not dispatch, escalate immediately."
-      ],
+      "id": "TSK-FIN003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -155,15 +85,7 @@
       "note": ""
     },
     {
-      "id": "documentation",
-      "title": "DOCUMENTATION: Complete inspection record",
-      "description": "Complete mandatory documentation of inspection outcome.",
-      "instructions": [
-        "Log outcome in work order/ops channel.",
-        "Include Name, Hangar, Timestamp, Status.",
-        "Add specific comment if STOP.",
-        "Submit adverse events form if needed."
-      ],
+      "id": "TSK-DOC001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,

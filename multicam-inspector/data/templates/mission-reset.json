@@ -12,15 +12,7 @@
   },
   "tasks": [
     {
-      "id": "safety_briefing",
-      "title": "SAFETY: Review safety requirements",
-      "description": "Review critical safety requirements before starting.",
-      "instructions": [
-        "Ensure PPE is available and worn.",
-        "Verify area is safe for inspection.",
-        "Keep drone powered ON during inspection.",
-        "Note any immediate hazards."
-      ],
+      "id": "TSK-SAF001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -29,15 +21,7 @@
       "note": ""
     },
     {
-      "id": "prs_disarm",
-      "title": "PRS: Disarm the parachute system",
-      "description": "ALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION.\n\nSwitch the parachute fuse to SAFE.",
-      "instructions": [
-        "Put on safety goggles and hearing protection.",
-        "Locate PRS fuse below the PRS tube.",
-        "Switch fuse to \"SAFE\" position.",
-        "Verify switch is secure in SAFE position."
-      ],
+      "id": "TSK-PRS001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -46,15 +30,7 @@
       "note": ""
     },
     {
-      "id": "open_lids",
-      "title": "DRONE: Open battery compartment",
-      "description": "Open drone compartment for battery access.",
-      "instructions": [
-        "Unscrew 4 lid screws (2 on each side) with torque screwdriver.",
-        "Open lids carefully.",
-        "Check for debris or moisture inside.",
-        "Check that the white seal is OK and undamaged."
-      ],
+      "id": "TSK-STR002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -63,14 +39,7 @@
       "note": ""
     },
     {
-      "id": "verify_new_batteries",
-      "title": "BATTERIES: Verify new batteries ready",
-      "description": "Check new batteries are fully charged and undamaged.",
-      "instructions": [
-        "Verify both new batteries are over 50.3V.",
-        "Check battery connectors are undamaged.",
-        "Ensure batteries are clean and dry."
-      ],
+      "id": "TSK-BAT001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -79,16 +48,7 @@
       "note": ""
     },
     {
-      "id": "remove_old_batteries",
-      "title": "BATTERIES: Remove old batteries",
-      "description": "Safely remove the old batteries from the drone.",
-      "instructions": [
-        "Disconnect front battery cable.",
-        "Remove front battery from compartment.",
-        "Disconnect back battery cable.",
-        "Remove back battery from compartment.",
-        "Check batteries for swelling or damage."
-      ],
+      "id": "TSK-BAT002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -97,15 +57,7 @@
       "note": ""
     },
     {
-      "id": "charge_old_batteries",
-      "title": "BATTERIES: Put old batteries on charge",
-      "description": "Connect old batteries to charging station.",
-      "instructions": [
-        "Take batteries to charging station.",
-        "Follow instructions at the charging station.",
-        "Connect batteries to charger.",
-        "Verify charging has started."
-      ],
+      "id": "TSK-BAT003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -114,15 +66,7 @@
       "note": ""
     },
     {
-      "id": "align_drone_perfect",
-      "title": "INSTRUCTION: Align the drone perfectly",
-      "description": "Position the drone precisely on the visual navigation marker for proper alignment.",
-      "instructions": [
-        "Align drone over visual navigation marker.",
-        "Place front landing gear on the two dots in front of marker.",
-        "Ensure front camera faces correct direction.",
-        "Verify drone body perfectly aligned with visual navigation markers."
-      ],
+      "id": "TSK-PRE002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -131,16 +75,7 @@
       "note": ""
     },
     {
-      "id": "install_front_battery",
-      "title": "BATTERIES: Install front battery",
-      "description": "Install the front battery in the drone.",
-      "instructions": [
-        "Place battery in front position.",
-        "Connect battery cable securely.",
-        "Ensure connector fully seated (no gap).",
-        "Secure velcro straps over battery wires.",
-        "Route cables to avoid pinching."
-      ],
+      "id": "TSK-BAT004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -149,16 +84,7 @@
       "note": ""
     },
     {
-      "id": "install_back_battery",
-      "title": "BATTERIES: Install back battery",
-      "description": "Install the back battery in the drone.",
-      "instructions": [
-        "Place battery in back position.",
-        "Connect battery cable securely.",
-        "Ensure connector fully seated (no gap).",
-        "Secure velcro straps over battery wires.",
-        "Route cables to avoid pinching."
-      ],
+      "id": "TSK-BAT005",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -167,16 +93,7 @@
       "note": ""
     },
     {
-      "id": "close_lids",
-      "title": "DRONE: Close battery compartment",
-      "description": "Close and secure the battery compartment.",
-      "instructions": [
-        "Verify batteries fully seated.",
-        "Check no cables will be pinched.",
-        "Close lids carefully.",
-        "Ensure no gaps between lids and core.",
-        "Screw in 4 screws (2 per side) with torque screwdriver."
-      ],
+      "id": "TSK-STR004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -185,15 +102,7 @@
       "note": ""
     },
     {
-      "id": "umbilical_inspection",
-      "title": "POWER: Inspect umbilical contacts",
-      "description": "Check umbilical connection points for damage.",
-      "instructions": [
-        "Check copper surfaces on landing gear.",
-        "Look for soot or corrosion.",
-        "Verify pins/pads not bent.",
-        "Clean contacts if needed."
-      ],
+      "id": "TSK-PWR001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -202,14 +111,7 @@
       "note": ""
     },
     {
-      "id": "attach_umbilical",
-      "title": "POWER: Attach umbilical to drone",
-      "description": "Connect umbilical for power supply.",
-      "instructions": [
-        "Connect umbilical next to the left landing gear.",
-        "Ensure connection is straight.",
-        "Verify fully connected."
-      ],
+      "id": "TSK-PWR002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -218,15 +120,7 @@
       "note": ""
     },
     {
-      "id": "medkit_verification",
-      "title": "MEDKIT: Verify contents and AED status",
-      "description": "Verify MedKit contents and AED operational status.\n\nVerify all utilities are included and in good condition.\nCheck AED is correctly placed inside MedKit.\nConfirm AED status is OK.\nVerify AED is dry, clean and free from damage.",
-      "instructions": [
-        "Check all MedKit utilities present.",
-        "Verify AED placement in MedKit.",
-        "Confirm AED status shows OK.",
-        "Check AED is clean and undamaged."
-      ],
+      "id": "TSK-MED001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -235,15 +129,7 @@
       "note": ""
     },
     {
-      "id": "winch_setup",
-      "title": "WINCH: Thread and attach line",
-      "description": "Set up winch line for MedKit deployment.\n\nThread line through the red guide below drone.\nAttach line securely to the spool.\nRoll up line using button on winch housing.\nConfirm spool spins smoothly with no abnormal noise.",
-      "instructions": [
-        "Thread line through red guide.",
-        "Attach line to spool securely.",
-        "Press and hold button to roll up line.",
-        "Verify smooth operation, no noise."
-      ],
+      "id": "TSK-WNC001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -252,17 +138,7 @@
       "note": ""
     },
     {
-      "id": "medkit_mounting",
-      "title": "MEDKIT: Mount and secure MedKit",
-      "description": "Mount the MedKit in position and secure it with the locking mechanism.",
-      "instructions": [
-        "Position MedKit on front brace.",
-        "Pull locking pin out.",
-        "Lift MedKit to locking position.",
-        "Lock pin securely.",
-        "Attach magnetic connector to front right.",
-        "Verify nav lights turn blue."
-      ],
+      "id": "TSK-MED002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -271,15 +147,7 @@
       "note": ""
     },
     {
-      "id": "motor_spin_test",
-      "title": "MOTORS: Test rotation by hand",
-      "description": "Spin each motor to check for bearing issues.",
-      "instructions": [
-        "Rotate each of 8 propellers slowly by hand.",
-        "Listen for crackling or grinding sounds.",
-        "Feel for smooth rotation.",
-        "STOP if any resistance or noise detected."
-      ],
+      "id": "TSK-PRO003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -288,14 +156,7 @@
       "note": ""
     },
     {
-      "id": "propeller_quick_check",
-      "title": "PROPELLERS: Quick visual inspection",
-      "description": "Quick check for obvious propeller damage.",
-      "instructions": [
-        "Visually scan all 8 propellers.",
-        "Look for obvious chips or cracks.",
-        "STOP if any damage found."
-      ],
+      "id": "TSK-PRO004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -304,14 +165,7 @@
       "note": ""
     },
     {
-      "id": "skybase_quick_check",
-      "title": "SKYBASE: Quick area check",
-      "description": "Quick check of Skybase area.",
-      "instructions": [
-        "Remove any debris from floor.",
-        "Secure all tools.",
-        "Clean navigation marker if dirty."
-      ],
+      "id": "TSK-SKY002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -320,16 +174,7 @@
       "note": ""
     },
     {
-      "id": "prs_arm",
-      "title": "PRS: Arm the parachute system",
-      "description": "FINAL STEP - ARM PARACHUTE\n\nALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION.",
-      "instructions": [
-        "Put on safety goggles and hearing protection.",
-        "Locate PRS fuse switch.",
-        "Switch to \"DANGER\" position.",
-        "Step away from drone immediately.",
-        "DO NOT APPROACH after arming."
-      ],
+      "id": "TSK-PRS003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -338,14 +183,7 @@
       "note": ""
     },
     {
-      "id": "documentation",
-      "title": "DOCUMENTATION: Report completion",
-      "description": "Document inspection completion.",
-      "instructions": [
-        "Log service partner inspection complete.",
-        "Note any issues found.",
-        "Report abnormalities if any."
-      ],
+      "id": "TSK-DOC001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,

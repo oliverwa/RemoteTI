@@ -10,16 +10,7 @@
   },
   "tasks": [
     {
-      "id": "comprehensive_structural_analysis",
-      "title": "STRUCTURAL ANALYSIS: Complete airframe integrity check",
-      "description": "Perform comprehensive structural analysis including NDT (Non-Destructive Testing) where applicable.\n\nConduct detailed crack inspection using magnification.\nCheck carbon fiber components for delamination.\nMeasure critical structural dimensions for deformation.\nPerform tap testing on composite structures.\nDocument all findings with measurements.",
-      "instructions": [
-        "Use magnifying equipment for crack detection",
-        "Perform tap test on all carbon fiber components",
-        "Measure and record critical dimensions",
-        "Check for any structural deformation",
-        "Document with photos and measurements"
-      ],
+      "id": "TSK-EXT001",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -28,16 +19,7 @@
       "note": ""
     },
     {
-      "id": "full_electrical_system_test",
-      "title": "ELECTRICAL SYSTEMS: Complete electrical testing and analysis",
-      "description": "Comprehensive electrical system testing with measurements.\n\nMeasure resistance on all power connections.\nCheck voltage drop under load conditions.\nTest all redundant power paths.\nVerify grounding and shielding effectiveness.\nPerform insulation resistance testing.\nCheck EMI/RFI compliance.",
-      "instructions": [
-        "Measure connection resistances with multimeter",
-        "Perform load testing on power systems",
-        "Test backup power circuits",
-        "Verify proper grounding continuity",
-        "Document all electrical measurements"
-      ],
+      "id": "TSK-EXT002",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -46,16 +28,7 @@
       "note": ""
     },
     {
-      "id": "performance_calibration_verification",
-      "title": "CALIBRATION: Full sensor and performance calibration",
-      "description": "Complete calibration verification of all sensors and performance systems.\n\nPerform full compass calibration with interference mapping.\nCalibrate and verify all IMU sensors.\nCheck and adjust ESC timing and calibration.\nVerify motor KV and performance curves.\nCalibrate gimbal and verify stabilization performance.\nTest and calibrate optical flow and ranging sensors.",
-      "instructions": [
-        "Complete compass calibration with data logging",
-        "Verify IMU calibration values are within spec",
-        "Check ESC calibration and timing",
-        "Test gimbal stabilization performance",
-        "Calibrate all distance sensors"
-      ],
+      "id": "TSK-EXT003",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -64,16 +37,7 @@
       "note": ""
     },
     {
-      "id": "environmental_stress_testing",
-      "title": "ENVIRONMENTAL: Temperature and vibration testing",
-      "description": "Perform environmental stress testing within safe parameters.\n\nConduct vibration analysis using accelerometer data.\nTest operation at temperature extremes (if chamber available).\nCheck seal integrity and water resistance.\nVerify thermal management under stress conditions.\nTest performance in simulated weather conditions.",
-      "instructions": [
-        "Run vibration analysis across frequency spectrum",
-        "Test components at temperature limits",
-        "Verify all seals and gaskets",
-        "Monitor thermal performance under load",
-        "Document environmental test results"
-      ],
+      "id": "TSK-EXT004",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,
@@ -82,16 +46,7 @@
       "note": ""
     },
     {
-      "id": "lifecycle_component_assessment",
-      "title": "LIFECYCLE: Component hour tracking and replacement assessment",
-      "description": "Assess all components against lifecycle limits and replacement schedules.\n\nReview flight hour logs for all critical components.\nCheck battery cycle count and capacity degradation.\nAssess propeller hours and stress cycles.\nEvaluate motor bearing wear indicators.\nReview parachute deployment device expiration.\nVerify all time-limited components are within limits.",
-      "instructions": [
-        "Review component hour tracking logs",
-        "Test battery capacity against specifications",
-        "Inspect wear indicators on all rotating components",
-        "Check expiration dates on safety equipment",
-        "Schedule replacements as needed"
-      ],
+      "id": "TSK-EXT005",
       "validationBoxes": {},
       "completion": {
         "completedBy": null,

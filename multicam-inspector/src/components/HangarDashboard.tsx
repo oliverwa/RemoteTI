@@ -1691,8 +1691,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
           <div className="flex justify-between items-center">
             <h1 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-200">Inspection Dashboard</h1>
             
-            {/* Desktop menu */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Desktop menu - Now hidden in favor of dropdown menu */}
+            <div className="hidden items-center gap-3">
               <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 px-3 py-1.5 bg-white/50 dark:bg-gray-800/50 rounded-lg">
                 <User className="w-4 h-4" />
                 <span>{currentUser}</span>
@@ -1749,8 +1749,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               </Button>
             </div>
             
-            {/* Mobile menu button and icons */}
-            <div className="mobile-menu-container flex md:hidden items-center gap-2">
+            {/* Menu button and icons - Always visible */}
+            <div className="mobile-menu-container flex items-center gap-2">
               <button
                 onClick={handleRefresh}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -1777,9 +1777,9 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
             </div>
           </div>
           
-          {/* Mobile dropdown menu */}
+          {/* Dropdown menu - Always available */}
           {mobileMenuOpen && (
-            <div className="mobile-menu-container md:hidden mt-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <div className="mobile-menu-container mt-4 pb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
               <div className="flex flex-col space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-200 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <User className="w-4 h-4" />
@@ -1832,8 +1832,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
       {/* Main Content - Responsive padding */}
       <div className="p-4 sm:p-6 md:p-8">
 
-        {/* Hangar Grid - Earlier adaptation with larger minimum width */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+        {/* Hangar Grid - Optimized for iPad with larger cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {hangarStatuses.map(hangar => {
             // Check if maintenance is required (failed inspections or overdue maintenance)
             const hasFailedInspection = (
@@ -1883,7 +1883,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 hangar.state === 'standby' || hangar.status !== 'operational' ? '' : 'cursor-pointer'
               } ${
                 hangar.status !== 'operational' ? 'min-h-[140px]' : userType === 'service_partner' ? 'min-h-[160px]' : 'min-h-[220px]'
-              } min-w-[280px] sm:min-w-[320px] flex flex-col`}
+              } min-w-[340px] sm:min-w-[380px] md:min-w-[420px] flex flex-col`}
               onClick={(e) => {
                 // Only open modal if clicking on the card itself, not buttons
                 if (e.target === e.currentTarget || (e.target as HTMLElement).closest('.card-content')) {

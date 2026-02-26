@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, Settings, MapPin, Plane, Users, FileText } from 'lucide-react';
+import { X, Settings, MapPin, Plane, Users, FileText, BookOpen } from 'lucide-react';
 import UserManagement from './UserManagement';
 import HangarsManagement from './admin/HangarsManagement';
 import DronesManagement from './admin/DronesManagement';
-import TemplateManagement from './admin/TemplateManagement';
+import InspectionManagement from './admin/InspectionManagement';
+import TaskLibraryManager from './admin/TaskLibraryManager';
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -12,7 +13,7 @@ interface AdminPanelProps {
 
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'hangars' | 'drones' | 'users' | 'templates'>('users');
+  const [activeTab, setActiveTab] = useState<'hangars' | 'drones' | 'users' | 'inspections' | 'task-library'>('users');
 
 
   if (!isOpen) return null;
@@ -73,15 +74,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
                 Drones
               </button>
               <button
-                onClick={() => setActiveTab('templates')}
+                onClick={() => setActiveTab('task-library')}
                 className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
-                  activeTab === 'templates'
+                  activeTab === 'task-library'
+                    ? 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300'
+                    : 'text-blue-200 hover:text-white hover:bg-white/10 dark:hover:bg-gray-700/20'
+                }`}
+              >
+                <BookOpen className="w-4 h-4" />
+                Task Library
+              </button>
+              <button
+                onClick={() => setActiveTab('inspections')}
+                className={`flex items-center gap-2 px-4 py-3 rounded-t-lg font-medium transition-colors ${
+                  activeTab === 'inspections'
                     ? 'bg-white dark:bg-gray-800 text-blue-700 dark:text-blue-300'
                     : 'text-blue-200 hover:text-white hover:bg-white/10 dark:hover:bg-gray-700/20'
                 }`}
               >
                 <FileText className="w-4 h-4" />
-                Templates
+                Inspections
               </button>
             </div>
           </div>
@@ -104,9 +116,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose }) => {
             <DronesManagement />
           )}
 
-          {/* Templates Management Tab */}
-          {activeTab === 'templates' && (
-            <TemplateManagement />
+          {/* Task Library Tab */}
+          {activeTab === 'task-library' && (
+            <TaskLibraryManager />
+          )}
+
+          {/* Inspections Management Tab */}
+          {activeTab === 'inspections' && (
+            <InspectionManagement />
           )}
         </div>
       </div>

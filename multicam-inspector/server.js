@@ -469,7 +469,10 @@ app.post('/api/capture', captureLimiter, validationRules.capture, handleValidati
     const destinationFile = path.join(sessionPath, providedSessionName ? `${sessionName}_inspection.json` : `${cleanType}_${drone}_${sessionTimestamp}_inspection.json`);
     
     if (fs.existsSync(templateFile)) {
-      const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      let templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      
+      // Merge task content from library
+      templateData = mergeTasksWithLibrary(templateData);
       
       // Add session metadata
       templateData.sessionInfo = {
@@ -909,7 +912,10 @@ app.post('/api/create-inspection-session', async (req, res) => {
     
     if (fs.existsSync(templateFile)) {
       // Read template
-      const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      let templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      
+      // Merge task content from library
+      templateData = mergeTasksWithLibrary(templateData);
       
       // Add session metadata
       templateData.sessionInfo = {
@@ -1195,7 +1201,8 @@ app.get('/api/inspection-types', (req, res) => {
     
     const files = fs.readdirSync(templatesDir).filter(f => 
       f.endsWith('.json') && 
-      !f.includes('alarm_reset') // Exclude the alarm_reset template
+      !f.includes('alarm_reset') && // Exclude the alarm_reset template
+      !f.includes('.backup') // Exclude backup files
     );
     
     const inspectionTypes = files.map(file => {
@@ -1338,7 +1345,10 @@ app.post('/api/alarm-session/:hangarId/generate-initial-rti', async (req, res) =
     const destinationFile = path.join(inspectionPath, `${sessionName}_inspection.json`);
     
     if (fs.existsSync(templateFile)) {
-      const templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      let templateData = JSON.parse(fs.readFileSync(templateFile, 'utf8'));
+      
+      // Merge task content from library
+      templateData = mergeTasksWithLibrary(templateData);
       
       // Add session metadata
       templateData.sessionInfo = {
@@ -1942,7 +1952,9 @@ app.get('/api/inspection-data/:type', (req, res) => {
       return res.status(404).json({ error: 'Inspection type not found' });
     }
     
-    const jsonData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
+    let jsonData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
+    // Merge task content from library
+    jsonData = mergeTasksWithLibrary(jsonData);
     // Add cameras from config
     jsonData.cameras = config.cameras.details;
     res.json(jsonData);
@@ -1963,7 +1975,9 @@ app.get('/api/inspection-data', (req, res) => {
       return res.status(404).json({ error: 'Default inspection type not found' });
     }
     
-    const jsonData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
+    let jsonData = JSON.parse(fs.readFileSync(inspectionPath, 'utf8'));
+    // Merge task content from library
+    jsonData = mergeTasksWithLibrary(jsonData);
     // Add cameras from config
     jsonData.cameras = config.cameras.details;
     res.json(jsonData);
@@ -3557,16 +3571,77 @@ app.post('/api/maintenance-history/:hangarId', async (req, res) => {
   }
 });
 
+// Helper function to merge task content from library
+function mergeTasksWithLibrary(templateData) {
+  const taskLibraryPath = path.join(BASE_DIR, 'data', 'tasks', 'task-library.json');
+  
+  if (fs.existsSync(taskLibraryPath)) {
+    const libraryData = JSON.parse(fs.readFileSync(taskLibraryPath, 'utf8'));
+    const taskLibrary = libraryData.tasks || {};
+    
+    if (templateData.tasks && Array.isArray(templateData.tasks)) {
+      templateData.tasks = templateData.tasks.map(task => {
+        const libraryTask = taskLibrary[task.id];
+        if (libraryTask) {
+          return {
+            ...task, // Keep template-specific data
+            title: libraryTask.title,
+            description: libraryTask.description,
+            instructions: libraryTask.instructions,
+            category: libraryTask.category,
+            type: libraryTask.type
+          };
+        }
+        return task;
+      });
+    }
+  }
+  
+  return templateData;
+}
+
 // API endpoints for template management
 app.get('/api/templates', async (req, res) => {
   try {
     const templatesDir = path.join(BASE_DIR, 'data', 'templates');
-    const templateFiles = fs.readdirSync(templatesDir).filter(f => f.endsWith('.json'));
+    const templateFiles = fs.readdirSync(templatesDir).filter(f => 
+      f.endsWith('.json') && !f.includes('.backup')
+    );
+    
+    // Load task library to merge task content
+    const taskLibraryPath = path.join(BASE_DIR, 'data', 'tasks', 'task-library.json');
+    let taskLibrary = {};
+    if (fs.existsSync(taskLibraryPath)) {
+      const libraryData = JSON.parse(fs.readFileSync(taskLibraryPath, 'utf8'));
+      taskLibrary = libraryData.tasks || {};
+    }
+    
     const templates = {};
     
     for (const file of templateFiles) {
       const templatePath = path.join(templatesDir, file);
       const templateData = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+      
+      // Merge task content from library
+      if (templateData.tasks && Array.isArray(templateData.tasks)) {
+        templateData.tasks = templateData.tasks.map(task => {
+          const libraryTask = taskLibrary[task.id];
+          if (libraryTask) {
+            // Merge library content with template-specific data
+            return {
+              ...task, // Keep template-specific data (validationBoxes, completion, note)
+              title: libraryTask.title,
+              description: libraryTask.description,
+              instructions: libraryTask.instructions,
+              category: libraryTask.category,
+              type: libraryTask.type
+            };
+          }
+          // If task not found in library, return as-is (shouldn't happen)
+          return task;
+        });
+      }
+      
       const key = file.replace('.json', '');
       templates[key] = templateData;
     }
@@ -3594,8 +3669,19 @@ app.put('/api/templates/:templateId', async (req, res) => {
       return res.status(404).json({ error: 'Template not found' });
     }
     
-    // Save the updated template
-    fs.writeFileSync(templatePath, JSON.stringify(templateData, null, 2));
+    // Strip task content before saving (keep only references)
+    const templateToSave = { ...templateData };
+    if (templateToSave.tasks && Array.isArray(templateToSave.tasks)) {
+      templateToSave.tasks = templateToSave.tasks.map(task => ({
+        id: task.id,
+        validationBoxes: task.validationBoxes || {},
+        completion: task.completion || { completedBy: null, completedAt: null },
+        note: task.note || ""
+      }));
+    }
+    
+    // Save the updated template with only task references
+    fs.writeFileSync(templatePath, JSON.stringify(templateToSave, null, 2));
     
     log('info', `Template ${templateId} updated successfully`);
     res.json({ success: true, message: 'Template updated successfully' });
@@ -3603,6 +3689,94 @@ app.put('/api/templates/:templateId', async (req, res) => {
   } catch (error) {
     log('error', 'Failed to update template:', error.message);
     res.status(500).json({ error: 'Failed to update template' });
+  }
+});
+
+// API endpoints for task library management
+app.get('/api/task-library', async (req, res) => {
+  try {
+    const taskLibraryPath = path.join(BASE_DIR, 'data', 'tasks', 'task-library.json');
+    
+    // Check if task library exists
+    if (!fs.existsSync(taskLibraryPath)) {
+      // Create empty task library if it doesn't exist
+      const emptyLibrary = { tasks: {} };
+      fs.ensureDirSync(path.join(BASE_DIR, 'data', 'tasks'));
+      fs.writeFileSync(taskLibraryPath, JSON.stringify(emptyLibrary, null, 2));
+      return res.json(emptyLibrary);
+    }
+    
+    const taskLibrary = JSON.parse(fs.readFileSync(taskLibraryPath, 'utf8'));
+    res.json(taskLibrary);
+    
+  } catch (error) {
+    log('error', 'Failed to fetch task library:', error.message);
+    res.status(500).json({ error: 'Failed to fetch task library' });
+  }
+});
+
+app.put('/api/task-library/:taskId', async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const taskData = req.body;
+    
+    if (!taskData || !taskData.id || !taskData.title) {
+      return res.status(400).json({ error: 'Invalid task data' });
+    }
+    
+    const taskLibraryPath = path.join(BASE_DIR, 'data', 'tasks', 'task-library.json');
+    
+    // Load current task library
+    let taskLibrary = { tasks: {} };
+    if (fs.existsSync(taskLibraryPath)) {
+      taskLibrary = JSON.parse(fs.readFileSync(taskLibraryPath, 'utf8'));
+    }
+    
+    // Update the task
+    taskLibrary.tasks[taskId] = taskData;
+    
+    // Save the updated task library
+    fs.writeFileSync(taskLibraryPath, JSON.stringify(taskLibrary, null, 2));
+    
+    // Now update all templates that use this task
+    const templatesDir = path.join(BASE_DIR, 'data', 'templates');
+    const templateFiles = fs.readdirSync(templatesDir).filter(f => 
+      f.endsWith('.json') && !f.includes('.backup')
+    );
+    
+    for (const file of templateFiles) {
+      const templatePath = path.join(templatesDir, file);
+      const template = JSON.parse(fs.readFileSync(templatePath, 'utf8'));
+      let updated = false;
+      
+      // Check if this template has any tasks with matching ID
+      if (template.tasks && Array.isArray(template.tasks)) {
+        for (let i = 0; i < template.tasks.length; i++) {
+          if (template.tasks[i].id === taskId) {
+            // Update the task content but preserve completion status and notes
+            template.tasks[i] = {
+              ...taskData,
+              completion: template.tasks[i].completion,
+              note: template.tasks[i].note
+            };
+            updated = true;
+          }
+        }
+      }
+      
+      // Save the template if it was updated
+      if (updated) {
+        fs.writeFileSync(templatePath, JSON.stringify(template, null, 2));
+        log('info', `Updated task ${taskId} in template ${file}`);
+      }
+    }
+    
+    log('info', `Task ${taskId} updated successfully in library and all templates`);
+    res.json({ success: true, message: 'Task updated successfully' });
+    
+  } catch (error) {
+    log('error', 'Failed to update task:', error.message);
+    res.status(500).json({ error: 'Failed to update task' });
   }
 });
 

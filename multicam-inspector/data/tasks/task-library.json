@@ -1,0 +1,1372 @@
+{
+  "version": "1.0",
+  "created": "2026-02-26",
+  "description": "Comprehensive library of all drone inspection tasks",
+  "metadata": {
+    "author": "RemoteTI",
+    "totalTasks": 68,
+    "categories": [
+      "Safety",
+      "Parachute",
+      "System",
+      "Structure",
+      "Propulsion",
+      "Peripherals",
+      "Markings",
+      "Battery",
+      "Power",
+      "Medical",
+      "Winch",
+      "Skybase",
+      "Final",
+      "Documentation",
+      "Camera",
+      "Service",
+      "Extended",
+      "Prerequisites"
+    ]
+  },
+  "tasks": {
+    "TSK-SAF001": {
+      "id": "TSK-SAF001",
+      "category": "Safety",
+      "title": "SAFETY BRIEFING: Review critical safety requirements",
+      "description": "Safety First - This checklist is critical for safe drone operation.\n\nJust Culture - Report any mistakes or concerns without fear of blame.\nAttention to Detail - Follow each task in order. Do not skip steps.\nUse PPE - Always wear required safety gear.\nReport Issues - Document any abnormalities immediately.\n\nKEEP THE DRONE POWERED ON until explicitly told to turn it off.",
+      "instructions": [
+        "Read and understand all safety requirements.",
+        "Confirm PPE is available and worn.",
+        "Acknowledge Just Culture principles.",
+        "Prepare to follow checklist sequentially."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "PPE"
+      ],
+      "testing": {}
+    },
+    "TSK-PRS001": {
+      "id": "TSK-PRS001",
+      "category": "Parachute",
+      "title": "PRS: Disarm the parachute system safely",
+      "description": "ALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION WHEN HANDLING THE PRS FUSE.\n\nSwitch the parachute fuse just below the PRS tube to \"SAFE\".",
+      "instructions": [
+        "Put on safety goggles and hearing protection.",
+        "Locate PRS fuse below the PRS tube.",
+        "Switch fuse to \"SAFE\" position.",
+        "Verify switch is secure in SAFE position."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Safety goggles",
+        "Hearing protection"
+      ],
+      "testing": {}
+    },
+    "TSK-PRS002": {
+      "id": "TSK-PRS002",
+      "category": "Parachute",
+      "title": "PARACHUTE SYSTEM: Complete system inspection",
+      "description": "Inspect entire parachute system for integrity.\n\nYELLOW LID: Check for cracks, verify evenly pressed, no fabric protruding.\nTUBE: Verify securely mounted and fully seated, no structural damage.\nLINE & COLLECTOR: Line collector intact, no excessive slack, line retained in backpack.\nFUSE SWITCH: Structurally intact with red cap mounted.",
+      "instructions": [
+        "Inspect yellow lid for cracks and proper seating.",
+        "Verify no parachute fabric visible outside lid.",
+        "Check tube is secure and undamaged.",
+        "Verify line collector intact with proper tension.",
+        "Confirm line retained in backpack.",
+        "Check fuse switch intact with red cap."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PRS003": {
+      "id": "TSK-PRS003",
+      "category": "Parachute",
+      "title": "PRS: Arm the parachute system safely",
+      "description": "FINAL CRITICAL STEP - ARM PARACHUTE\n\nALWAYS WEAR SAFETY GOGGLES AND HEARING PROTECTION.\nSwitch the parachute fuse below PRS tube to \"DANGER\".\nAfter arming the PRS, DO NOT approach the drone.",
+      "instructions": [
+        "Put on safety goggles and hearing protection.",
+        "Locate PRS fuse switch.",
+        "Switch to \"DANGER\" position.",
+        "Step away from drone immediately.",
+        "DO NOT APPROACH after arming."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Safety goggles",
+        "Hearing protection"
+      ],
+      "testing": {}
+    },
+    "TSK-SYS001": {
+      "id": "TSK-SYS001",
+      "category": "System",
+      "title": "SYSTEM: Initiate telemetry transfer",
+      "description": "Connect the Ethernet cable and initiate telemetry data transfer from the drone.",
+      "instructions": [
+        "Unscrew Ethernet port safety cap.",
+        "Connect telemetry Ethernet cable.",
+        "Verify nav lights blinking yellow (transfer active).",
+        "Note: Continue checklist, will verify completion later."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Ethernet cable"
+      ],
+      "testing": {}
+    },
+    "TSK-SYS002": {
+      "id": "TSK-SYS002",
+      "category": "System",
+      "title": "SYSTEM: Complete telemetry and secure ports",
+      "description": "Finalize telemetry transfer and secure ports.\n\nConfirm telemetry complete (nav lights not yellow).\nIf not complete after 10 minutes, stop and continue.\nRemove Ethernet cable and store safely.\nSecurely lock Ethernet port cap.\nVerify USB caps on both sides are sealed with silver cover.",
+      "instructions": [
+        "Check nav lights no longer yellow.",
+        "If still yellow after 10 min, stop transfer.",
+        "Remove and store Ethernet cable.",
+        "Screw on Ethernet port cap completely.",
+        "Verify USB caps on both sides sealed with silver cover."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SYS003": {
+      "id": "TSK-SYS003",
+      "category": "System",
+      "title": "SYSTEM STARTUP: Verify all systems initialize correctly",
+      "description": "Confirm proper system initialization after first battery connection.\n\nLIVEVIEW: Camera moves to end position then returns forward.\nFLIGHT CONTROLLER: Initial beeping for 5-10s, then stops if untouched.\nNAV LIGHTS: Snake pattern - Green (OK), Blue (OK with MedKit), other = contact pilot.\nONYX FAN: Verify fan on bottom spins (keep fingers clear).",
+      "instructions": [
+        "Watch LiveView calibration movement.",
+        "Listen for flight controller beeping pattern.",
+        "Verify nav light color pattern.",
+        "Check Onyx fan is spinning.",
+        "Contact pilot if unexpected nav lights."
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-STR001": {
+      "id": "TSK-STR001",
+      "category": "Structure",
+      "title": "DRONE STRUCTURE: Comprehensive structural inspection",
+      "description": "Inspect all structural components.\n\nMOTOR ARMS: Check for visual or structural damage.\nCORE: Inspect for visual cracks.\nLANDING GEAR: Check for cracks, verify connection (some play acceptable).",
+      "instructions": [
+        "Inspect all motor arms for damage.",
+        "Check drone core for cracks.",
+        "Verify landing gear structural soundness.",
+        "Check landing gear connections.",
+        "Confirm no excessive play in connections."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-STR002": {
+      "id": "TSK-STR002",
+      "category": "Structure",
+      "title": "DRONE STRUCTURE: Open lids for battery access",
+      "description": "Open drone compartment for battery replacement.\n\nUnscrew 4 screws holding the lids together using torque screwdriver.\nOpen lids to access battery compartment.",
+      "instructions": [
+        "Unscrew 4 lid screws with torque screwdriver.",
+        "Open lids carefully for battery access."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Torque screwdriver"
+      ],
+      "testing": {}
+    },
+    "TSK-STR003": {
+      "id": "TSK-STR003",
+      "category": "Structure",
+      "title": "DRONE STRUCTURE: Verify internal compartment",
+      "description": "Inspect the internal battery compartment for cables, debris, moisture, and white seal integrity.",
+      "instructions": [
+        "Check internal cable routing.",
+        "Look for debris or dirt.",
+        "Verify no moisture present.",
+        "Check that the white seal is OK and undamaged.",
+        "Ensure compartment is clean."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-STR004": {
+      "id": "TSK-STR004",
+      "category": "Structure",
+      "title": "DRONE STRUCTURE: Close the lids",
+      "description": "Close and secure the battery compartment lids.",
+      "instructions": [
+        "Verify batteries fully seated.",
+        "Close lids carefully.",
+        "Check no cables pinched.",
+        "Ensure no gaps between lids and core.",
+        "Screw in 4 screws (2 per side) with torque screwdriver."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Torque screwdriver"
+      ],
+      "testing": {}
+    },
+    "TSK-PRO001": {
+      "id": "TSK-PRO001",
+      "category": "Propulsion",
+      "title": "PROPULSION SYSTEM: Full propulsion inspection",
+      "description": "Complete propulsion system check.\n\nPROPELLERS: Clean if needed, check for damage/cracks, inspect edges.\nMOTORS: Check rotors, spin for smoothness, verify no abnormal sounds, check orange ESC cables.\nAXIAL PLAY: Hold motor base, push/pull bell - no movement allowed.\nESCs: Verify no indications of loose mounting.",
+      "instructions": [
+        "Clean propellers if necessary.",
+        "Check all propellers for damage/cracks.",
+        "Inspect leading and trailing edges.",
+        "Check motor rotors for damage.",
+        "Spin each motor for smooth movement.",
+        "Listen for abnormal sounds.",
+        "Check orange cables between ESC and motors.",
+        "Test each motor for axial play.",
+        "Verify ESCs are securely mounted."
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Cleaning supplies"
+      ],
+      "testing": {}
+    },
+    "TSK-PER001": {
+      "id": "TSK-PER001",
+      "category": "Peripherals",
+      "title": "PERIPHERALS: All sensors and external components",
+      "description": "Inspect all peripheral systems.\n\n4G ANTENNAS: Firmly mounted, 2 to sides, 2 angled down.\nGPS MASTS: Structurally OK, both aimed forward.\nREALSENSE: Front and downward lenses clean, no damage (use dry utilities only).\nOPTICALFLOW: Clean, no dirt obscuring view.\nDOWNLIGHT: Structurally intact on front right landing gear.\nMINIFINDER: Mounted and holder intact.",
+      "instructions": [
+        "Verify 4G antennas firmly mounted and positioned.",
+        "Check GPS masts structure and forward aim.",
+        "Clean RealSense lenses with dry utilities.",
+        "Inspect OpticalFlow for obstructions.",
+        "Verify Downlight intact on front right gear.",
+        "Check MiniFinder and holder condition."
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Cleaning utilities",
+        "Microfiber cloth"
+      ],
+      "testing": {}
+    },
+    "TSK-PER002": {
+      "id": "TSK-PER002",
+      "category": "Peripherals",
+      "title": "LIVEVIEW: Verify camera condition",
+      "description": "Inspect the LiveView camera for structural integrity and clean the lens.",
+      "instructions": [
+        "Check LiveView camera structure.",
+        "Clean lens with dry microfiber/brush.",
+        "Verify no damage to camera."
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Microfiber cloth",
+        "Brush"
+      ],
+      "testing": {}
+    },
+    "TSK-MRK001": {
+      "id": "TSK-MRK001",
+      "category": "Markings",
+      "title": "MARKING: Verify all required markings",
+      "description": "Verify drone and AED markings.\n\nPermit number on rear arm (starting with \"SWEbne…\").\nOnyx name and airframeID visible (e.g., \"E3001\" airframeID 1234C01B1124E3001).\nPublic instructions between middle and rear arms.\nAED alarm device has power-off sticker.",
+      "instructions": [
+        "Check permit number on rear arm.",
+        "Verify Onyx name and airframeID.",
+        "Confirm public instructions present.",
+        "Check AED power-off sticker."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-BAT001": {
+      "id": "TSK-BAT001",
+      "category": "Battery",
+      "title": "BATTERIES: Verify new batteries ready",
+      "description": "Check new batteries are fully charged and undamaged.\n\nVerify both batteries are over 50.3V.\nEnsure batteries and connectors are undamaged.\nConfirm batteries are clean and dry.",
+      "instructions": [
+        "Verify both new batteries are over 50.3V.",
+        "Check battery connectors are undamaged.",
+        "Ensure batteries are clean and dry."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Multimeter"
+      ],
+      "testing": {}
+    },
+    "TSK-BAT002": {
+      "id": "TSK-BAT002",
+      "category": "Battery",
+      "title": "BATTERIES: Remove and inspect old batteries",
+      "description": "Safely remove and inspect the old batteries from the drone.",
+      "instructions": [
+        "Unplug both batteries with unplugging tool.",
+        "Verify batteries look OK.",
+        "Check for any swelling or damage."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Battery unplugging tool"
+      ],
+      "testing": {}
+    },
+    "TSK-BAT003": {
+      "id": "TSK-BAT003",
+      "category": "Battery",
+      "title": "BATTERIES: Put old batteries on charge",
+      "description": "Connect old batteries to charging station.\n\nFollow the instructions at the charging station.\nEnsure batteries are properly connected to charger.",
+      "instructions": [
+        "Take batteries to charging station.",
+        "Follow instructions at the charging station.",
+        "Connect batteries to charger.",
+        "Verify charging has started."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-BAT004": {
+      "id": "TSK-BAT004",
+      "category": "Battery",
+      "title": "BATTERIES: Install front battery",
+      "description": "Install the front battery in the drone.",
+      "instructions": [
+        "Place battery in front position.",
+        "Connect battery securely.",
+        "Ensure connector fully seated (no gap).",
+        "Secure velcro straps over battery wires.",
+        "Route cables to avoid pinching."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-BAT005": {
+      "id": "TSK-BAT005",
+      "category": "Battery",
+      "title": "BATTERIES: Install back battery",
+      "description": "Install the back battery in the drone.",
+      "instructions": [
+        "Place battery in back position.",
+        "Connect battery securely.",
+        "Ensure connector fully seated (no gap).",
+        "Secure velcro straps over battery wires.",
+        "Route cables to avoid pinching."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PWR001": {
+      "id": "TSK-PWR001",
+      "category": "Power",
+      "title": "POWER SYSTEM: Inspect umbilical contact surfaces",
+      "description": "Check umbilical for damage before connecting.\n\nInspect copper surfaces on umbilical (floor and drone landing gear).\nEnsure no soot or residues from sparks.\nVerify copper pins/pads are not bent or damaged.",
+      "instructions": [
+        "Inspect umbilical copper surfaces.",
+        "Check for soot or corrosion.",
+        "Verify pins/pads not bent.",
+        "Ensure contacts are clean."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PWR002": {
+      "id": "TSK-PWR002",
+      "category": "Power",
+      "title": "POWER SYSTEM: Attach umbilical to drone",
+      "description": "Connect umbilical for power supply.\n\nConnect umbilical next to the left landing gear.\nConfirm connector is straight and fully connected.",
+      "instructions": [
+        "Connect umbilical to left landing gear.",
+        "Ensure connection is straight.",
+        "Verify fully connected."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-MED001": {
+      "id": "TSK-MED001",
+      "category": "Medical",
+      "title": "MEDKIT: Verify contents and AED status",
+      "description": "Verify MedKit contents and AED operational status.\n\nVerify all utilities are included and in good condition.\nCheck AED is correctly placed inside MedKit.\nConfirm AED status is OK.\nVerify AED is dry, clean and free from damage.",
+      "instructions": [
+        "Check all MedKit utilities present.",
+        "Verify AED placement in MedKit.",
+        "Confirm AED status shows OK.",
+        "Check AED is clean and undamaged."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-MED002": {
+      "id": "TSK-MED002",
+      "category": "Medical",
+      "title": "MEDKIT: Mount and secure MedKit",
+      "description": "Mount the MedKit in position and secure it with the locking mechanism.",
+      "instructions": [
+        "Position MedKit on front brace.",
+        "Pull locking pin out.",
+        "Lift MedKit to locking position.",
+        "Lock pin securely.",
+        "Attach magnetic connector to front right.",
+        "Verify nav lights turn blue."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-WNC001": {
+      "id": "TSK-WNC001",
+      "category": "Winch",
+      "title": "WINCH: Thread and attach line",
+      "description": "Set up winch line for MedKit deployment.\n\nThread line through the red guide below drone.\nAttach line securely to the spool.\nRoll up line using button on winch housing.\nConfirm spool spins smoothly with no abnormal noise.",
+      "instructions": [
+        "Thread line through red guide.",
+        "Attach line to spool securely.",
+        "Press and hold button to roll up line.",
+        "Verify smooth operation, no noise."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SKY001": {
+      "id": "TSK-SKY001",
+      "category": "Skybase",
+      "title": "SKYBASE: Complete environment and maintenance check",
+      "description": "Final Skybase inspection and maintenance.\n\nVISUAL MARKERS: Clean navigation markers.\nVEGETATION: No overgrown foliage/grass.\nCLEAN & SAFE: Secure tools, remove debris.\nLIGHTS: Interior and external lights working.\nRESTOCK: Note any items needing restocking.\nCAMERAS: Clean all 8 dome cameras with microfiber.",
+      "instructions": [
+        "Clean visual navigation markers.",
+        "Check vegetation clearance.",
+        "Secure all tools.",
+        "Remove any debris.",
+        "Test interior and external lights.",
+        "Note items needing restocking.",
+        "Clean all 8 RemoteTI cameras."
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Cleaning supplies",
+        "Microfiber cloth"
+      ],
+      "testing": {}
+    },
+    "TSK-FIN001": {
+      "id": "TSK-FIN001",
+      "category": "Final",
+      "title": "FINAL CHECK: Verify everything is ready",
+      "description": "Final verification before arming PRS.\n\nEnsure Ethernet port cap is screwed on.\nConfirm drone is perfectly aligned.\nConfirm lids are securely screwed on.\nVerify all tools are secured.",
+      "instructions": [
+        "Check Ethernet port cap sealed.",
+        "Verify drone alignment on marker.",
+        "Confirm lid screws tight.",
+        "Ensure all tools secured."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-DOC001": {
+      "id": "TSK-DOC001",
+      "category": "Documentation",
+      "title": "DOCUMENTATION: Write a note for inspection details",
+      "description": "Document the inspection details in the work order system.",
+      "instructions": [
+        "Open work order.",
+        "Write a note with name, AirframeID, drone name, battery set.",
+        "Save the note."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-DOC002": {
+      "id": "TSK-DOC002",
+      "category": "Documentation",
+      "title": "DOCUMENTATION: Report any abnormalities",
+      "description": "Record any issues found during inspection.\n\nFill out Adverse Events form for any abnormalities.\nLink: https://forms.gle/NF1nVe6F9GGWq5fZ8",
+      "instructions": [
+        "If any issues found, open Adverse Events form.",
+        "Document all abnormalities.",
+        "Submit form if applicable."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PRE001": {
+      "id": "TSK-PRE001",
+      "category": "Safety",
+      "title": "ARRIVAL TASKS: Battery check and drone preparation",
+      "description": "Complete initial arrival tasks.\n\nVerify spare batteries are fully charged (otherwise start charging).\nDry off any water, snow, or moisture on drone to prevent water entering during battery change.",
+      "instructions": [
+        "Check spare batteries are fully charged.",
+        "Start charging if batteries not ready.",
+        "Dry off any moisture on drone."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Drying cloth"
+      ],
+      "testing": {}
+    },
+    "TSK-PRE002": {
+      "id": "TSK-PRE002",
+      "category": "Safety",
+      "title": "INSTRUCTION: Align the drone perfectly",
+      "description": "Position the drone precisely on the visual navigation marker for proper alignment.",
+      "instructions": [
+        "Align drone over visual navigation marker.",
+        "Place front landing gear on the two dots in front of marker.",
+        "Ensure front camera faces correct direction.",
+        "Verify drone body perfectly aligned with visual navigation markers."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-REM001": {
+      "id": "TSK-REM001",
+      "category": "System",
+      "title": "START CONDITIONS: Verify prerequisites",
+      "description": "Confirm all prerequisites for remote inspection are met.",
+      "instructions": [
+        "Confirm RemoteTI procedure is being used.",
+        "Verify correct hangar/Skybase selected.",
+        "Check all 8 camera images are captured with good quality.",
+        "Confirm no personnel visible in hangar.",
+        "Document timestamp of inspection start."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-CAM001": {
+      "id": "TSK-CAM001",
+      "category": "Camera",
+      "title": "CAMERA COVERAGE: Verify visual coverage",
+      "description": "Confirm critical areas are visible in captured images.",
+      "instructions": [
+        "Verify drone visible from opposite corners.",
+        "Check marker alignment visibility.",
+        "Confirm umbilical area is visible.",
+        "Verify MedKit/winch visibility.",
+        "Check ground coverage for debris.",
+        "STOP if critical areas not visible."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SAF002": {
+      "id": "TSK-SAF002",
+      "category": "Safety",
+      "title": "SKYBASE SAFETY: Environment and obstacle check",
+      "description": "Inspect Skybase environment for safety hazards and foreign objects.",
+      "instructions": [
+        "Scan floor for debris/tools in images.",
+        "Check clearance around propellers.",
+        "Verify marker is clean and visible.",
+        "Assess vegetation clearance.",
+        "Confirm lighting functionality.",
+        "STOP if hazards detected."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PWR003": {
+      "id": "TSK-PWR003",
+      "category": "Power",
+      "title": "UMBILICAL: Power connection and contact surfaces",
+      "description": "Inspect umbilical connection and contact surfaces.",
+      "instructions": [
+        "Verify umbilical is connected straight.",
+        "Check for arcing/corrosion signs.",
+        "Verify cable routing appears correct.",
+        "STOP if misseated or damaged."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PER003": {
+      "id": "TSK-PER003",
+      "category": "Peripherals",
+      "title": "SENSORS: Navigation and vision systems",
+      "description": "Inspect sensor systems for proper condition.",
+      "instructions": [
+        "Check RealSense lenses clean (front + downward).",
+        "Verify OpticalFlow area unobstructed.",
+        "Confirm all sensors properly aligned.",
+        "Look for physical damage to housings."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PER004": {
+      "id": "TSK-PER004",
+      "category": "Peripherals",
+      "title": "ANTENNAS: Communication systems",
+      "description": "Verify all antenna systems configuration.",
+      "instructions": [
+        "Count and verify 4 4G antennas present.",
+        "Check 2 antennas pointing sideways.",
+        "Check 2 antennas angled downward.",
+        "Verify GPS masts intact and forward-facing.",
+        "Confirm all antenna connections secure."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PER005": {
+      "id": "TSK-PER005",
+      "category": "Peripherals",
+      "title": "PORTS & PERIPHERALS: Protective covers and accessories",
+      "description": "Verify ports and peripheral equipment.",
+      "instructions": [
+        "Verify Ethernet and USB caps installed.",
+        "Confirm all ports have protective covers.",
+        "Check no exposed connectors visible.",
+        "Locate downlight on front-right landing gear.",
+        "Verify downlight not illuminated.",
+        "Check MiniFinder present and mounted."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-MED003": {
+      "id": "TSK-MED003",
+      "category": "Medical",
+      "title": "MEDKIT & WINCH: Payload system verification",
+      "description": "Verify MedKit and winch system configuration.",
+      "instructions": [
+        "Verify MedKit presence and seating.",
+        "Check mechanical locking.",
+        "Trace winch line routing.",
+        "Look for knots or snags.",
+        "Check line tension.",
+        "Verify AED mounting.",
+        "STOP if abnormal."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SYS004": {
+      "id": "TSK-SYS004",
+      "category": "System",
+      "title": "DRONE STATUS: Verify safe state",
+      "description": "Confirm drone is in expected safe state.",
+      "instructions": [
+        "Verify drone stable on landing gear.",
+        "Check nav lights (Green=OK, Blue=OK+MedKit, Red=STOP).",
+        "Confirm drone appears level.",
+        "STOP if red lights or unexpected pattern."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SYS005": {
+      "id": "TSK-SYS005",
+      "category": "System",
+      "title": "ALIGNMENT: Marker positioning",
+      "description": "Verify drone alignment with navigation marker.",
+      "instructions": [
+        "Check drone centered on navigation marker.",
+        "Verify body parallel with marker lines.",
+        "Confirm landing legs symmetric to marker.",
+        "Check front matches marker orientation.",
+        "Verify clearance from hangar structures."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-BAT006": {
+      "id": "TSK-BAT006",
+      "category": "Battery",
+      "title": "BATTERY: Compartment inspection",
+      "description": "Inspect battery compartment area.",
+      "instructions": [
+        "Verify battery compartment lid completely closed.",
+        "Check 4 screws secured (2 on each side).",
+        "Ensure no gaps between lids and core.",
+        "Verify white seal visible and intact if observable."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SAF003": {
+      "id": "TSK-SAF003",
+      "category": "Safety",
+      "title": "CRITICAL SAFETY: Skybase environment check",
+      "description": "Inspect Skybase environment for immediate safety hazards.",
+      "instructions": [
+        "Check for debris/tools/loose objects on floor.",
+        "Verify clearance near propellers and landing gear.",
+        "Check doors/enclosure for obstruction or damage.",
+        "STOP if anything could interfere with safety."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SYS006": {
+      "id": "TSK-SYS006",
+      "category": "System",
+      "title": "DRONE SAFE STATE: Post-flight condition",
+      "description": "Verify drone is in safe post-flight state.",
+      "instructions": [
+        "Verify drone is stationary (no movement/rocking).",
+        "Check stability on landing gear (no abnormal tip/lean).",
+        "Look for smoke, steam, liquid, or heat haze.",
+        "Check for obvious structural damage.",
+        "STOP immediately if smoke/liquid/damage observed."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PRO002": {
+      "id": "TSK-PRO002",
+      "category": "Propulsion",
+      "title": "PROPULSION: Visual danger check",
+      "description": "Quick visual inspection of propulsion system for immediate dangers.",
+      "instructions": [
+        "Verify all 8 propellers present (none missing).",
+        "Check for broken/chipped propellers.",
+        "Look for bent propellers or surface contact.",
+        "Confirm motors are not spinning.",
+        "Check nav light pattern if visible.",
+        "STOP if propeller damaged or drone appears armed."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PWR004": {
+      "id": "TSK-PWR004",
+      "category": "Power",
+      "title": "UMBILICAL: Quick visual check",
+      "description": "Visual inspection of umbilical and charging area.",
+      "instructions": [
+        "Check umbilical connector area for damage.",
+        "Look for soot/burn marks around contacts.",
+        "Verify no obvious mis-seat if connected.",
+        "STOP if area burned or connector misaligned."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PER006": {
+      "id": "TSK-PER006",
+      "category": "Peripherals",
+      "title": "PERIPHERALS: Quick inventory check",
+      "description": "Fast visual check for missing or broken peripherals.",
+      "instructions": [
+        "Check 4G antennas present (not snapped off).",
+        "Verify GPS masts present and upright.",
+        "Check RealSense lenses not cracked/covered.",
+        "Look for ETH/USB caps if visible.",
+        "Check downlight and MiniFinder if visible.",
+        "STOP if essential peripheral missing/broken."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SYS007": {
+      "id": "TSK-SYS007",
+      "category": "System",
+      "title": "SYSTEM VITALS: UI status check",
+      "description": "Check system status from UI if available.",
+      "instructions": [
+        "Check for critical warnings/faults in UI.",
+        "Verify LiveView or telemetry available.",
+        "Check battery status reasonable for post-flight.",
+        "Look for temperature/power warnings.",
+        "STOP if critical system fault present."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SYS008": {
+      "id": "TSK-SYS008",
+      "category": "System",
+      "title": "ALIGNMENT: Marker positioning",
+      "description": "Verify drone alignment with navigation marker.",
+      "instructions": [
+        "Check drone centered on navigation marker.",
+        "Verify body parallel with marker lines.",
+        "Confirm landing legs symmetric to marker.",
+        "Check front matches marker orientation.",
+        "Verify clearance from hangar structures."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PRO003": {
+      "id": "TSK-PRO003",
+      "category": "Propulsion",
+      "title": "MOTORS: Test rotation by hand",
+      "description": "Spin each motor to check for bearing issues.",
+      "instructions": [
+        "Rotate each of 8 propellers slowly by hand.",
+        "Listen for crackling or grinding sounds.",
+        "Feel for smooth rotation.",
+        "STOP if any resistance or noise detected."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PRO004": {
+      "id": "TSK-PRO004",
+      "category": "Propulsion",
+      "title": "PROPELLERS: Quick visual inspection",
+      "description": "Quick check for obvious propeller damage.",
+      "instructions": [
+        "Visually scan all 8 propellers.",
+        "Look for obvious chips or cracks.",
+        "STOP if any damage found."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SKY002": {
+      "id": "TSK-SKY002",
+      "category": "Skybase",
+      "title": "SKYBASE: Quick area check",
+      "description": "Quick check of Skybase area.",
+      "instructions": [
+        "Remove any debris from floor.",
+        "Secure all tools.",
+        "Clean navigation marker if dirty."
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Cleaning supplies"
+      ],
+      "testing": {}
+    },
+    "TSK-EXT001": {
+      "id": "TSK-EXT001",
+      "category": "Extended",
+      "title": "STRUCTURAL ANALYSIS: Complete airframe integrity check",
+      "description": "Perform comprehensive structural analysis including NDT (Non-Destructive Testing) where applicable.\n\nConduct detailed crack inspection using magnification.\nCheck carbon fiber components for delamination.\nMeasure critical structural dimensions for deformation.\nPerform tap testing on composite structures.\nDocument all findings with measurements.",
+      "instructions": [
+        "Use magnifying equipment for crack detection",
+        "Perform tap test on all carbon fiber components",
+        "Measure and record critical dimensions",
+        "Check for any structural deformation",
+        "Document with photos and measurements"
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Magnifying equipment",
+        "Measuring tools",
+        "Camera"
+      ],
+      "testing": {}
+    },
+    "TSK-EXT002": {
+      "id": "TSK-EXT002",
+      "category": "Extended",
+      "title": "ELECTRICAL SYSTEMS: Complete electrical testing and analysis",
+      "description": "Comprehensive electrical system testing with measurements.\n\nMeasure resistance on all power connections.\nCheck voltage drop under load conditions.\nTest all redundant power paths.\nVerify grounding and shielding effectiveness.\nPerform insulation resistance testing.\nCheck EMI/RFI compliance.",
+      "instructions": [
+        "Measure connection resistances with multimeter",
+        "Perform load testing on power systems",
+        "Test backup power circuits",
+        "Verify proper grounding continuity",
+        "Document all electrical measurements"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Multimeter",
+        "Load tester",
+        "Insulation tester"
+      ],
+      "testing": {}
+    },
+    "TSK-EXT003": {
+      "id": "TSK-EXT003",
+      "category": "Extended",
+      "title": "CALIBRATION: Full sensor and performance calibration",
+      "description": "Complete calibration verification of all sensors and performance systems.\n\nPerform full compass calibration with interference mapping.\nCalibrate and verify all IMU sensors.\nCheck and adjust ESC timing and calibration.\nVerify motor KV and performance curves.\nCalibrate gimbal and verify stabilization performance.\nTest and calibrate optical flow and ranging sensors.",
+      "instructions": [
+        "Complete compass calibration with data logging",
+        "Verify IMU calibration values are within spec",
+        "Check ESC calibration and timing",
+        "Test gimbal stabilization performance",
+        "Calibrate all distance sensors"
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Calibration software",
+        "Data logger"
+      ],
+      "testing": {}
+    },
+    "TSK-EXT004": {
+      "id": "TSK-EXT004",
+      "category": "Extended",
+      "title": "ENVIRONMENTAL: Temperature and vibration testing",
+      "description": "Perform environmental stress testing within safe parameters.\n\nConduct vibration analysis using accelerometer data.\nTest operation at temperature extremes (if chamber available).\nCheck seal integrity and water resistance.\nVerify thermal management under stress conditions.\nTest performance in simulated weather conditions.",
+      "instructions": [
+        "Run vibration analysis across frequency spectrum",
+        "Test components at temperature limits",
+        "Verify all seals and gaskets",
+        "Monitor thermal performance under load",
+        "Document environmental test results"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Accelerometer",
+        "Temperature chamber",
+        "Thermal camera"
+      ],
+      "testing": {}
+    },
+    "TSK-EXT005": {
+      "id": "TSK-EXT005",
+      "category": "Extended",
+      "title": "LIFECYCLE: Component hour tracking and replacement assessment",
+      "description": "Assess all components against lifecycle limits and replacement schedules.\n\nReview flight hour logs for all critical components.\nCheck battery cycle count and capacity degradation.\nAssess propeller hours and stress cycles.\nEvaluate motor bearing wear indicators.\nReview parachute deployment device expiration.\nVerify all time-limited components are within limits.",
+      "instructions": [
+        "Review component hour tracking logs",
+        "Test battery capacity against specifications",
+        "Inspect wear indicators on all rotating components",
+        "Check expiration dates on safety equipment",
+        "Schedule replacements as needed"
+      ],
+      "validationBoxes": {},
+      "type": "combined",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Battery tester",
+        "Hour tracking system"
+      ],
+      "testing": {}
+    },
+    "TSK-PRE003": {
+      "id": "TSK-PRE003",
+      "category": "Prerequisites",
+      "title": "START CONDITIONS: Verify prerequisites",
+      "description": "Confirm all prerequisites for initial remote inspection are met.",
+      "instructions": [
+        "Confirm correct hangar/Skybase ID.",
+        "Verify camera feeds are LIVE (check timestamps).",
+        "Confirm no people visible inside Skybase.",
+        "STOP if any condition cannot be confirmed."
+      ],
+      "validationBoxes": {},
+      "type": "verification",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SKY003": {
+      "id": "TSK-SKY003",
+      "category": "Skybase",
+      "title": "CRITICAL SAFETY: Skybase environment check",
+      "description": "Inspect Skybase environment for immediate safety hazards.",
+      "instructions": [
+        "Check for debris/tools/loose objects on floor.",
+        "Verify clearance near propellers and landing gear.",
+        "Check doors/enclosure for obstruction or damage.",
+        "STOP if anything could interfere with safety."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-PRO005": {
+      "id": "TSK-PRO005",
+      "category": "Propulsion",
+      "title": "PROPULSION: Visual danger check",
+      "description": "Quick visual inspection of propulsion system for immediate dangers.",
+      "instructions": [
+        "Verify all 8 propellers present (none missing).",
+        "Check for broken/chipped propellers.",
+        "Look for bent propellers or surface contact.",
+        "Confirm motors are not spinning.",
+        "Check nav light pattern if visible.",
+        "STOP if propeller damaged or drone appears armed."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-FIN003": {
+      "id": "TSK-FIN003",
+      "category": "Final",
+      "title": "DISPATCH GATE: Go/No-Go decision",
+      "description": "Make dispatch decision based on inspection results.",
+      "instructions": [
+        "Review all inspection results.",
+        "Make PASS or STOP decision.",
+        "If PASS: Clear for dispatch.",
+        "If STOP: Do not dispatch, escalate immediately."
+      ],
+      "validationBoxes": {},
+      "type": "decision",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-SVC001": {
+      "id": "TSK-SVC001",
+      "category": "Service",
+      "title": "MAINTENANCE: Scheduled component replacement",
+      "description": "Replace time-limited components according to maintenance schedule.\n\nReplace propellers if at hour limit.\nChange dampeners and vibration isolators.\nReplace battery if at cycle limit.\nUpdate expired safety equipment.\nReplace worn cable ties and protective sleeves.",
+      "instructions": [
+        "Check maintenance schedule for due replacements",
+        "Replace propellers if needed",
+        "Change vibration dampeners",
+        "Replace time-expired components",
+        "Update maintenance log with replacements"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [
+        "Propellers",
+        "Dampeners",
+        "Cable ties",
+        "Protective sleeves"
+      ],
+      "tooling": [
+        "Installation tools"
+      ],
+      "testing": {}
+    },
+    "TSK-SVC002": {
+      "id": "TSK-SVC002",
+      "category": "Service",
+      "title": "LUBRICATION: Apply lubrication and protective coatings",
+      "description": "Perform all lubrication and protection services.\n\nLubricate gimbal bearings if applicable.\nApply dielectric grease to electrical connections.\nLubricate folding propeller mechanisms.\nApply corrosion protection to exposed metal.\nClean and lubricate mechanical linkages.",
+      "instructions": [
+        "Lubricate all specified bearing points",
+        "Apply dielectric grease to connectors",
+        "Service folding mechanisms",
+        "Apply corrosion preventive compounds",
+        "Document all lubrication performed"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [
+        "Lubricants",
+        "Dielectric grease",
+        "Corrosion preventive"
+      ],
+      "tooling": [
+        "Lubrication equipment"
+      ],
+      "testing": {}
+    },
+    "TSK-SVC003": {
+      "id": "TSK-SVC003",
+      "category": "Service",
+      "title": "SOFTWARE: Firmware and software updates",
+      "description": "Update all firmware and software to latest stable versions.\n\nUpdate flight controller firmware.\nUpdate ESC firmware if available.\nUpdate companion computer software.\nUpdate ground station software.\nVerify parameter file after updates.\nTest all functions after updates.",
+      "instructions": [
+        "Check for available firmware updates",
+        "Backup current parameters",
+        "Perform firmware updates",
+        "Restore and verify parameters",
+        "Conduct post-update function test"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [
+        "Programming cables",
+        "Computer"
+      ],
+      "testing": {}
+    },
+    "TSK-SVC004": {
+      "id": "TSK-SVC004",
+      "category": "Service",
+      "title": "CLEANING: Deep cleaning and inspection",
+      "description": "Perform thorough cleaning of all components.\n\nClean all optical sensors and lenses.\nRemove dust and debris from motors.\nClean cooling fins and heat sinks.\nClean electrical contacts and connectors.\nRemove any corrosion or oxidation.\nClean and inspect propellers thoroughly.",
+      "instructions": [
+        "Clean all camera lenses and sensors",
+        "Blow out motors with compressed air",
+        "Clean all cooling surfaces",
+        "Clean electrical contacts",
+        "Detail clean entire airframe"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [
+        "Cleaning solvents",
+        "Compressed air"
+      ],
+      "tooling": [
+        "Cleaning brushes",
+        "Microfiber cloths"
+      ],
+      "testing": {}
+    },
+    "TSK-SVC005": {
+      "id": "TSK-SVC005",
+      "category": "Service",
+      "title": "COMPLIANCE: Regulatory compliance and documentation",
+      "description": "Ensure all regulatory compliance requirements are met.\n\nVerify registration is current.\nCheck insurance documentation.\nUpdate maintenance logbook.\nVerify pilot certifications are current.\nEnsure all required markings are legible.\nFile any required service bulletins.",
+      "instructions": [
+        "Verify registration status",
+        "Check insurance expiration",
+        "Complete maintenance logbook entries",
+        "Verify all required documentation",
+        "Submit compliance reports if required"
+      ],
+      "validationBoxes": {},
+      "type": "physical",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-STR005": {
+      "id": "TSK-STR005",
+      "category": "Structure",
+      "title": "DRONE STRUCTURE: Arms, core, and landing gear",
+      "description": "Inspect drone structural components for integrity.",
+      "instructions": [
+        "Inspect each motor arm for damage.",
+        "Check core for cracks.",
+        "Verify landing gear symmetry.",
+        "Look for structural deformation.",
+        "Confirm component alignment.",
+        "STOP if structural damage found."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    },
+    "TSK-BAT007": {
+      "id": "TSK-BAT007",
+      "category": "Battery",
+      "title": "BATTERY: Compartment inspection",
+      "description": "Inspect battery compartment area.",
+      "instructions": [
+        "Verify battery compartment lid completely closed.",
+        "Check 4 screws secured (2 on each side).",
+        "Ensure no gaps between lids and core.",
+        "Verify white seal visible and intact if observable."
+      ],
+      "validationBoxes": {},
+      "type": "visual",
+      "scheduling": {},
+      "consumables": [],
+      "tooling": [],
+      "testing": {}
+    }
+  }
+}
