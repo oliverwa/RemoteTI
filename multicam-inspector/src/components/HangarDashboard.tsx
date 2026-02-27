@@ -5,6 +5,7 @@ import AdminPanel from './AdminPanel';
 import TelemetryAnalysis from './TelemetryAnalysis';
 import SimpleTelemetryAnalysis from './SimpleTelemetryAnalysis';
 import InspectionSummaryModal from './modals/InspectionSummaryModal';
+// Workflow History removed for now
 import { API_CONFIG } from '../config/api.config';
 import authService from '../services/authService';
 import { useTheme } from '../contexts/ThemeContext';
@@ -80,6 +81,7 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
   const [hangarsLoading, setHangarsLoading] = useState(true);
   const [selectedHangar, setSelectedHangar] = useState<string | null>(null);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  // const [showWorkflowHistory, setShowWorkflowHistory] = useState(false);
   const [showTelemetryAnalysis, setShowTelemetryAnalysis] = useState(false);
   const [showTelemetryDataAnalysis, setShowTelemetryDataAnalysis] = useState(false);
   const [telemetryHangar, setTelemetryHangar] = useState<any>(null);
@@ -1713,13 +1715,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               </button>
               <DarkModeButton />
               {userType === 'admin' && (
-                <button
-                  onClick={() => setShowAdminPanel(true)}
-                  className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-100"
-                  title="Admin Settings"
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
+                <>
+                  {/* Workflow History button removed for now */}
+                  <button
+                    onClick={() => setShowAdminPanel(true)}
+                    className="p-2 hover:bg-white/50 dark:hover:bg-gray-700/50 rounded-lg transition-all text-gray-600 dark:text-gray-200 hover:text-gray-800 dark:hover:text-gray-100"
+                    title="Admin Settings"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                </>
               )}
               {(userType === 'admin' || userType === 'everdrone') && (
                 <>
@@ -1763,13 +1768,16 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
               </button>
               <DarkModeButton />
               {userType === 'admin' && (
-                <button
-                  onClick={() => setShowAdminPanel(true)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                  title="Admin Settings"
-                >
-                  <Settings className="w-5 h-5 text-gray-600 dark:text-gray-200" />
-                </button>
+                <>
+                  {/* Workflow History button removed for now */}
+                  <button
+                    onClick={() => setShowAdminPanel(true)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    title="Admin Settings"
+                  >
+                    <Settings className="w-5 h-5 text-gray-600 dark:text-gray-200" />
+                  </button>
+                </>
               )}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -1804,16 +1812,19 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
                 )}
                 
                 {userType === 'admin' && (
-                  <button
-                    onClick={() => {
-                      setShowTelemetryDataAnalysis(true);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
-                  >
-                    <BarChart className="w-4 h-4" />
-                    <span>Telemetry Analysis</span>
-                  </button>
+                  <>
+                    {/* Workflow History button removed for now */}
+                    <button
+                      onClick={() => {
+                        setShowTelemetryDataAnalysis(true);
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                    >
+                      <BarChart className="w-4 h-4" />
+                      <span>Telemetry Analysis</span>
+                    </button>
+                  </>
                 )}
                 
                 <button
@@ -2317,6 +2328,8 @@ const HangarDashboard: React.FC<HangarDashboardProps> = ({
         isOpen={showAdminPanel}
         onClose={() => setShowAdminPanel(false)}
       />
+
+      {/* Workflow History Modal removed for now */}
 
       {/* Telemetry Data Analysis Modal */}
       <SimpleTelemetryAnalysis

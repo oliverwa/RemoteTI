@@ -3145,6 +3145,200 @@ app.post('/api/alarm-session/:hangarId/route-decision', async (req, res) => {
   }
 });
 
+// Get workflow history for all hangars
+app.get('/api/workflow-history', async (req, res) => {
+  try {
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    // Ensure directory exists
+    if (!fs.existsSync(alarmsDir)) {
+      return res.json([]);
+    }
+    
+    let files = fs.readdirSync(alarmsDir)
+      .filter(f => f.endsWith('.json'));
+    
+    const workflows = [];
+    
+    for (const file of files) {
+      try {
+        const sessionPath = path.join(alarmsDir, file);
+        const session = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+        
+        // Extract hangar info
+        const sessionHangarId = session.hangarId || file.split('_')[1];
+        const hangarConfig = getHangarConfig(sessionHangarId);
+        
+        // Build workflow history entry
+        const workflow = {
+          id: file.replace('.json', ''),
+          hangarId: sessionHangarId,
+          hangarName: hangarConfig?.label || sessionHangarId,
+          status: session.workflow?.status || session.status || 'active',
+          startTime: session.createdAt || session.workflow?.startTime,
+          endTime: session.workflow?.completedTime || session.workflow?.cancelledAt || session.completedAt || session.cancelledAt,
+          routeDecision: session.workflow?.routeDecision,
+          phases: session.workflow?.phases || {},
+          inspections: session.inspections || {},
+          alarmId: session.alarmId,
+          droneId: session.droneId || hangarConfig?.assignedDrone,
+          cancelReason: session.workflow?.cancellationReason,
+          cancelledBy: session.workflow?.cancelledBy || (session.workflow?.status === 'cancelled' ? 'Admin' : undefined)
+        };
+        
+        workflows.push(workflow);
+      } catch (err) {
+        console.error(`Error parsing workflow file ${file}:`, err);
+      }
+    }
+    
+    // Sort by start time (newest first)
+    workflows.sort((a, b) => {
+      const timeA = new Date(a.startTime || 0).getTime();
+      const timeB = new Date(b.startTime || 0).getTime();
+      return timeB - timeA;
+    });
+    
+    res.json(workflows);
+  } catch (error) {
+    console.error('Error fetching workflow history:', error);
+    res.status(500).json({ error: 'Failed to fetch workflow history' });
+  }
+});
+
+// Get workflow history for a specific hangar
+app.get('/api/workflow-history/:hangarId', async (req, res) => {
+  try {
+    const { hangarId } = req.params;
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    
+    // Ensure directory exists
+    if (!fs.existsSync(alarmsDir)) {
+      return res.json([]);
+    }
+    
+    let files = fs.readdirSync(alarmsDir)
+      .filter(f => f.endsWith('.json'));
+    
+    // Filter by hangar if specified
+    if (hangarId) {
+      files = files.filter(f => f.includes(`_${hangarId}_`));
+    }
+    
+    const workflows = [];
+    
+    for (const file of files) {
+      try {
+        const sessionPath = path.join(alarmsDir, file);
+        const session = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+        
+        // Extract hangar info
+        const sessionHangarId = session.hangarId || file.split('_')[1];
+        const hangarConfig = getHangarConfig(sessionHangarId);
+        
+        // Build workflow history entry
+        const workflow = {
+          id: file.replace('.json', ''),
+          hangarId: sessionHangarId,
+          hangarName: hangarConfig?.label || sessionHangarId,
+          status: session.workflow?.status || session.status || 'active',
+          startTime: session.createdAt || session.workflow?.startTime,
+          endTime: session.workflow?.completedTime || session.workflow?.cancelledAt || session.completedAt || session.cancelledAt,
+          routeDecision: session.workflow?.routeDecision,
+          phases: session.workflow?.phases || {},
+          inspections: session.inspections || {},
+          alarmId: session.alarmId,
+          droneId: session.droneId || hangarConfig?.assignedDrone,
+          cancelReason: session.workflow?.cancellationReason,
+          cancelledBy: session.workflow?.cancelledBy || (session.workflow?.status === 'cancelled' ? 'Admin' : undefined)
+        };
+        
+        workflows.push(workflow);
+      } catch (err) {
+        console.error(`Error parsing workflow file ${file}:`, err);
+      }
+    }
+    
+    // Sort by start time (newest first)
+    workflows.sort((a, b) => {
+      const timeA = new Date(a.startTime || 0).getTime();
+      const timeB = new Date(b.startTime || 0).getTime();
+      return timeB - timeA;
+    });
+    
+    res.json(workflows);
+  } catch (error) {
+    console.error('Error fetching workflow history:', error);
+    res.status(500).json({ error: 'Failed to fetch workflow history' });
+  }
+});
+
+// Cancel an active workflow
+app.post('/api/workflow/:workflowId/cancel', async (req, res) => {
+  try {
+    const { workflowId } = req.params;
+    const { reason } = req.body;
+    
+    const alarmsDir = path.join(BASE_DIR, 'data', 'sessions', 'alarms');
+    const sessionPath = path.join(alarmsDir, `${workflowId}.json`);
+    
+    if (!fs.existsSync(sessionPath)) {
+      return res.status(404).json({ error: 'Workflow not found' });
+    }
+    
+    const alarmSession = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    
+    // Check if already completed or cancelled
+    if (alarmSession.workflow?.status === 'completed' || alarmSession.workflow?.status === 'cancelled') {
+      return res.status(400).json({ 
+        error: `Cannot cancel ${alarmSession.workflow.status} workflow` 
+      });
+    }
+    
+    // Update workflow status
+    if (!alarmSession.workflow) {
+      alarmSession.workflow = { phases: {} };
+    }
+    
+    alarmSession.workflow.status = 'cancelled';
+    alarmSession.workflow.cancelledAt = new Date().toISOString();
+    alarmSession.workflow.cancellationReason = reason || 'Manually cancelled';
+    alarmSession.workflow.cancelledBy = 'Admin'; // You could get this from auth token
+    
+    // Update alarm status to cancelled (not completed)
+    alarmSession.status = 'cancelled';
+    alarmSession.cancelledAt = new Date().toISOString();
+    
+    // Important: Do NOT mark as completed - it was cancelled
+    delete alarmSession.completedAt;
+    delete alarmSession.workflow.completedTime;
+    
+    // Mark any in-progress phases as cancelled
+    if (alarmSession.workflow.phases) {
+      Object.keys(alarmSession.workflow.phases).forEach(phase => {
+        if (alarmSession.workflow.phases[phase].status === 'in-progress') {
+          alarmSession.workflow.phases[phase].status = 'cancelled';
+          alarmSession.workflow.phases[phase].cancelledAt = new Date().toISOString();
+        }
+      });
+    }
+    
+    // Save updated session
+    saveAlarmSession(sessionPath, alarmSession);
+    
+    log('info', `Workflow ${workflowId} cancelled: ${reason || 'No reason provided'}`);
+    
+    res.json({ 
+      success: true, 
+      message: 'Workflow cancelled successfully',
+      workflow: alarmSession.workflow
+    });
+  } catch (error) {
+    console.error('Error cancelling workflow:', error);
+    res.status(500).json({ error: 'Failed to cancel workflow' });
+  }
+});
+
 // Update inspection progress and completion status
 app.post('/api/inspection/update-progress', async (req, res) => {
   try {

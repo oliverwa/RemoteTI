@@ -585,7 +585,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
 
       {/* Main scrollable content area */}
       <div className="flex-1 overflow-y-auto relative">
-          <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-24 sm:pb-8">
+          <div className="w-full max-w-3xl mx-auto px-4 sm:px-8 py-4 sm:py-8 pb-8">
             {/* Simplified Task Card */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
@@ -648,8 +648,8 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
               )}
             </div>
 
-            {/* Pass/Fail Buttons - Fixed on mobile */}
-            <div className="fixed sm:relative bottom-0 left-0 right-0 bg-white dark:bg-gray-800 sm:bg-transparent p-3 sm:p-0 border-t sm:border-0 border-gray-200 dark:border-gray-700 z-10 sm:mb-6">
+            {/* Pass/Fail Buttons - Now positioned inline */}
+            <div className="mb-6">
               <div className="flex gap-3 max-w-3xl mx-auto">
                 <Button
                   onClick={() => handleTaskStatus(currentTask.taskNumber, 'pass')}
@@ -725,16 +725,7 @@ const OnsiteChecklistInspector: React.FC<OnsiteChecklistInspectorProps> = ({
                 />
               </div>
               
-              {/* Back button for mobile - at bottom of content */}
-              <div className="mt-6 mb-4 sm:hidden">
-                <button
-                  onClick={() => window.history.back()}
-                  className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Back</span>
-                </button>
-              </div>
+              {/* Back button for mobile - moved up */}
             </div>
 
           </div>
